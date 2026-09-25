@@ -1,0 +1,30 @@
+---
+/**
+ * <Perspective historian="A. J. P. Taylor" work="The Origins of the Second World War" year="1961" school="Revisionist">
+ *   Summary of the historian's argument.
+ * </Perspective>
+ *
+ * One historian's interpretation. Put several in a row for a historiography
+ * comparison — they lay out side by side on wide screens.
+ */
+import './notes.css';
+
+interface Props {
+  historian: string;
+  work?: string;
+  year?: string | number;
+  /** School of thought, e.g. "Intentionalist", "Revisionist". */
+  school?: string;
+}
+
+const { historian, work, year, school } = Astro.props;
+---
+
+<article class="note-view">
+  <header class="note-view__head">
+    {school && <span class="note-view__school">{school}</span>}
+    <span class="note-view__historian">{historian}</span>
+    {work && <cite class="note-view__work">{work}{year && ` (${year})`}</cite>}
+  </header>
+  <div class="note-view__body"><slot /></div>
+</article>

@@ -1,0 +1,31 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found">
+  <section class="container nf">
+    <p class="eyebrow">404</p>
+    <h1>This page has been lost to history.</h1>
+    <p class="lede">The link may be out of date, or the page may have moved.</p>
+    <div class="actions">
+      <a class="btn btn--primary" href="/">Go home</a>
+      <a class="btn" href="/globe">Explore the globe</a>
+      <a class="btn" href="/topics">Browse the notes</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf {
+    padding-block: clamp(64px, 12vw, 160px);
+  }
+  .nf h1 {
+    max-width: 16ch;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+</style>

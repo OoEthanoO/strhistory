@@ -1,0 +1,48 @@
+---
+/**
+ * <Q by="Neville Chamberlain" date="30 September 1938" note="…">peace for our time</Q>
+ *
+ * An inline highlighted quotation. Clicking it reveals who said it, when, and
+ * (optionally) why it matters. For a stand-alone quote use <KeyQuote>.
+ * Uses a <span role="button"> trigger so long quotes wrap like normal text.
+ */
+import './notes.css';
+
+interface Props {
+  by: string;
+  date?: string;
+  source?: string;
+  /** Optional analysis shown under the attribution. */
+  note?: string;
+}
+
+const { by, date, source, note } = Astro.props;
+const popId = `quote-${crypto.randomUUID().slice(0, 8)}`;
+---
+
+<span
+  class="note-q"
+  role="button"
+  tabindex="0"
+  aria-haspopup="dialog"
+  aria-expanded="false"
+  aria-controls={popId}
+  data-pop={popId}>“<slot />”</span><span
+  id={popId}
+  popover="auto"
+  class="note-pop note-pop--quote"
+  role="dialog"
+  aria-label={`Quotation from ${by}`}
+>
+  <span class="note-pop__kicker">Quotation{date && ` · ${date}`}</span>
+  <span class="note-pop__title">{by}</span>
+  {source && <span class="note-pop__source">{source}</span>}
+  {
+    note && (
+      <span class="note-pop__section">
+        <span class="note-pop__label">Why it matters</span>
+        <span class="note-pop__text">{note}</span>
+      </span>
+    )
+  }
+</span><script>import './popover-client';</script>

@@ -1,0 +1,162 @@
+{
+  "1900": {
+    "Kingdom of Brazil": "Brazil",
+    "Manchu Empire": "Qing Empire",
+    "Congo": "Congo Free State"
+  },
+  "1914": {
+    "Manchu Empire": "Republic of China",
+    "Georgia": {
+      "name": "Georgia (Russian Empire)",
+      "subjecto": "Russia"
+    },
+    "Armenia": {
+      "name": "Armenia (Russian Empire)",
+      "subjecto": "Russia"
+    },
+    "Azerbaijan": {
+      "name": "Azerbaijan (Russian Empire)",
+      "subjecto": "Russia"
+    },
+    "Finland": {
+      "name": "Grand Duchy of Finland (Russia)",
+      "subjecto": "Russia"
+    },
+    "Botswana": "Bechuanaland (UK)",
+    "Lesotho": "Basutoland (UK)",
+    "Malawi": "Nyasaland (UK)",
+    "Guyana": "British Guiana (UK)",
+    "Djibouti": "French Somaliland",
+    "Equatorial Guinea": "Spanish Guinea",
+    "Suriname": "Dutch Guiana",
+    "Mozambique": "Mozambique (Portugal)",
+    "Libya": "Libya (Italy)"
+  },
+  "1920": {
+    "USSR": "Soviet Russia",
+    "Ghana": "Gold Coast (UK)",
+    "Guinea-Bissau": "Portuguese Guinea",
+    "Botswana": "Bechuanaland (UK)",
+    "Lesotho": "Basutoland (UK)",
+    "Malawi": "Nyasaland (UK)",
+    "Guyana": "British Guiana (UK)",
+    "Malaysia": "British Malaya (UK)",
+    "Tanzania, United Republic of": "Tanganyika (UK)",
+    "Zaire (Belgium)": "Belgian Congo",
+    "Zambia": "Northern Rhodesia (UK)",
+    "Zimbabwe": "Southern Rhodesia (UK)",
+    "Suriname": "Dutch Guiana",
+    "Equatorial Guinea": "Spanish Guinea",
+    "Iran": "Persia"
+  },
+  "1930": {
+    "White Russia": {
+      "name": "USSR",
+      "subjecto": "USSR"
+    },
+    "Far Eastern SSR": {
+      "name": "USSR",
+      "subjecto": "USSR"
+    },
+    "Chinese Warlords": "Republic of China",
+    "Ghana": "Gold Coast (UK)",
+    "Guinea-Bissau": "Portuguese Guinea",
+    "Botswana": "Bechuanaland (UK)",
+    "Lesotho": "Basutoland (UK)",
+    "Malawi": "Nyasaland (UK)",
+    "Guyana": "British Guiana (UK)",
+    "Malaysia": "British Malaya (UK)",
+    "Tanzania, United Republic of": "Tanganyika (UK)",
+    "Zaire (Belgium)": "Belgian Congo",
+    "Zambia": "Northern Rhodesia (UK)",
+    "Zimbabwe": "Southern Rhodesia (UK)",
+    "Suriname": "Dutch Guiana",
+    "Equatorial Guinea": "Spanish Guinea",
+    "Iran": "Persia"
+  },
+  "1938": {
+    "Israel": "Mandatory Palestine (UK)",
+    "Tanzania, United Republic of": "Tanganyika (UK)",
+    "Malawi": "Nyasaland (UK)",
+    "Botswana": "Bechuanaland (UK)",
+    "Lesotho": "Basutoland (UK)",
+    "Malaysia": "British Malaya (UK)",
+    "Guyana": "British Guiana (UK)",
+    "Chinese warlords": "Republic of China",
+    "Jordan": "Transjordan (UK)",
+    "Hail": {
+      "name": "Saudi Arabia",
+      "subjecto": "Saudi Arabia"
+    },
+    "Hejaz": {
+      "name": "Saudi Arabia",
+      "subjecto": "Saudi Arabia"
+    },
+    "Mesopotamia (GB)": "Iraq",
+    "Guinea-Bissau": "Portuguese Guinea",
+    "Equatorial Guinea": "Spanish Guinea",
+    "Suriname": "Dutch Guiana"
+  },
+  "1945": {
+    "India": "British Raj",
+    "Pakistan": "British Raj",
+    "Bangladesh": "British Raj",
+    "Sri Lanka": "Ceylon (UK)",
+    "Israel": "Mandatory Palestine (UK)",
+    "Jordan": "Transjordan (UK)",
+    "United Arab Emirates": "Trucial States (UK)",
+    "Malaysia": "British Malaya (UK)",
+    "Benin": "Dahomey (France)",
+    "Mali": "French Sudan (France)",
+    "Guinea": "French Guinea (France)",
+    "Central African Republic": "Ubangi-Shari (France)",
+    "Congo": "Middle Congo (France)",
+    "Zaire": "Belgian Congo",
+    "Cameroon": "French Cameroons",
+    "Namibia": "South West Africa (South Africa)",
+    "Tanzania, United Republic of": "Tanganyika (UK)",
+    "Botswana": "Bechuanaland (UK)",
+    "Lesotho": "Basutoland (UK)",
+    "Rhodesia": "Southern Rhodesia (UK)",
+    "Djibouti": "French Somaliland",
+    "Western Sahara": "Spanish Sahara",
+    "Equatorial Guinea": "Spanish Guinea",
+    "Guyana": "British Guiana (UK)",
+    "Suriname": "Dutch Guiana",
+    "Sudan": "Anglo-Egyptian Sudan"
+  },
+  "1960": {
+    "Tanzania, United Republic of": "Tanganyika (UK)",
+    "Zambia": "Northern Rhodesia (UK)",
+    "Zimbabwe": "Southern Rhodesia (UK)",
+    "Malawi": "Nyasaland (UK)",
+    "Botswana": "Bechuanaland (UK)",
+    "Lesotho": "Basutoland (UK)",
+    "Namibia": "South West Africa (South Africa)",
+    "Zaire": "Congo-Léopoldville",
+    "Congo": "Congo-Brazzaville",
+    "Benin": "Dahomey",
+    "Burkina Faso": "Upper Volta",
+    "Guinea-Bissau": "Portuguese Guinea",
+    "Equatorial Guinea": "Spanish Guinea",
+    "Western Sahara": "Spanish Sahara",
+    "Djibouti": "French Somaliland",
+    "Guyana": "British Guiana (UK)",
+    "Belize": "British Honduras (UK)",
+    "Sri Lanka": "Ceylon",
+    "Malaysia": "Federation of Malaya",
+    "United Arab Emirates": "Trucial States (UK)",
+    "Oman": "Muscat and Oman"
+  },
+  "1994": {
+    "Serbia": {
+      "name": "FR Yugoslavia",
+      "subjecto": "FR Yugoslavia"
+    },
+    "Montenegro": {
+      "name": "FR Yugoslavia (Montenegro)",
+      "subjecto": "FR Yugoslavia"
+    }
+  },
+  "$comment": "Per-year corrections for anachronistic names in the upstream historical-basemaps data. Keys are snapshot years. Each entry maps an upstream NAME (or SUBJECTO) to either a display name (string) or {\"name\": ..., \"subjecto\": ...} when the controlling power (used for colouring) must change too. Only rename what you are sure of; the geometry itself cannot be fixed here. Re-run `npm run data:snapshots -- <year>` after editing."
+}

@@ -1,0 +1,84 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { formatDate } from '@/lib/format';
+import Badge from './Badge.astro';
+
+interface Props {
+  post: CollectionEntry<'news'>;
+}
+const { post } = Astro.props;
+const { data } = post;
+---
+
+<a class="news-card" href={`/news/${post.id}`}>
+  {data.image && <Image class="cover" src={data.image} alt={data.imageAlt ?? ''} width={720} />}
+  <div class="body">
+    <p class="meta">
+      <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
+      {data.tags.slice(0, 2).map((t) => <span class="tag">{t}</span>)}
+    </p>
+    <h3>{data.title}</h3>
+    <p class="summary">{data.summary}</p>
+    {data.placeholder && <Badge tone="sample">Sample post</Badge>}
+  </div>
+</a>
+
+<style>
+  .news-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: var(--radius-l);
+    border: 1px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    text-decoration: none;
+    overflow: hidden;
+    box-shadow: var(--shadow-s);
+    transition: transform 0.2s var(--ease), box-shadow 0.2s;
+  }
+  .news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    color: var(--ink);
+  }
+  .cover {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  .body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 20px 22px 22px;
+    flex: 1;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--ink-3);
+  }
+  .tag {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--paper-2);
+    font-size: 0.78rem;
+  }
+  h3 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+  .summary {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 0.95rem;
+    flex: 1;
+  }
+</style>

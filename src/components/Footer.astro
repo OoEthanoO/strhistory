@@ -1,0 +1,96 @@
+---
+import { footerNav, site } from '@/config/site';
+import Logo from './Logo.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container inner">
+    <div class="about">
+      <a class="brand" href="/">
+        <Logo size={26} />
+        <span>{site.name}</span>
+      </a>
+      <p>
+        {site.department}{site.school && `, ${site.school}`}. Study notes for IB History, mapped onto the world they describe.
+      </p>
+      {site.email && <p><a href={`mailto:${site.email}`}>{site.email}</a></p>}
+    </div>
+    <nav aria-label="Footer">
+      <ul>
+        {footerNav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </nav>
+  </div>
+  <div class="container legal">
+    <p>
+      © {year} {site.department}. Historical borders from
+      <a href="https://github.com/aourednik/historical-basemaps">historical-basemaps</a> (GPL-3.0) — approximate,
+      especially for earlier periods.
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--rule);
+    background: var(--paper-2);
+    color: var(--ink-2);
+    font-size: 0.94rem;
+    margin-top: auto;
+  }
+  .inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 32px;
+    padding-block: 48px 32px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    text-decoration: none;
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .about p {
+    max-width: 44ch;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 24px;
+  }
+  nav a {
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+  nav a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .legal {
+    border-top: 1px solid var(--rule);
+    padding-block: 18px 28px;
+    font-size: 0.85rem;
+    color: var(--ink-3);
+  }
+  .legal p {
+    margin: 0;
+  }
+  .legal a {
+    color: inherit;
+  }
+  @media (max-width: 720px) {
+    .inner {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

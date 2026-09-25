@@ -1,0 +1,57 @@
+---
+# Copy this file to src/content/topics/<slug>.mdx — the file name becomes the URL
+# (/topics/<slug>) and the pin's id. Files starting with "_" are ignored.
+# Field reference: src/schemas/topics.ts. Quote any value containing ": ".
+title: The title students see
+shortTitle: Short pin label        # optional, max 36 characters
+unit: ps3-move-to-global-war       # a file name from src/content/syllabus/
+period:
+  start: 1931
+  end: 1941
+location:
+  place: Mukden (Shenyang), Manchuria
+  lat: 41.80
+  lng: 123.43
+summary: One or two sentences for cards, pin previews and search (max 320 characters).
+keyQuestions:
+  - The first big question these notes answer?
+  - A second?
+related: []                        # other topic slugs
+authors: []                        # teacher slugs from src/content/teachers/
+# snapshot: 1938                   # optional: which globe year to open on
+updated: 2026-09-25
+draft: true                        # remove when the notes are ready to publish
+---
+
+## Overview
+
+Two or three sentences that set the scene. Mark key terms with
+<Term id="league-of-nations">League of Nations</Term> — the id must match a file
+in src/content/glossary/ (create it if needed).
+
+<Chronology title="Key dates">
+  <Event date="18 Sep 1931">What happened, in one line.</Event>
+</Chronology>
+
+## A section heading
+
+Normal Markdown paragraphs. Inline quotations go in
+<Q by="Who said it" date="When" source="Where" note="Why it matters (optional)">the quoted words</Q>.
+
+<KeyQuote by="Who said it" role="Their position" date="When" source="Where it comes from" analysis="Why this quote matters — what a student should notice.">The exact quoted words, on one line.</KeyQuote>
+
+<Callout type="exam">
+Exam technique. Other types: historiography, context, warning, tip.
+</Callout>
+
+## Historians' debate
+
+<Perspective historian="Name" work="Book or article title" year="2000" school="School of thought">
+One or two sentences summarising their argument.
+</Perspective>
+
+## Test yourself
+
+<Recall q="A question a student should be able to answer?">
+A model answer.
+</Recall>

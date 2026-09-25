@@ -1,0 +1,78 @@
+---
+import { Image } from 'astro:assets';
+import { render, type CollectionEntry } from 'astro:content';
+import Badge from '@/components/Badge.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getNews } from '@/lib/content';
+import { formatDate } from '@/lib/format';
+
+export async function getStaticPaths() {
+  return (await getNews()).map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+interface Props {
+  post: CollectionEntry<'news'>;
+}
+
+const { post } = Astro.props;
+const { data } = post;
+const { Content } = await render(post);
+---
+
+<BaseLayout title={data.title} description={data.summary}>
+  <article class="container post">
+    <header>
+      <p class="eyebrow"><a href="/news">News</a></p>
+      <h1>{data.title}</h1>
+      <p class="meta">
+        <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
+        {data.tags.map((t) => <span class="tag">{t}</span>)}
+        {data.placeholder && <Badge tone="sample">Sample post</Badge>}
+      </p>
+      <p class="lede">{data.summary}</p>
+    </header>
+    {data.image && <Image class="cover" src={data.image} alt={data.imageAlt ?? ''} width={1200} />}
+    <div class="prose">
+      <Content />
+    </div>
+    <p class="back"><a href="/news">← All news</a></p>
+  </article>
+</BaseLayout>
+
+<style>
+  .post {
+    max-width: calc(var(--prose) + 2 * var(--gutter));
+    padding-block: clamp(40px, 7vw, 88px);
+  }
+  .eyebrow a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    color: var(--ink-3);
+    font-size: 0.92rem;
+  }
+  .tag {
+    padding: 1px 10px;
+    border-radius: 999px;
+    background: var(--paper-2);
+    font-size: 0.8rem;
+  }
+  .cover {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-l);
+    margin: 12px 0 32px;
+  }
+  .back {
+    margin-top: 48px;
+    font-weight: 600;
+  }
+  .back a {
+    text-decoration: none;
+  }
+</style>

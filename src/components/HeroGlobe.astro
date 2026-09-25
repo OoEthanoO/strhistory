@@ -1,0 +1,114 @@
+---
+/**
+ * A static orthographic globe drawn at build time (no client JavaScript):
+ * Natural Earth land, a graticule, and a glowing dot for each topic that
+ * faces the viewer. Used as the home page illustration.
+ */
+import { geoGraticule10, geoOrthographic, geoPath, geoDistance } from 'd3-geo';
+import { feature } from 'topojson-client';
+import landTopo from 'world-atlas/land-110m.json';
+import type { Topic } from '@/lib/content';
+
+interface Props {
+  topics: Topic[];
+  /** [longitude, latitude] at the centre of the view. */
+  center?: [number, number];
+  size?: number;
+}
+
+const { topics, center = [40, 28], size = 560 } = Astro.props;
+const r = size / 2 - 8;
+const projection = geoOrthographic()
+  .scale(r)
+  .translate([size / 2, size / 2])
+  .rotate([-center[0], -center[1]])
+  .precision(0.6);
+const path = geoPath(projection).digits(1);
+const topology = landTopo as unknown as Parameters<typeof feature>[0];
+const land = feature(topology, topology.objects.land);
+const landPath = path(land as never) ?? '';
+const gratPath = path(geoGraticule10()) ?? '';
+const spherePath = path({ type: 'Sphere' }) ?? '';
+
+const pins = topics
+  .map((t) => ({ t, lngLat: [t.data.location.lng, t.data.location.lat] as [number, number] }))
+  .filter(({ lngLat }) => geoDistance(lngLat, center) < Math.PI / 2 - 0.12)
+  .map(({ t, lngLat }) => {
+    const [x, y] = projection(lngLat) ?? [0, 0];
+    return { id: t.id, title: t.data.shortTitle ?? t.data.title, x, y };
+  });
+---
+
+<svg class="hero-globe" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="A globe with IB History topics marked">
+  <defs>
+    <radialGradient id="hg-ocean" cx="38%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#1b3354"></stop>
+      <stop offset="70%" stop-color="#0d1a2c"></stop>
+      <stop offset="100%" stop-color="#070d18"></stop>
+    </radialGradient>
+    <radialGradient id="hg-shade" cx="35%" cy="30%" r="80%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"></stop>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"></stop>
+    </radialGradient>
+    <radialGradient id="hg-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="78%" stop-color="#6f9bd8" stop-opacity="0.28"></stop>
+      <stop offset="100%" stop-color="#6f9bd8" stop-opacity="0"></stop>
+    </radialGradient>
+  </defs>
+  <circle cx={size / 2} cy={size / 2} r={r + 26} fill="url(#hg-glow)"></circle>
+  <path d={spherePath} fill="url(#hg-ocean)"></path>
+  <path d={gratPath} fill="none" stroke="#a9c1e0" stroke-opacity="0.12" stroke-width="0.6"></path>
+  <path d={landPath} fill="#8c7a5b" fill-opacity="0.9" stroke="#070d18" stroke-opacity="0.6" stroke-width="0.6"></path>
+  <path d={spherePath} fill="url(#hg-shade)"></path>
+  <path d={spherePath} fill="none" stroke="#a9c1e0" stroke-opacity="0.25"></path>
+  <g class="pins">
+    {
+      pins.map((p, i) => (
+        <g transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`} style={`--d:${(i % 5) * 0.5}s`}>
+          <circle class="pin-ring" r="7" />
+          <circle class="pin-dot" r="4.5" />
+          <title>{p.title}</title>
+        </g>
+      ))
+    }
+  </g>
+</svg>
+
+<style>
+  .hero-globe {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 30px 60px rgb(0 0 0 / 0.45));
+  }
+  .pin-dot {
+    fill: #f2b35b;
+    stroke: #1a1206;
+    stroke-width: 1.5;
+  }
+  .pin-ring {
+    fill: none;
+    stroke: #f2b35b;
+    stroke-width: 1.5;
+    transform-origin: center;
+    transform-box: fill-box;
+    opacity: 0;
+    animation: hg-pulse 3s ease-out infinite;
+    animation-delay: var(--d);
+  }
+  @keyframes hg-pulse {
+    0% {
+      transform: scale(0.6);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pin-ring {
+      animation: none;
+    }
+  }
+</style>

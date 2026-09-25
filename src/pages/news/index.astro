@@ -1,0 +1,31 @@
+---
+import NewsCard from '@/components/NewsCard.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getNews } from '@/lib/content';
+
+const posts = await getNews();
+---
+
+<BaseLayout title="News" description="News, events and achievements from the history department.">
+  <PageHeader eyebrow="News" title="From the department" lede="Trips, competitions, guest speakers and student achievements." />
+  <div class="container list">
+    {
+      posts.length ? (
+        <div class="grid" style="--min: 320px">
+          {posts.map((p) => (
+            <NewsCard post={p} />
+          ))}
+        </div>
+      ) : (
+        <p class="muted">No news yet.</p>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .list {
+    padding-bottom: clamp(48px, 7vw, 96px);
+  }
+</style>

@@ -1,0 +1,50 @@
+---
+import { getGlobeData } from '@/features/globe/data';
+import GlobeExplorer from '@/features/globe/GlobeExplorer';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { formatYearRange } from '@/lib/format';
+
+const data = await getGlobeData();
+---
+
+<BaseLayout
+  title="Globe"
+  description="Explore IB History topics on a 3D globe of historical borders, from the Crusades to the end of the Cold War."
+  immersive
+>
+  <GlobeExplorer client:only="react" {...data}>
+    <div slot="fallback" class="globe-fallback">
+      <p>Loading the globe…</p>
+      <noscript>
+        <p>The globe needs JavaScript. Here are the topics it shows:</p>
+        <ul>
+          {
+            data.topics.map((t) => (
+              <li>
+                <a href={t.href}>{t.title}</a> ({formatYearRange(t.start, t.end)}, {t.place})
+              </li>
+            ))
+          }
+        </ul>
+      </noscript>
+    </div>
+  </GlobeExplorer>
+</BaseLayout>
+
+<style>
+  .globe-fallback {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    padding: 24px;
+    color: #c9c3b6;
+    text-align: center;
+  }
+  .globe-fallback a {
+    color: #f2b35b;
+  }
+  .globe-fallback ul {
+    text-align: left;
+  }
+</style>

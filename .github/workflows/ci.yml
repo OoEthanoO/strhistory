@@ -1,0 +1,38 @@
+# Checks every push and pull request. Deployment is separate: the home server
+# polls main and deploys new commits itself (see AGENTS.md -> Deployment), so a
+# red check here means "fix before merging", not "the deploy was skipped".
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Content check (frontmatter, key terms, references, snapshot files)
+        run: npm run check:content
+
+      - name: Type check
+        run: npx astro check
+
+      - name: Build
+        run: npm run build
+        env:
+          GIT_SHA: ${{ github.sha }}

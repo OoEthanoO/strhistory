@@ -1,0 +1,96 @@
+---
+import { getEntries, type CollectionEntry } from 'astro:content';
+import Avatar from './Avatar.astro';
+import Badge from './Badge.astro';
+
+interface Props {
+  teacher: CollectionEntry<'teachers'>;
+  /** Smaller card without course list (home page). */
+  compact?: boolean;
+}
+
+const { teacher, compact = false } = Astro.props;
+const { data } = teacher;
+const courses = compact ? [] : await getEntries(data.courses);
+---
+
+<a class:list={['teacher-card', { compact }]} href={`/teachers/${teacher.id}`}>
+  <Avatar name={data.name} photo={data.photo} alt={data.photoAlt} size={compact ? 56 : 72} />
+  <div class="body">
+    <h3 class="name">{data.name}</h3>
+    <p class="role">{data.role}</p>
+    {
+      courses.length > 0 && (
+        <ul class="courses">
+          {courses.map((c) => (
+            <li>{c.data.title}</li>
+          ))}
+        </ul>
+      )
+    }
+    {data.placeholder && <Badge tone="sample" title="Sample profile — replace with real details">Sample profile</Badge>}
+  </div>
+</a>
+
+<style>
+  .teacher-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    height: 100%;
+    padding: 22px;
+    border-radius: var(--radius-l);
+    border: 1px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    text-decoration: none;
+    box-shadow: var(--shadow-s);
+    transition: transform 0.2s var(--ease), box-shadow 0.2s;
+  }
+  .teacher-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    color: var(--ink);
+  }
+  .compact {
+    flex-direction: row;
+    align-items: center;
+    padding: 16px;
+    gap: 14px;
+  }
+  .body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+  }
+  .name {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+  .compact .name {
+    font-size: 1.1rem;
+  }
+  .role {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 0.92rem;
+  }
+  .courses {
+    list-style: none;
+    margin: 8px 0 4px;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .courses li {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--paper-2);
+    font-size: 0.8rem;
+    color: var(--ink-2);
+  }
+</style>

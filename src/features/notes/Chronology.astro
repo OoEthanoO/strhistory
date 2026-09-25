@@ -1,0 +1,18 @@
+---
+/**
+ * <Chronology title="Key dates">
+ *   <Event date="18 September 1931">What happened.</Event>
+ * </Chronology>
+ */
+import './notes.css';
+
+interface Props {
+  title?: string;
+}
+const { title = 'Chronology' } = Astro.props;
+---
+
+<section class="note-chrono" aria-label={title}>
+  <p class="note-chrono__title">{title}</p>
+  <ol class="note-chrono__list"><slot /></ol>
+</section>

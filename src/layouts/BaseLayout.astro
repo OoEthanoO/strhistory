@@ -1,0 +1,74 @@
+---
+/**
+ * The HTML shell every page uses: <head>, fonts, theme, header and footer.
+ * Pages pass a title and description; `immersive` is for full-screen tools
+ * (the globe) — dark floating header, no footer, no page scroll.
+ */
+import '@fontsource-variable/inter';
+import '@fontsource-variable/newsreader/opsz.css';
+import '@fontsource-variable/newsreader/opsz-italic.css';
+import '@/styles/tokens.css';
+import '@/styles/base.css';
+import Footer from '@/components/Footer.astro';
+import Header from '@/components/Header.astro';
+import { site } from '@/config/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  immersive?: boolean;
+  /** Extra class on <body>. */
+  bodyClass?: string;
+}
+
+const { title, description = site.description, immersive = false, bodyClass } = Astro.props;
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.tagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en" data-immersive={immersive ? '' : undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content={immersive ? '#0b1220' : '#f6f3ec'} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <script is:inline>
+      // Apply the saved theme before first paint to avoid a flash.
+      try {
+        const t = localStorage.getItem('theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
+    <slot name="head" />
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header variant={immersive ? 'immersive' : 'default'} />
+    <main id="main">
+      <slot />
+    </main>
+    {!immersive && <Footer />}
+  </body>
+</html>
+
+<style is:global>
+  @view-transition {
+    navigation: auto;
+  }
+  html[data-immersive],
+  html[data-immersive] body {
+    height: 100%;
+    overflow: hidden;
+    background: #060a12;
+  }
+</style>

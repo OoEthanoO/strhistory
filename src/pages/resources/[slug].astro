@@ -1,0 +1,108 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { notesComponents } from '@/features/notes';
+import '@/features/notes/notes.css';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getGuides } from '@/lib/content';
+import { formatDate } from '@/lib/format';
+
+export async function getStaticPaths() {
+  return (await getGuides()).map((guide) => ({ params: { slug: guide.id }, props: { guide } }));
+}
+
+interface Props {
+  guide: CollectionEntry<'guides'>;
+}
+
+const { guide } = Astro.props;
+const { data } = guide;
+const { Content, headings } = await render(guide);
+const toc = headings.filter((h) => h.depth === 2);
+---
+
+<BaseLayout title={data.title} description={data.summary}>
+  <header class="page-head">
+    <div class="container">
+      <p class="eyebrow"><a href="/resources">Resources</a> · {data.category}</p>
+      <h1>{data.title}</h1>
+      <p class="lede">{data.summary}</p>
+    </div>
+  </header>
+  <div class="container layout">
+    {
+      toc.length > 0 && (
+        <nav class="toc" aria-label="On this page">
+          <p>On this page</p>
+          <ol>
+            {toc.map((h) => (
+              <li>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
+    <article class="prose">
+      <Content components={notesComponents} />
+      {data.updated && <p class="updated">Last updated {formatDate(data.updated)}.</p>}
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .eyebrow a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: clamp(32px, 5vw, 72px);
+    padding-bottom: clamp(48px, 6vw, 80px);
+  }
+  .toc {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+    align-self: start;
+    font-size: 0.9rem;
+  }
+  .toc p {
+    margin: 0 0 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 14px;
+    border-left: 1px solid var(--rule);
+  }
+  .toc li {
+    margin-bottom: 8px;
+  }
+  .toc a {
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+  .toc a:hover {
+    color: var(--accent);
+  }
+  .updated {
+    margin-top: 3em;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    color: var(--ink-3);
+  }
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .toc {
+      display: none;
+    }
+  }
+</style>

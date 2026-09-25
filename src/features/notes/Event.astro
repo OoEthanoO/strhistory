@@ -1,0 +1,12 @@
+---
+/** One row of a <Chronology>. */
+interface Props {
+  date: string;
+}
+const { date } = Astro.props;
+---
+
+<li class="note-chrono__event">
+  <span class="note-chrono__date">{date}</span>
+  <div class="note-chrono__what"><slot /></div>
+</li>

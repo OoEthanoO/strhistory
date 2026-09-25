@@ -1,0 +1,12 @@
+# Normalise line endings so Windows, macOS and Linux contributors produce the
+# same diffs. PowerShell scripts keep CRLF for the Windows server.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+
+# Binary data
+*.pbf binary
+*.woff2 binary
+*.png binary
+*.jpg binary
+*.webp binary

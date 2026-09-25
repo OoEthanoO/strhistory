@@ -1,0 +1,85 @@
+---
+import PageHeader from '@/components/PageHeader.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getGuides } from '@/lib/content';
+
+const guides = await getGuides();
+const categories = ['Assessment', 'Skills', 'Research'] as const;
+---
+
+<BaseLayout
+  title="Resources"
+  description="Study guides for IB History: exam papers, source analysis, essay writing, the internal assessment and the extended essay."
+>
+  <PageHeader
+    eyebrow="Resources"
+    title="Study guides"
+    lede="How the IB History exams work, and how to do well in them — from source analysis to the historical investigation."
+  />
+  <div class="container list">
+    {
+      categories.map((cat) => {
+        const items = guides.filter((g) => g.data.category === cat);
+        return (
+          items.length > 0 && (
+            <section class="cat">
+              <h2>{cat}</h2>
+              <div class="grid" style="--min: 300px">
+                {items.map((g) => (
+                  <a class="guide" href={`/resources/${g.id}`}>
+                    <h3>{g.data.title}</h3>
+                    <p>{g.data.summary}</p>
+                    <span class="go">Read the guide →</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )
+        );
+      })
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .list {
+    padding-bottom: clamp(48px, 7vw, 96px);
+  }
+  .cat + .cat {
+    margin-top: 48px;
+  }
+  .cat h2 {
+    font-size: var(--step-2);
+  }
+  .guide {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 22px 24px;
+    border-radius: var(--radius-l);
+    border: 1px solid var(--rule);
+    border-top: 4px solid var(--brass);
+    background: var(--card);
+    color: var(--ink);
+    text-decoration: none;
+    transition: transform 0.2s var(--ease), box-shadow 0.2s;
+  }
+  .guide:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    color: var(--ink);
+  }
+  .guide h3 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+  .guide p {
+    margin: 0;
+    color: var(--ink-2);
+    flex: 1;
+  }
+  .go {
+    font-weight: 600;
+    color: var(--accent);
+  }
+</style>

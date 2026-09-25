@@ -1,0 +1,182 @@
+---
+import { getEntries, render, type CollectionEntry } from 'astro:content';
+import Badge from '@/components/Badge.astro';
+import TeacherCard from '@/components/TeacherCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCourses, getTeachers, getTopics } from '@/lib/content';
+
+export async function getStaticPaths() {
+  return (await getCourses()).map((course) => ({ params: { slug: course.id }, props: { course } }));
+}
+
+interface Props {
+  course: CollectionEntry<'courses'>;
+}
+
+const { course } = Astro.props;
+const { data } = course;
+const { Content } = await render(course);
+const units = await getEntries(data.units);
+const topics = await getTopics();
+const teachers = (await getTeachers()).filter((t) => t.data.courses.some((c) => c.id === course.id));
+---
+
+<BaseLayout title={data.title} description={data.summary}>
+  <header class="page-head">
+    <div class="container">
+      <p class="eyebrow"><a href="/courses">Courses</a> · {data.level}</p>
+      <h1>{data.title}</h1>
+      <p class="lede">{data.summary}</p>
+      <p class="facts">
+        <span>{data.grades}</span>
+        {data.code && <span>Course code {data.code}</span>}
+        {data.placeholder && <Badge tone="sample">Sample course details</Badge>}
+      </p>
+    </div>
+  </header>
+
+  <div class="container layout">
+    <article class="prose">
+      <Content />
+    </article>
+
+    <aside class="side">
+      {
+        data.assessment.length > 0 && (
+          <section class="box">
+            <h2>Assessment</h2>
+            <ul class="assess">
+              {data.assessment.map((a) => (
+                <li>
+                  <span class="a-top">
+                    <span class="a-name">{a.component}</span>
+                    <span class="a-weight">{a.weight}</span>
+                  </span>
+                  <span class="a-detail">{a.detail}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+      {
+        units.length > 0 && (
+          <section class="box">
+            <h2>Units studied</h2>
+            <ul class="units">
+              {units.map((u) => {
+                const list = topics.filter((t) => t.data.unit.id === u.id);
+                return (
+                  <li>
+                    <span class="u-title">
+                      <Badge tone={`paper-${u.data.paper}`}>P{u.data.paper}</Badge> {u.data.title}
+                    </span>
+                    {list.length > 0 && (
+                      <span class="u-topics">
+                        {list.map((t, i) => (
+                          <>
+                            {i > 0 && ' · '}
+                            <a href={`/topics/${t.id}`}>{t.data.title}</a>
+                          </>
+                        ))}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )
+      }
+    </aside>
+  </div>
+
+  {
+    teachers.length > 0 && (
+      <section class="section section--alt">
+        <div class="container">
+          <h2>Taught by</h2>
+          <div class="grid" style="--min: 260px">
+            {teachers.map((t) => (
+              <TeacherCard teacher={t} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .eyebrow a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 20px;
+    margin: 16px 0 0;
+    color: var(--ink-3);
+    font-size: 0.95rem;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: clamp(32px, 5vw, 64px);
+    padding-bottom: clamp(48px, 6vw, 80px);
+  }
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .box {
+    padding: 20px 22px;
+    border-radius: var(--radius-l);
+    border: 1px solid var(--rule);
+    background: var(--card);
+  }
+  .box h2 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+  }
+  .assess,
+  .units {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .assess li,
+  .units li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .a-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 600;
+  }
+  .a-weight {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .a-detail,
+  .u-topics {
+    font-size: 0.88rem;
+    color: var(--ink-3);
+  }
+  .u-title {
+    font-weight: 600;
+  }
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

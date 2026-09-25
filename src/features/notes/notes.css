@@ -1,0 +1,527 @@
+/*
+ * Styles for study notes: the prose column and every notes component.
+ * Global (not scoped) because MDX content and popovers are rendered outside
+ * the components' own scope. Everything is prefixed .note- / .prose.
+ */
+
+/* ---------- prose ---------- */
+
+.prose {
+  font-family: var(--font-serif);
+  font-size: clamp(1.08rem, 1.02rem + 0.25vw, 1.22rem);
+  line-height: 1.7;
+  color: var(--ink);
+  max-width: var(--prose);
+}
+.prose > * + * {
+  margin-top: 0;
+}
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 1.1em;
+}
+.prose h2 {
+  font-size: var(--step-3);
+  margin: 2.2em 0 0.6em;
+  padding-top: 0.2em;
+}
+.prose h3 {
+  font-size: var(--step-2);
+  margin: 1.8em 0 0.5em;
+}
+.prose h4 {
+  font-size: var(--step-1);
+  margin: 1.5em 0 0.4em;
+}
+.prose h2:first-child,
+.prose h3:first-child {
+  margin-top: 0;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.3em;
+}
+.prose li {
+  margin-bottom: 0.4em;
+}
+.prose li::marker {
+  color: var(--brass);
+}
+.prose strong {
+  font-weight: 650;
+}
+.prose a {
+  color: var(--accent);
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-family: var(--font-sans);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+.prose th,
+.prose td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.prose th {
+  font-weight: 650;
+  color: var(--ink-2);
+  border-bottom: 2px solid var(--rule-strong);
+}
+.prose blockquote {
+  margin: 1.5em 0;
+  padding: 0.2em 0 0.2em 1.2em;
+  border-left: 3px solid var(--brass);
+  color: var(--ink-2);
+  font-style: italic;
+}
+.prose hr {
+  margin: 3em auto;
+  width: 40%;
+}
+
+/* ---------- key terms ---------- */
+
+.note-term {
+  display: inline;
+  padding: 0 0.1em;
+  margin: 0;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  font: inherit;
+  color: var(--term);
+  text-decoration: underline dotted 1.5px;
+  text-decoration-color: color-mix(in srgb, var(--term) 55%, transparent);
+  text-underline-offset: 0.22em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.note-term:hover,
+.note-term:focus-visible,
+.note-term[aria-expanded='true'] {
+  background: var(--term-soft);
+  text-decoration-style: solid;
+}
+.note-term[data-seen] {
+  text-decoration-style: solid;
+  text-decoration-color: color-mix(in srgb, var(--seen) 60%, transparent);
+}
+
+/* ---------- inline quotes ---------- */
+
+.note-q {
+  display: inline;
+  padding: 0.05em 0.15em;
+  margin: 0;
+  border: 0;
+  font: inherit;
+  font-style: italic;
+  color: inherit;
+  background: linear-gradient(to top, var(--highlight) 0 70%, transparent 70%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.note-q:hover,
+.note-q:focus-visible,
+.note-q[aria-expanded='true'] {
+  background: var(--highlight-strong);
+}
+
+/* ---------- popover card (shared by Term and Q) ---------- */
+
+.note-pop {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: min(360px, calc(100vw - 24px));
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-l);
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  font-style: normal;
+  line-height: 1.55;
+  text-align: left;
+}
+.note-pop:popover-open {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: note-pop-in 0.16s var(--ease);
+}
+@keyframes note-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.note-pop[data-side='above']:popover-open {
+  animation-name: note-pop-in-above;
+}
+@keyframes note-pop-in-above {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.note-pop__kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--term);
+}
+.note-pop--quote .note-pop__kicker {
+  color: var(--brass);
+}
+.note-pop__title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.note-pop__source {
+  font-style: italic;
+  color: var(--ink-3);
+}
+.note-pop__text {
+  color: var(--ink-2);
+}
+.note-pop__section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radius-s);
+  background: var(--paper-2);
+}
+.note-pop__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.note-pop__section .note-pop__text {
+  color: var(--ink);
+}
+.note-pop__link {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ---------- key quote ---------- */
+
+.note-kq {
+  position: relative;
+  margin: 2em 0;
+  padding: 24px 26px 20px;
+  border-radius: var(--radius-l);
+  background: var(--brass-soft);
+  border: 1px solid color-mix(in srgb, var(--brass) 30%, transparent);
+}
+.note-kq__mark {
+  position: absolute;
+  top: -12px;
+  left: 22px;
+  color: var(--brass);
+}
+/* Doubled class beats .prose blockquote. */
+.note-kq .note-kq__quote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-style: normal;
+  color: var(--ink);
+}
+.note-kq .note-kq__quote p {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
+  line-height: 1.5;
+  font-weight: 450;
+}
+.note-kq__hl {
+  background: linear-gradient(to top, var(--highlight-strong) 0 38%, transparent 38%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding-inline: 0.1em;
+}
+.note-kq__cite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-top: 14px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+.note-kq__by {
+  font-weight: 650;
+}
+.note-kq__by::before {
+  content: '— ';
+  color: var(--brass);
+}
+.note-kq__role {
+  color: var(--ink-2);
+}
+.note-kq__meta {
+  flex-basis: 100%;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+.note-kq__analysis {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed color-mix(in srgb, var(--brass) 40%, transparent);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+.note-kq__analysis summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--brass);
+  width: fit-content;
+}
+.note-kq__analysis p {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+}
+
+/* ---------- callouts ---------- */
+
+.note-callout {
+  --c: var(--c-context);
+  --c-soft: var(--c-context-soft);
+  margin: 1.8em 0;
+  padding: 16px 20px 6px;
+  border-radius: var(--radius);
+  background: var(--c-soft);
+  border-left: 4px solid var(--c);
+  font-family: var(--font-sans);
+  font-size: 0.97rem;
+  line-height: 1.6;
+}
+.note-callout--exam {
+  --c: var(--c-exam);
+  --c-soft: var(--c-exam-soft);
+}
+.note-callout--historiography {
+  --c: var(--c-historiography);
+  --c-soft: var(--c-historiography-soft);
+}
+.note-callout--warning {
+  --c: var(--c-warning);
+  --c-soft: var(--c-warning-soft);
+}
+.note-callout--tip {
+  --c: var(--seen);
+  --c-soft: color-mix(in srgb, var(--seen) 12%, var(--paper));
+}
+.note-callout__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px !important;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c);
+}
+.note-callout__body p,
+.note-callout__body ul,
+.note-callout__body ol {
+  margin-bottom: 0.8em;
+}
+
+/* ---------- historiography ---------- */
+
+.note-view {
+  margin: 1.2em 0;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--rule);
+  background: var(--card);
+  font-family: var(--font-sans);
+  font-size: 0.97rem;
+  box-shadow: var(--shadow-s);
+}
+.note-view__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-bottom: 8px;
+}
+.note-view__school {
+  flex-basis: 100%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-historiography);
+}
+.note-view__historian {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.note-view__work {
+  color: var(--ink-3);
+  font-size: 0.9rem;
+}
+.note-view__body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- chronology ---------- */
+
+.note-chrono {
+  margin: 2em 0;
+  padding: 18px 20px 8px;
+  border-radius: var(--radius);
+  background: var(--paper-2);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+.note-chrono__title {
+  margin: 0 0 12px !important;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.note-chrono__list {
+  list-style: none;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.note-chrono__event {
+  position: relative;
+  display: grid;
+  grid-template-columns: 9.5em 1fr;
+  gap: 4px 18px;
+  padding: 0 0 14px 18px;
+  margin: 0 !important;
+}
+.note-chrono__event::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.note-chrono__event::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1.2em;
+  bottom: 0;
+  width: 1px;
+  background: var(--rule-strong);
+}
+.note-chrono__event:last-child::after {
+  display: none;
+}
+.note-chrono__date {
+  font-weight: 650;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.note-chrono__what {
+  color: var(--ink-2);
+}
+.note-chrono__what p {
+  margin: 0;
+}
+@media (max-width: 560px) {
+  .note-chrono__event {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- recall cards ---------- */
+
+.note-recall {
+  margin: 0.8em 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-family: var(--font-sans);
+  font-size: 0.97rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.note-recall[open] {
+  border-color: var(--rule-strong);
+  box-shadow: var(--shadow-s);
+}
+.note-recall summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+.note-recall summary::-webkit-details-marker {
+  display: none;
+}
+.note-recall__badge {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+.note-recall__q {
+  flex: 1;
+  font-weight: 600;
+  line-height: 1.45;
+  padding-top: 2px;
+}
+.note-recall__hint {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.note-recall[open] .note-recall__hint {
+  visibility: hidden;
+}
+.note-recall__a {
+  padding: 0 16px 12px 54px;
+  color: var(--ink-2);
+}
+.note-recall__a p {
+  margin: 0 0 0.7em;
+}

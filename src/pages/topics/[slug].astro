@@ -1,0 +1,504 @@
+---
+import { getEntries, getEntry, render } from 'astro:content';
+import Badge from '@/components/Badge.astro';
+import TopicCard from '@/components/TopicCard.astro';
+import { notesComponents } from '@/features/notes';
+import '@/features/notes/notes.css';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getSnapshots, getTerm, getTopics, snapshotYearFor, termIdsIn, type Topic } from '@/lib/content';
+import { formatDate, formatYearRange } from '@/lib/format';
+
+export async function getStaticPaths() {
+  const topics = await getTopics();
+  return topics.map((topic) => ({ params: { slug: topic.id }, props: { topic } }));
+}
+
+interface Props {
+  topic: Topic;
+}
+
+const { topic } = Astro.props;
+const { data } = topic;
+const { Content, headings } = await render(topic);
+const unit = await getEntry(data.unit);
+const related = await getEntries(data.related);
+const authors = await getEntries(data.authors);
+const years = (await getSnapshots()).map((s) => s.data.year);
+const snapshot = snapshotYearFor(topic, years);
+const terms = await Promise.all(termIdsIn(topic.body ?? '').map((id) => getTerm(id)));
+terms.sort((a, b) => a.data.term.localeCompare(b.data.term));
+const toc = headings.filter((h) => h.depth === 2);
+const globeHref = `/globe?year=${snapshot}&topic=${topic.id}`;
+---
+
+<BaseLayout title={data.title} description={data.summary}>
+  <div class="reading-progress" aria-hidden="true"><span data-reading-bar></span></div>
+
+  <header class="topic-hero">
+    <div class="container">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/topics">Notes</a>
+        <span aria-hidden="true">/</span>
+        <a href={`/topics#paper-${unit.data.paper}`}>Paper {unit.data.paper}</a>
+        <span aria-hidden="true">/</span>
+        <span>{unit.data.title}</span>
+      </nav>
+      <h1>{data.title}</h1>
+      <div class="meta">
+        <Badge tone={`paper-${unit.data.paper}`}>Paper {unit.data.paper}</Badge>
+        <span class="meta-item">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+            ><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"
+            ></rect><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+            ></path></svg
+          >
+          {formatYearRange(data.period.start, data.period.end)}
+        </span>
+        <span class="meta-item">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+            ><path
+              d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"></path><circle cx="12" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7"
+            ></circle></svg
+          >
+          {data.location.place}
+        </span>
+        <span class="meta-item">{unit.data.component}</span>
+      </div>
+      <p class="lede">{data.summary}</p>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href={globeHref}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+            ><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"></circle><path
+              d="M3.5 12h17M12 3.5c2.6 2.3 3.7 5.3 3.7 8.5s-1.1 6.2-3.7 8.5c-2.6-2.3-3.7-5.3-3.7-8.5s1.1-6.2 3.7-8.5Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"></path></svg
+          >
+          See the world in {snapshot}
+        </a>
+        {terms.length > 0 && <a class="btn" href="#key-terms">{terms.length} key terms</a>}
+      </div>
+      {
+        data.keyQuestions.length > 0 && (
+          <section class="key-questions" aria-labelledby="kq-title">
+            <h2 id="kq-title">Key questions</h2>
+            <ol>
+              {data.keyQuestions.map((q) => (
+                <li>{q}</li>
+              ))}
+            </ol>
+          </section>
+        )
+      }
+    </div>
+  </header>
+
+  <div class="container topic-body">
+    <aside class="topic-aside">
+      <div class="aside-sticky">
+        {
+          toc.length > 0 && (
+            <nav class="toc" aria-label="On this page">
+              <p class="aside-title">On this page</p>
+              <ol>
+                {toc.map((h) => (
+                  <li>
+                    <a href={`#${h.slug}`} data-toc-link={h.slug}>
+                      {h.text}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
+        {
+          terms.length > 0 && (
+            <div class="progress" data-term-progress>
+              <p class="aside-title">Key terms explored</p>
+              <p class="progress-count">
+                <span data-count>0</span> / <span data-total>{terms.length}</span>
+              </p>
+              <div class="progress-track">
+                <span data-bar />
+              </div>
+              <p class="progress-hint">
+                Click the <span class="hint-term">underlined terms</span> to reveal why they matter.
+              </p>
+              <p class="progress-done">
+                All key terms explored. <a href="#" data-term-reset>Reset</a>
+              </p>
+            </div>
+          )
+        }
+      </div>
+    </aside>
+
+    <article class="prose topic-notes">
+      <Content components={notesComponents} />
+
+      {
+        terms.length > 0 && (
+          <section class="term-index" aria-labelledby="key-terms">
+            <h2 id="key-terms">Key terms</h2>
+            <dl>
+              {terms.map((t) => (
+                <div class="term-row" id={`term-${t.id}`}>
+                  <dt>
+                    {t.data.term}
+                    {t.data.when && <span class="term-when">{t.data.when}</span>}
+                  </dt>
+                  <dd>
+                    <p>{t.data.definition}</p>
+                    <p class="term-sig">
+                      <strong>Significance:</strong> {t.data.significance}
+                    </p>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )
+      }
+
+      <footer class="topic-foot">
+        {
+          authors.length > 0 && (
+            <p>
+              Notes by{' '}
+              {authors.map((a, i) => (
+                <>
+                  {i > 0 && ', '}
+                  <a href={`/teachers/${a.id}`}>{a.data.name}</a>
+                </>
+              ))}
+              .
+            </p>
+          )
+        }
+        {data.updated && <p>Last updated {formatDate(data.updated)}.</p>}
+        <p>
+          Spotted a mistake? Tell your teacher — or, if you are editing the site, this page is
+          <code>src/content/topics/{topic.id}.mdx</code>.
+        </p>
+      </footer>
+    </article>
+  </div>
+
+  {
+    related.length > 0 && (
+      <section class="section section--alt">
+        <div class="container">
+          <p class="eyebrow">Keep going</p>
+          <h2>Related topics</h2>
+          <div class="grid" style="--min: 300px">
+            {related.map((r) => (
+              <TopicCard topic={r} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<script>
+  // Reading progress bar and table-of-contents highlighting.
+  const bar = document.querySelector<HTMLElement>('[data-reading-bar]');
+  const article = document.querySelector<HTMLElement>('.topic-notes');
+  const onScroll = () => {
+    if (!bar || !article) return;
+    const r = article.getBoundingClientRect();
+    const total = r.height - window.innerHeight * 0.6;
+    const done = Math.min(1, Math.max(0, -r.top / Math.max(1, total)));
+    bar.style.transform = `scaleX(${done})`;
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  const links = new Map(
+    [...document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')].map((a) => [a.dataset.tocLink!, a]),
+  );
+  if (links.size) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          links.forEach((a) => a.removeAttribute('aria-current'));
+          links.get(e.target.id)?.setAttribute('aria-current', 'true');
+        }
+      },
+      { rootMargin: '-20% 0px -70% 0px' },
+    );
+    links.forEach((_, id) => {
+      const h = document.getElementById(id);
+      if (h) observer.observe(h);
+    });
+  }
+</script>
+
+<style>
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 60;
+    pointer-events: none;
+  }
+  .reading-progress span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  .topic-hero {
+    padding-block: clamp(32px, 6vw, 72px) clamp(28px, 4vw, 48px);
+    border-bottom: 1px solid var(--rule);
+    background:
+      radial-gradient(ellipse 60% 80% at 100% 0%, var(--accent-soft), transparent 70%),
+      var(--paper);
+  }
+  .crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: var(--ink-3);
+    margin-bottom: 18px;
+  }
+  .crumbs a {
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+  .crumbs a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .topic-hero h1 {
+    max-width: 22ch;
+    font-size: var(--step-5);
+    margin-bottom: 18px;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 20px;
+    font-size: 0.95rem;
+    color: var(--ink-2);
+    margin-bottom: 20px;
+  }
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .meta-item svg {
+    color: var(--ink-3);
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .key-questions {
+    margin-top: 32px;
+    max-width: 780px;
+    padding: 18px 22px;
+    border-radius: var(--radius);
+    border: 1px solid var(--rule);
+    background: var(--card);
+  }
+  .key-questions h2 {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .key-questions ol {
+    margin: 0;
+    padding-left: 1.3em;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+  }
+  .key-questions li {
+    margin-bottom: 4px;
+  }
+
+  .topic-body {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: clamp(32px, 5vw, 72px);
+    padding-block: clamp(36px, 5vw, 64px) clamp(48px, 6vw, 80px);
+  }
+  .aside-sticky {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    font-size: 0.9rem;
+  }
+  .aside-title {
+    margin: 0 0 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--rule);
+  }
+  .toc a {
+    display: block;
+    padding: 5px 0 5px 14px;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--ink-2);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .toc a:hover {
+    color: var(--ink);
+  }
+  .toc a[aria-current] {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+  .progress {
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: var(--paper-2);
+  }
+  .progress-count {
+    margin: 0 0 8px;
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  .progress-track {
+    height: 6px;
+    border-radius: 6px;
+    background: var(--rule);
+    overflow: hidden;
+  }
+  .progress-track span {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 6px;
+    background: var(--seen);
+    transition: width 0.4s var(--ease);
+  }
+  .progress-hint,
+  .progress-done {
+    margin: 10px 0 0;
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    line-height: 1.45;
+  }
+  .hint-term {
+    color: var(--term);
+    text-decoration: underline dotted 1.5px;
+    text-underline-offset: 0.2em;
+  }
+  .progress-done {
+    display: none;
+    color: var(--seen);
+    font-weight: 600;
+  }
+  .progress[data-complete] .progress-hint {
+    display: none;
+  }
+  .progress[data-complete] .progress-done {
+    display: block;
+  }
+
+  .term-index {
+    margin-top: 3.5em;
+    padding-top: 1em;
+    border-top: 1px solid var(--rule);
+  }
+  .term-index dl {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+  }
+  .term-row {
+    display: grid;
+    grid-template-columns: minmax(0, 12em) minmax(0, 1fr);
+    gap: 4px 24px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .term-row dt {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 1.08rem;
+  }
+  .term-when {
+    display: block;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: var(--ink-3);
+  }
+  .term-row dd {
+    margin: 0;
+    color: var(--ink-2);
+  }
+  .term-row dd p {
+    margin: 0 0 6px;
+  }
+  .term-sig strong {
+    color: var(--accent);
+  }
+  .topic-foot {
+    margin-top: 3em;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    color: var(--ink-3);
+  }
+  .topic-foot p {
+    margin-bottom: 6px;
+  }
+  .topic-foot code {
+    font-size: 0.85em;
+  }
+
+  @media (max-width: 960px) {
+    .topic-body {
+      grid-template-columns: 1fr;
+    }
+    .topic-aside {
+      order: -1;
+    }
+    .aside-sticky {
+      position: static;
+    }
+    .toc {
+      display: none;
+    }
+  }
+  @media (max-width: 560px) {
+    .term-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

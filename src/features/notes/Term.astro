@@ -1,0 +1,49 @@
+---
+/**
+ * <Term id="appeasement">appeasement</Term>
+ *
+ * A clickable key term. The popover shows the glossary entry's definition and
+ * significance (src/content/glossary/<id>.md). An unknown id fails the build.
+ *
+ * The trigger is a <span role="button"> rather than a <button>: browsers always
+ * lay buttons out as inline-block, so a multi-word term could not wrap across
+ * lines. popover-client.ts supplies the click and keyboard behaviour.
+ */
+import { getTerm } from '@/lib/content';
+import './notes.css';
+
+interface Props {
+  /** Glossary entry id = file name in src/content/glossary/, without .md */
+  id: string;
+}
+
+const { id } = Astro.props;
+const entry = await getTerm(id);
+const popId = `term-${id}-${crypto.randomUUID().slice(0, 8)}`;
+---
+
+<span
+  class="note-term"
+  role="button"
+  tabindex="0"
+  aria-haspopup="dialog"
+  aria-expanded="false"
+  aria-controls={popId}
+  data-pop={popId}
+  data-term={id}><slot /></span><span
+  id={popId}
+  popover="auto"
+  class="note-pop"
+  role="dialog"
+  aria-label={`Key term: ${entry.data.term}`}
+  data-term-id={id}
+>
+  <span class="note-pop__kicker">Key term{entry.data.when && ` · ${entry.data.when}`}</span>
+  <span class="note-pop__title">{entry.data.term}</span>
+  <span class="note-pop__text">{entry.data.definition}</span>
+  <span class="note-pop__section">
+    <span class="note-pop__label">Why it matters</span>
+    <span class="note-pop__text">{entry.data.significance}</span>
+  </span>
+  <a class="note-pop__link" href={`/glossary#${id}`}>See in glossary →</a>
+</span><script>import './popover-client';</script>

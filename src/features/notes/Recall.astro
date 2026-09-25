@@ -1,0 +1,22 @@
+---
+/**
+ * <Recall q="Why did the League of Nations fail to act over Manchuria?">Model answer…</Recall>
+ *
+ * A self-test card: the question is shown, the answer is revealed on click.
+ */
+import './notes.css';
+
+interface Props {
+  q: string;
+}
+const { q } = Astro.props;
+---
+
+<details class="note-recall">
+  <summary>
+    <span class="note-recall__badge" aria-hidden="true">Q</span>
+    <span class="note-recall__q">{q}</span>
+    <span class="note-recall__hint">Reveal</span>
+  </summary>
+  <div class="note-recall__a"><slot /></div>
+</details>

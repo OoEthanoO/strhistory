@@ -1,0 +1,60 @@
+---
+import PageHeader from '@/components/PageHeader.astro';
+import { site } from '@/config/site';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About" description={`About ${site.name}: how the site works, where the maps come from, and how to contribute.`}>
+  <PageHeader
+    eyebrow="About"
+    title={`About ${site.name}`}
+    lede="A study companion for IB History students and a home for the history department online."
+  />
+  <div class="container">
+    <div class="prose about">
+      <h2>Why a globe?</h2>
+      <p>
+        History happens in places, and the map of the world has changed constantly. Students often learn the Munich
+        Agreement, the Mukden Incident and the partition of Africa as separate stories. Seeing them on a globe, with the
+        borders of the time, makes the connections visible: which empires bordered each other, how far armies travelled,
+        and why a crisis in one region mattered to powers on the other side of the world.
+      </p>
+
+      <h2>How to use the notes</h2>
+      <ul>
+        <li><strong>Highlighted quotations</strong> are sources you should be able to recognise and use. Click one to see who said it and why it matters.</li>
+        <li><strong>Underlined key terms</strong> open a card with a definition and their significance — the point a strong exam answer makes.</li>
+        <li><strong>Historians' debate</strong> sections summarise interpretations you can use in Paper 2 and 3 essays.</li>
+        <li><strong>Test yourself</strong> questions at the end of each topic hide their answers until you ask.</li>
+      </ul>
+      <p>
+        The notes support your class, not replace it. Your teacher's course outline and the current IB History guide are
+        the final word on what you need to know.
+      </p>
+
+      <h2>Where the maps come from</h2>
+      <p>
+        Historical borders come from the open
+        <a href="https://github.com/aourednik/historical-basemaps">historical-basemaps</a> project by André Ourednik and
+        contributors (GPL-3.0). We simplify the shapes so they load quickly and correct some names that were out of place
+        for their year. Borders before 1800 are especially approximate; the globe draws approximate borders dashed. Base
+        land shapes are from <a href="https://www.naturalearthdata.com/">Natural Earth</a> (public domain), and the globe is
+        rendered with <a href="https://maplibre.org/">MapLibre GL</a>.
+      </p>
+
+      <h2>Contributing</h2>
+      <p>
+        Teachers and student volunteers can add topics, key terms and department news. Every topic, term, teacher profile
+        and news post is a single text file, so changes are easy to review and rarely clash. The
+        <a href={site.repo}>source repository</a> explains how — start with <code>AGENTS.md</code>. The site updates
+        automatically a minute or two after a change is merged.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .about {
+    padding-bottom: clamp(48px, 7vw, 96px);
+  }
+</style>

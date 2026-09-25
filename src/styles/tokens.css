@@ -1,0 +1,159 @@
+/*
+ * Design tokens. Every colour, font and radius in the site comes from here.
+ * Components use var(--token) and never hard-code colours, so both themes stay
+ * consistent. Theme = light by default, dark via prefers-color-scheme or the
+ * header toggle (html[data-theme]).
+ *
+ * The globe explorer is always dark; its own palette is in
+ * src/features/globe/globe.css.
+ */
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --paper: #f6f3ec;
+  --paper-2: #eee8dc;
+  --card: #fffdf8;
+  --overlay: rgb(246 243 236 / 0.9);
+
+  /* Text */
+  --ink: #1d1b18;
+  --ink-2: #48443d;
+  --ink-3: #736d62;
+
+  /* Lines */
+  --rule: #ddd4c4;
+  --rule-strong: #c4b8a3;
+
+  /* Brand: oxblood + brass */
+  --accent: #8e2c32;
+  --accent-hover: #74222a;
+  --accent-ink: #fffaf3;
+  --accent-soft: #f2e1de;
+  --brass: #9a7426;
+  --brass-soft: #f3e8cf;
+
+  /* Notes */
+  --highlight: rgb(236 196 82 / 0.38);
+  --highlight-strong: rgb(236 196 82 / 0.62);
+  --term: #1f5f7a;
+  --term-soft: #e0edf1;
+  --seen: #3d7a4b;
+
+  /* Callout families */
+  --c-exam: #1f5f7a;
+  --c-exam-soft: #e3eef2;
+  --c-historiography: #6b4a8e;
+  --c-historiography-soft: #ece5f3;
+  --c-context: #8a6a1f;
+  --c-context-soft: #f4ecd8;
+  --c-warning: #a33b2b;
+  --c-warning-soft: #f6e2dd;
+
+  /* Deep colour used behind the globe and in hero panels, both themes */
+  --night: #0b1220;
+  --night-2: #131d31;
+  --night-ink: #e9e4d8;
+
+  /* Type */
+  --font-serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  --step--1: clamp(0.83rem, 0.8rem + 0.12vw, 0.9rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
+  --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.4rem);
+  --step-2: clamp(1.44rem, 1.3rem + 0.7vw, 1.85rem);
+  --step-3: clamp(1.73rem, 1.5rem + 1.15vw, 2.5rem);
+  --step-4: clamp(2.07rem, 1.7rem + 1.9vw, 3.4rem);
+  --step-5: clamp(2.5rem, 1.9rem + 3vw, 4.6rem);
+
+  /* Shape & depth */
+  --radius-s: 6px;
+  --radius: 10px;
+  --radius-l: 16px;
+  --shadow-s: 0 1px 2px rgb(29 27 24 / 0.06), 0 1px 1px rgb(29 27 24 / 0.04);
+  --shadow: 0 4px 16px rgb(29 27 24 / 0.08), 0 1px 3px rgb(29 27 24 / 0.06);
+  --shadow-l: 0 18px 48px rgb(29 27 24 / 0.16), 0 4px 12px rgb(29 27 24 / 0.08);
+
+  /* Layout */
+  --container: 1200px;
+  --prose: 68ch;
+  --gutter: clamp(16px, 4vw, 40px);
+  --header-h: 64px;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Dark theme. Keep the two dark blocks below identical. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #121315;
+  --paper-2: #18191c;
+  --card: #1d1f23;
+  --overlay: rgb(18 19 21 / 0.9);
+  --ink: #ece7dd;
+  --ink-2: #c2bbae;
+  --ink-3: #8f887c;
+  --rule: #2d3036;
+  --rule-strong: #41454c;
+  --accent: #e0737b;
+  --accent-hover: #ea8d94;
+  --accent-ink: #1a0d0e;
+  --accent-soft: #3a2225;
+  --brass: #d6b061;
+  --brass-soft: #33291a;
+  --highlight: rgb(214 176 97 / 0.26);
+  --highlight-strong: rgb(214 176 97 / 0.45);
+  --term: #7cc1dc;
+  --term-soft: #1b2e36;
+  --seen: #7fc08e;
+  --c-exam: #7cc1dc;
+  --c-exam-soft: #182a31;
+  --c-historiography: #b99be0;
+  --c-historiography-soft: #261f31;
+  --c-context: #d6b061;
+  --c-context-soft: #2c2517;
+  --c-warning: #ef8a7a;
+  --c-warning-soft: #33201d;
+  --shadow-s: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow: 0 4px 16px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.3);
+  --shadow-l: 0 18px 48px rgb(0 0 0 / 0.5), 0 4px 12px rgb(0 0 0 / 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --paper: #121315;
+    --paper-2: #18191c;
+    --card: #1d1f23;
+    --overlay: rgb(18 19 21 / 0.9);
+    --ink: #ece7dd;
+    --ink-2: #c2bbae;
+    --ink-3: #8f887c;
+    --rule: #2d3036;
+    --rule-strong: #41454c;
+    --accent: #e0737b;
+    --accent-hover: #ea8d94;
+    --accent-ink: #1a0d0e;
+    --accent-soft: #3a2225;
+    --brass: #d6b061;
+    --brass-soft: #33291a;
+    --highlight: rgb(214 176 97 / 0.26);
+    --highlight-strong: rgb(214 176 97 / 0.45);
+    --term: #7cc1dc;
+    --term-soft: #1b2e36;
+    --seen: #7fc08e;
+    --c-exam: #7cc1dc;
+    --c-exam-soft: #182a31;
+    --c-historiography: #b99be0;
+    --c-historiography-soft: #261f31;
+    --c-context: #d6b061;
+    --c-context-soft: #2c2517;
+    --c-warning: #ef8a7a;
+    --c-warning-soft: #33201d;
+    --shadow-s: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow: 0 4px 16px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.3);
+    --shadow-l: 0 18px 48px rgb(0 0 0 / 0.5), 0 4px 12px rgb(0 0 0 / 0.3);
+  }
+}

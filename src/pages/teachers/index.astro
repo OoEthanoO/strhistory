@@ -1,0 +1,27 @@
+---
+import PageHeader from '@/components/PageHeader.astro';
+import TeacherCard from '@/components/TeacherCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getTeachers } from '@/lib/content';
+
+const teachers = await getTeachers();
+---
+
+<BaseLayout title="Teachers" description="Meet the teachers of the history department.">
+  <PageHeader
+    eyebrow="The department"
+    title="Our teachers"
+    lede="Historians, coaches and extended essay supervisors. Click a profile to see what each teacher teaches and the notes they have written."
+  />
+  <div class="container list">
+    <div class="grid" style="--min: 260px">
+      {teachers.map((t) => <TeacherCard teacher={t} />)}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .list {
+    padding-bottom: clamp(48px, 7vw, 96px);
+  }
+</style>

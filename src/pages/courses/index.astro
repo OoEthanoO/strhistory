@@ -1,0 +1,207 @@
+---
+import Badge from '@/components/Badge.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCourses, getTopics, getUnits } from '@/lib/content';
+
+const courses = await getCourses();
+const units = await getUnits();
+const topics = await getTopics();
+const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === unitId);
+---
+
+<BaseLayout title="Courses" description="History courses offered by the department, and how the IB History syllabus is organised.">
+  <PageHeader
+    eyebrow="Courses"
+    title="What we teach"
+    lede="From the foundations in the early grades to the IB Diploma at Standard and Higher Level."
+  />
+
+  <div class="container">
+    <div class="grid courses" style="--min: 320px">
+      {
+        courses.map((c) => (
+          <a class="course" href={`/courses/${c.id}`}>
+            <div class="course-top">
+              <span class="level">{c.data.level}</span>
+              {c.data.placeholder && <Badge tone="sample">Sample</Badge>}
+            </div>
+            <h2>{c.data.title}</h2>
+            <p class="grades">
+              {c.data.grades}
+              {c.data.code && ` · ${c.data.code}`}
+            </p>
+            <p class="summary">{c.data.summary}</p>
+            <span class="go">Course details →</span>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">The IB History syllabus</p>
+      <h2>Units and their notes</h2>
+      <p class="lede">
+        Every unit of the IB History guide, grouped by the paper that assesses it. Your teachers choose which units your
+        class studies.
+      </p>
+      <div class="table-wrap">
+        <table class="syllabus">
+          <thead>
+            <tr>
+              <th scope="col">Paper</th>
+              <th scope="col">Unit</th>
+              <th scope="col">Level</th>
+              <th scope="col">Notes on this site</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              units.map((u) => {
+                const list = topicsIn(u.id);
+                return (
+                  <tr>
+                    <td>
+                      <Badge tone={`paper-${u.data.paper}`}>P{u.data.paper}</Badge>
+                    </td>
+                    <td>
+                      <span class="u-title">{u.data.title}</span>
+                      <span class="u-comp">{u.data.component}</span>
+                    </td>
+                    <td class="u-level">{u.data.levels}</td>
+                    <td>
+                      {list.length ? (
+                        <ul class="u-topics">
+                          {list.map((t) => (
+                            <li>
+                              <a href={`/topics/${t.id}`}>{t.data.title}</a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span class="muted">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="note muted">
+        Based on the IB Diploma Programme History guide. Always check the current guide and your teacher's course outline
+        for assessment details.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .courses {
+    margin-bottom: clamp(32px, 5vw, 56px);
+  }
+  .course {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 26px;
+    border-radius: var(--radius-l);
+    border: 1px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    text-decoration: none;
+    box-shadow: var(--shadow-s);
+    transition: transform 0.2s var(--ease), box-shadow 0.2s;
+  }
+  .course:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    color: var(--ink);
+  }
+  .course-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .level {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brass);
+  }
+  .course h2 {
+    font-size: 1.7rem;
+    margin: 4px 0 0;
+  }
+  .grades {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ink-3);
+  }
+  .summary {
+    margin: 4px 0 8px;
+    color: var(--ink-2);
+    flex: 1;
+  }
+  .go {
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 28px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-l);
+    background: var(--card);
+  }
+  .syllabus {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  .syllabus th {
+    text-align: left;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .syllabus td {
+    vertical-align: top;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .syllabus tr:last-child td {
+    border-bottom: 0;
+  }
+  .u-title {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 1.08rem;
+    font-weight: 560;
+  }
+  .u-comp {
+    font-size: 0.82rem;
+    color: var(--ink-3);
+  }
+  .u-level {
+    white-space: nowrap;
+    color: var(--ink-2);
+  }
+  .u-topics {
+    margin: 0;
+    padding-left: 1.1em;
+  }
+  .note {
+    margin-top: 16px;
+    font-size: 0.88rem;
+  }
+</style>

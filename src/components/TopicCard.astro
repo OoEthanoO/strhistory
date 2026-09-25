@@ -1,0 +1,94 @@
+---
+/** Card linking to a topic's notes. Used on the home page, topic index and "related topics". */
+import { getEntry } from 'astro:content';
+import type { Topic } from '@/lib/content';
+import { formatYearRange } from '@/lib/format';
+import Badge from './Badge.astro';
+
+interface Props {
+  topic: Topic;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { topic, headingLevel: Heading = 'h3' } = Astro.props;
+const unit = await getEntry(topic.data.unit);
+const paper = unit?.data.paper ?? 2;
+---
+
+<a class="topic-card" href={`/topics/${topic.id}`}>
+  <div class="top">
+    <Badge tone={`paper-${paper}`}>Paper {paper}</Badge>
+    <span class="years">{formatYearRange(topic.data.period.start, topic.data.period.end)}</span>
+  </div>
+  <Heading class="title">{topic.data.title}</Heading>
+  <p class="summary">{topic.data.summary}</p>
+  <p class="foot">
+    <span class="place">{topic.data.location.place}</span>
+    <span class="go" aria-hidden="true">→</span>
+  </p>
+</a>
+
+<style>
+  .topic-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    padding: 20px 22px;
+    border-radius: var(--radius-l);
+    border: 1px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    text-decoration: none;
+    box-shadow: var(--shadow-s);
+    transition: transform 0.2s var(--ease), box-shadow 0.2s, border-color 0.2s;
+  }
+  .topic-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-color: var(--rule-strong);
+    color: var(--ink);
+  }
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .years {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .title {
+    margin: 4px 0 0;
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+  .summary {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    flex: 1;
+  }
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 6px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.85rem;
+    color: var(--ink-3);
+  }
+  .go {
+    color: var(--accent);
+    font-size: 1.1rem;
+    transition: transform 0.2s var(--ease);
+  }
+  .topic-card:hover .go {
+    transform: translateX(4px);
+  }
+</style>

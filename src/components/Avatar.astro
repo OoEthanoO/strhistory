@@ -1,0 +1,63 @@
+---
+/** A teacher's photo, or a monogram when there is no photo yet. */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  name: string;
+  photo?: ImageMetadata;
+  alt?: string;
+  size?: number;
+}
+
+const { name, photo, alt, size = 72 } = Astro.props;
+const initials = name
+  .replace(/^(Mr|Mrs|Ms|Mx|Dr|Prof)\.?\s+/i, '')
+  .split(/\s+/)
+  .map((w) => w[0])
+  .slice(0, 2)
+  .join('')
+  .toUpperCase();
+// Stable hue per name so monograms are distinguishable.
+const hue = [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+---
+
+{
+  photo ? (
+    <Image class="avatar" src={photo} alt={alt ?? name} width={size * 2} height={size * 2} style={`--size:${size}px`} />
+  ) : (
+    <span class="avatar avatar--mono" style={`--size:${size}px; --hue:${hue}`} aria-hidden="true">
+      {initials}
+    </span>
+  )
+}
+
+<style>
+  .avatar {
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .avatar--mono {
+    display: inline-grid;
+    place-items: center;
+    background: hsl(var(--hue) 32% 88%);
+    color: hsl(var(--hue) 38% 30%);
+    font-family: var(--font-serif);
+    font-size: calc(var(--size) * 0.38);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  :global(:root[data-theme='dark']) .avatar--mono {
+    background: hsl(var(--hue) 22% 24%);
+    color: hsl(var(--hue) 45% 80%);
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .avatar--mono {
+      background: hsl(var(--hue) 22% 24%);
+      color: hsl(var(--hue) 45% 80%);
+    }
+  }
+</style>

@@ -1,0 +1,271 @@
+---
+import { getCollection, getEntries } from 'astro:content';
+import PageHeader from '@/components/PageHeader.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getTermUsage } from '@/lib/content';
+
+const terms = (await getCollection('glossary')).sort((a, b) =>
+  a.data.term.localeCompare(b.data.term, 'en', { sensitivity: 'base' }),
+);
+const usage = await getTermUsage();
+const letterOf = (term: string) => term.normalize('NFKD')[0].toUpperCase();
+const letters = [...new Set(terms.map((t) => letterOf(t.data.term)))];
+const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: await getEntries(t.data.related) })));
+---
+
+<BaseLayout
+  title="Glossary"
+  description="Key terms for IB History, each with a definition and an explanation of why it matters."
+>
+  <PageHeader
+    eyebrow="Glossary"
+    title="Key terms"
+    lede={`${terms.length} terms from the notes. Each explains what the term means and — more importantly for the exam — why it matters.`}
+  >
+    <div class="tools">
+      <label class="search">
+        <span class="visually-hidden">Filter terms</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+          ><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path
+            d="m16 16 4.5 4.5"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"></path></svg
+        >
+        <input type="search" placeholder="Filter terms…" data-filter autocomplete="off" />
+      </label>
+      <nav class="letters" aria-label="Jump to letter">
+        {letters.map((l) => <a href={`#letter-${l}`}>{l}</a>)}
+      </nav>
+    </div>
+  </PageHeader>
+
+  <div class="container glossary">
+    {
+      letters.map((letter) => (
+        <section class="letter-group" id={`letter-${letter}`} data-group>
+          <h2 class="letter">{letter}</h2>
+          <dl>
+            {withRelated
+              .filter(({ t }) => letterOf(t.data.term) === letter)
+              .map(({ t, related }) => {
+                const topics = usage.get(t.id) ?? [];
+                return (
+                  <div
+                    class="entry"
+                    id={t.id}
+                    data-entry
+                    data-text={`${t.data.term} ${t.data.definition} ${t.data.significance}`.toLowerCase()}
+                  >
+                    <dt>
+                      {t.data.term}
+                      {t.data.when && <span class="when">{t.data.when}</span>}
+                    </dt>
+                    <dd>
+                      <p>{t.data.definition}</p>
+                      <p class="sig">
+                        <span class="sig-label">Why it matters</span>
+                        {t.data.significance}
+                      </p>
+                      {(topics.length > 0 || related.length > 0) && (
+                        <p class="links">
+                          {topics.length > 0 && (
+                            <span>
+                              Appears in:{' '}
+                              {topics.map((tp, i) => (
+                                <>
+                                  {i > 0 && ', '}
+                                  <a href={`/topics/${tp.id}`}>{tp.data.title}</a>
+                                </>
+                              ))}
+                            </span>
+                          )}
+                          {related.length > 0 && (
+                            <span>
+                              See also:{' '}
+                              {related.map((r, i) => (
+                                <>
+                                  {i > 0 && ', '}
+                                  <a href={`#${r.id}`}>{r.data.term}</a>
+                                </>
+                              ))}
+                            </span>
+                          )}
+                        </p>
+                      )}
+                    </dd>
+                  </div>
+                );
+              })}
+          </dl>
+        </section>
+      ))
+    }
+    <p class="no-results" hidden data-no-results>No terms match that filter.</p>
+  </div>
+</BaseLayout>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-filter]');
+  const entries = [...document.querySelectorAll<HTMLElement>('[data-entry]')];
+  const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
+  const none = document.querySelector<HTMLElement>('[data-no-results]');
+  input?.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const e of entries) {
+      e.hidden = !!q && !e.dataset.text!.includes(q);
+      if (!e.hidden) shown++;
+    }
+    for (const g of groups) g.hidden = !g.querySelector('[data-entry]:not([hidden])');
+    if (none) none.hidden = shown > 0;
+  });
+  // Highlight the entry linked from a notes popover.
+  const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+  target?.classList.add('is-target');
+</script>
+
+<style>
+  .tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 24px;
+    margin-top: 28px;
+  }
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 280px;
+    max-width: 420px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--rule-strong);
+    background: var(--card);
+    color: var(--ink-3);
+  }
+  .search:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--ink);
+    outline: none;
+  }
+  .letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .letters a {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--ink-2);
+  }
+  .letters a:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .glossary {
+    padding-bottom: clamp(48px, 7vw, 96px);
+  }
+  .letter-group {
+    display: grid;
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: 24px;
+    padding-block: 20px;
+    border-top: 1px solid var(--rule);
+  }
+  .letter-group[hidden] {
+    display: none;
+  }
+  .letter {
+    font-size: var(--step-4);
+    color: var(--brass);
+    line-height: 1;
+    margin: 0;
+  }
+  dl {
+    margin: 0;
+  }
+  .entry {
+    display: grid;
+    grid-template-columns: minmax(0, 14em) minmax(0, 1fr);
+    gap: 6px 32px;
+    padding: 16px 12px;
+    margin-inline: -12px;
+    border-radius: var(--radius);
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: calc(var(--header-h) + 24px);
+  }
+  .entry:last-child {
+    border-bottom: 0;
+  }
+  .entry[hidden] {
+    display: none;
+  }
+  .entry.is-target {
+    background: var(--brass-soft);
+  }
+  dt {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .when {
+    display: block;
+    margin-top: 2px;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+  dd {
+    margin: 0;
+  }
+  dd p {
+    margin: 0 0 8px;
+  }
+  .sig {
+    color: var(--ink-2);
+  }
+  .sig-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    font-size: 0.88rem;
+    color: var(--ink-3);
+  }
+  .no-results {
+    padding: 40px 0;
+    text-align: center;
+    color: var(--ink-3);
+  }
+  @media (max-width: 720px) {
+    .letter-group,
+    .entry {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

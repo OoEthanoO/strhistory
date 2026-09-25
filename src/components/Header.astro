@@ -1,0 +1,243 @@
+---
+import { nav, site } from '@/config/site';
+import Logo from './Logo.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props {
+  /** `immersive` = dark, translucent header floating over the globe. */
+  variant?: 'default' | 'immersive';
+}
+const { variant = 'default' } = Astro.props;
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
+---
+
+<header class:list={['site-header', variant]}>
+  <div class="inner">
+    <a class="brand" href="/" aria-label={`${site.name} — home`}>
+      <Logo size={30} />
+      <span class="brand-name">{site.name}</span>
+    </a>
+
+    <nav class="primary" aria-label="Main">
+      <ul>
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="actions">
+      {variant === 'default' && <ThemeToggle />}
+      <button
+        type="button"
+        class="menu-btn"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label="Open menu"
+        data-menu-btn
+      >
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Main" hidden data-mobile-nav>
+    <ul>
+      {
+        nav.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+      <li><a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a></li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu-btn]');
+  const panel = document.querySelector<HTMLElement>('[data-mobile-nav]');
+  if (btn && panel) {
+    const set = (open: boolean) => {
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      panel.hidden = !open;
+    };
+    btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+    document.addEventListener('keydown', (e) => e.key === 'Escape' && set(false));
+    matchMedia('(min-width: 961px)').addEventListener('change', (e) => e.matches && set(false));
+  }
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--overlay);
+    backdrop-filter: saturate(1.4) blur(14px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .inner {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: var(--header-h);
+    max-width: var(--container);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .brand-name {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .primary {
+    margin-left: auto;
+  }
+  .primary ul,
+  .mobile-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .primary ul {
+    display: flex;
+    gap: 4px;
+  }
+  .primary a,
+  .mobile-nav a {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 999px;
+    color: var(--ink-2);
+    text-decoration: none;
+    font-size: 0.94rem;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+  }
+  .primary a:hover {
+    background: var(--paper-2);
+    color: var(--ink);
+  }
+  .primary a[aria-current='page'] {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .menu-btn {
+    display: none;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+  }
+  .menu-btn span {
+    display: block;
+    width: 16px;
+    height: 1.6px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: transform 0.2s var(--ease), opacity 0.2s;
+  }
+  .menu-btn[aria-expanded='true'] span:nth-child(1) {
+    transform: translateY(5.6px) rotate(45deg);
+  }
+  .menu-btn[aria-expanded='true'] span:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-btn[aria-expanded='true'] span:nth-child(3) {
+    transform: translateY(-5.6px) rotate(-45deg);
+  }
+
+  .mobile-nav {
+    border-top: 1px solid var(--rule);
+    padding: 8px var(--gutter) 16px;
+  }
+  .mobile-nav a {
+    border-radius: var(--radius-s);
+    padding: 12px;
+    font-size: 1.05rem;
+  }
+  .mobile-nav a[aria-current='page'] {
+    color: var(--accent);
+  }
+
+  @media (max-width: 960px) {
+    .primary {
+      display: none;
+    }
+    .actions {
+      margin-left: auto;
+    }
+    .menu-btn {
+      display: inline-flex;
+    }
+  }
+
+  /* Immersive: over the globe, always dark regardless of site theme. */
+  .immersive {
+    position: fixed;
+    inset: 0 0 auto 0;
+    background: linear-gradient(to bottom, rgb(6 10 18 / 0.85), rgb(6 10 18 / 0));
+    backdrop-filter: none;
+    border-bottom: 0;
+    color: var(--night-ink);
+    --paper: #0b1220;
+  }
+  .immersive .brand,
+  .immersive .primary a {
+    color: rgb(233 228 216 / 0.86);
+  }
+  .immersive .primary a:hover {
+    background: rgb(255 255 255 / 0.08);
+    color: #fff;
+  }
+  .immersive .primary a[aria-current='page'] {
+    background: rgb(255 255 255 / 0.12);
+    color: #fff;
+  }
+  .immersive .menu-btn {
+    border-color: rgb(255 255 255 / 0.2);
+    color: #fff;
+  }
+  .immersive .mobile-nav {
+    background: rgb(11 18 32 / 0.96);
+    border-top-color: rgb(255 255 255 / 0.1);
+  }
+  .immersive .mobile-nav a {
+    color: rgb(233 228 216 / 0.9);
+  }
+</style>

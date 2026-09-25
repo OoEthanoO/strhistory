@@ -1,0 +1,59 @@
+---
+/** Small pill label. Tones: neutral, accent, brass, paper-1, paper-2, paper-3, sample. */
+interface Props {
+  tone?: 'neutral' | 'accent' | 'brass' | 'sample' | `paper-${number}`;
+  title?: string;
+}
+const { tone = 'neutral', title } = Astro.props;
+---
+
+<span class={`badge badge--${tone}`} title={title}><slot /></span>
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    white-space: nowrap;
+    background: var(--paper-2);
+    color: var(--ink-2);
+    border: 1px solid var(--rule);
+  }
+  .badge--accent {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: transparent;
+  }
+  .badge--brass {
+    background: var(--brass-soft);
+    color: var(--brass);
+    border-color: transparent;
+  }
+  .badge--paper-1 {
+    background: var(--c-exam-soft);
+    color: var(--c-exam);
+    border-color: transparent;
+  }
+  .badge--paper-2 {
+    background: var(--c-context-soft);
+    color: var(--c-context);
+    border-color: transparent;
+  }
+  .badge--paper-3 {
+    background: var(--c-historiography-soft);
+    color: var(--c-historiography);
+    border-color: transparent;
+  }
+  .badge--sample {
+    background: transparent;
+    color: var(--ink-3);
+    border-style: dashed;
+  }
+</style>

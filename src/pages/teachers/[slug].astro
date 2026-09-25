@@ -1,0 +1,177 @@
+---
+import { getEntries, render, type CollectionEntry } from 'astro:content';
+import Avatar from '@/components/Avatar.astro';
+import Badge from '@/components/Badge.astro';
+import TopicCard from '@/components/TopicCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getTeachers, getTopics } from '@/lib/content';
+
+export async function getStaticPaths() {
+  return (await getTeachers()).map((teacher) => ({ params: { slug: teacher.id }, props: { teacher } }));
+}
+
+interface Props {
+  teacher: CollectionEntry<'teachers'>;
+}
+
+const { teacher } = Astro.props;
+const { data } = teacher;
+const { Content } = await render(teacher);
+const courses = await getEntries(data.courses);
+const authored = (await getTopics()).filter((t) => t.data.authors.some((a) => a.id === teacher.id));
+---
+
+<BaseLayout title={data.name} description={`${data.name} — ${data.role}`}>
+  <header class="page-head">
+    <div class="container head">
+      <Avatar name={data.name} photo={data.photo} alt={data.photoAlt} size={128} />
+      <div>
+        <p class="eyebrow"><a href="/teachers">Teachers</a></p>
+        <h1>{data.name}</h1>
+        <p class="role">{data.role}</p>
+        {data.placeholder && <Badge tone="sample">Sample profile — replace with real details</Badge>}
+      </div>
+    </div>
+  </header>
+
+  <div class="container layout">
+    <article class="prose">
+      {data.quote && <blockquote class="quote">{data.quote}</blockquote>}
+      <Content />
+    </article>
+    <aside class="side">
+      {
+        courses.length > 0 && (
+          <section>
+            <h2>Teaches</h2>
+            <ul>
+              {courses.map((c) => (
+                <li>
+                  <a href={`/courses/${c.id}`}>{c.data.title}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+      {
+        data.education.length > 0 && (
+          <section>
+            <h2>Education</h2>
+            <ul>
+              {data.education.map((e) => (
+                <li>{e}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+      {
+        data.interests.length > 0 && (
+          <section>
+            <h2>Historical interests</h2>
+            <ul class="chips">
+              {data.interests.map((i) => (
+                <li>{i}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+      {
+        data.email && (
+          <section>
+            <h2>Contact</h2>
+            <a href={`mailto:${data.email}`}>{data.email}</a>
+          </section>
+        )
+      }
+    </aside>
+  </div>
+
+  {
+    authored.length > 0 && (
+      <section class="section section--alt">
+        <div class="container">
+          <h2>Notes by {data.name}</h2>
+          <div class="grid" style="--min: 300px">
+            {authored.map((t) => (
+              <TopicCard topic={t} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .head {
+    display: flex;
+    align-items: center;
+    gap: clamp(20px, 4vw, 40px);
+  }
+  .eyebrow a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .role {
+    margin: 0 0 12px;
+    font-size: var(--step-1);
+    color: var(--ink-2);
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: clamp(32px, 5vw, 64px);
+    padding-bottom: clamp(48px, 6vw, 80px);
+  }
+  .quote {
+    font-size: 1.3em;
+    border-left-color: var(--accent);
+  }
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    font-size: 0.95rem;
+  }
+  .side h2 {
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+  }
+  .side ul {
+    margin: 0;
+    padding-left: 1.1em;
+  }
+  .side li {
+    margin-bottom: 4px;
+  }
+  .chips {
+    list-style: none;
+    padding: 0 !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chips li {
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: var(--paper-2);
+    color: var(--ink-2);
+  }
+  @media (max-width: 860px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

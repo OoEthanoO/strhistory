@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <style>
+    .g { stroke: #1d1b18; }
+    .bg { fill: #f6f3ec; }
+    @media (prefers-color-scheme: dark) { .g { stroke: #ece7dd; } .bg { fill: #121315; } }
+  </style>
+  <circle class="bg" cx="16" cy="16" r="15"/>
+  <circle class="g" cx="16" cy="16" r="12.5" stroke-width="1.8"/>
+  <ellipse class="g" cx="16" cy="16" rx="5.4" ry="12.5" stroke-width="1.4" opacity="0.75"/>
+  <path class="g" d="M3.8 12h24.4M3.8 20h24.4" stroke-width="1.4" opacity="0.75"/>
+  <path d="M21.5 4.5c-2.6 0-4.5 1.9-4.5 4.4 0 3.2 4.5 7.6 4.5 7.6s4.5-4.4 4.5-7.6c0-2.5-1.9-4.4-4.5-4.4Z" fill="#8e2c32"/>
+  <circle cx="21.5" cy="8.9" r="1.5" fill="#f6f3ec"/>
+</svg>

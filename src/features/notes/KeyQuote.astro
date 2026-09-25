@@ -1,0 +1,43 @@
+---
+/**
+ * <KeyQuote by="…" role="…" date="…" source="…" analysis="…">Quote text.</KeyQuote>
+ *
+ * A highlighted stand-alone quotation. Keep the quote on one line in the MDX
+ * (inline text), so it renders inside the highlight. `analysis` adds a
+ * "Why this quote matters" reveal.
+ */
+import './notes.css';
+
+interface Props {
+  by: string;
+  role?: string;
+  date?: string;
+  source?: string;
+  analysis?: string;
+}
+
+const { by, role, date, source, analysis } = Astro.props;
+---
+
+<figure class="note-kq">
+  <svg class="note-kq__mark" viewBox="0 0 32 24" width="32" height="24" aria-hidden="true">
+    <path
+      d="M0 24V14.4C0 6.1 4.3 1.3 12.2 0l1.4 3.1C9 4.6 6.8 7.4 6.5 11.2H13V24H0Zm18.6 0V14.4C18.6 6.1 22.9 1.3 30.8 0l1.2 3.1c-4.6 1.5-6.8 4.3-7.1 8.1h6.5V24H18.6Z"
+      fill="currentColor"></path>
+  </svg>
+  <blockquote class="note-kq__quote">
+    <p><span class="note-kq__hl"><slot /></span></p>
+  </blockquote>
+  <figcaption class="note-kq__cite">
+    <span class="note-kq__by">{by}</span>{role && <span class="note-kq__role">{role}</span>}
+    {(date || source) && <span class="note-kq__meta">{[date, source].filter(Boolean).join(' · ')}</span>}
+  </figcaption>
+  {
+    analysis && (
+      <details class="note-kq__analysis">
+        <summary>Why this quote matters</summary>
+        <p>{analysis}</p>
+      </details>
+    )
+  }
+</figure>
