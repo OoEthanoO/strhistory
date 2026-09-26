@@ -2,7 +2,7 @@
     deploy.ps1 - build one commit and make it live. Called by tick.ps1 after it
     has checked out the commit in <Root>\repo; can also be run by hand:
 
-        powershell -File C:\Users\ethan\strhistory\repo\deploy\server\deploy.ps1 -Sha (git rev-parse HEAD)
+        powershell -ExecutionPolicy Bypass -File C:\Users\ethan\strhistory\repo\deploy\server\deploy.ps1 -Sha (git rev-parse HEAD)
 
     Steps: install dependencies (only when package-lock.json changed) ->
     content check -> build -> copy dist\ to releases\<sha> -> sync the Caddy

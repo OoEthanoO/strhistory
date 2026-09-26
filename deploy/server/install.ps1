@@ -123,4 +123,4 @@ if ($err) { Write-Host "    $err" -ForegroundColor Yellow } else { Info 'Caddy r
 
 Write-Host ''
 Write-Host "Installed. Every push to main is live about a minute later: https://$($script:Domain)" -ForegroundColor Green
-Write-Host "Status:   powershell -File `"$repo\deploy\server\status.ps1`""
+Write-Host "Status:   powershell -ExecutionPolicy Bypass -File `"$repo\deploy\server\status.ps1`""

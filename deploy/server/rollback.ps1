@@ -1,8 +1,8 @@
 <#
     rollback.ps1 - point the site at an earlier release, immediately.
 
-        powershell -File ...\rollback.ps1              # list releases
-        powershell -File ...\rollback.ps1 -To 1a2b3c4  # go live with that release
+        powershell -ExecutionPolicy Bypass -File ...\rollback.ps1              # list releases
+        powershell -ExecutionPolicy Bypass -File ...\rollback.ps1 -To 1a2b3c4  # go live with that release
 
     The poller does not undo a rollback: it only deploys when main gets a new
     commit. The proper fix is usually `git revert` on main, which deploys itself.

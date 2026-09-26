@@ -408,15 +408,15 @@ PowerShell):
 
 ```bash
 # status: live commit, last error, poller health, recent log
-ssh finprint-host "powershell -NoProfile -File C:\Users\ethan\strhistory\repo\deploy\server\status.ps1"
+ssh finprint-host "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\ethan\strhistory\repo\deploy\server\status.ps1"
 
 # deploy now instead of waiting (or re-deploy the same commit)
 ssh finprint-host "schtasks /run /tn strhistory-deploy"
-ssh finprint-host "powershell -NoProfile -File C:\Users\ethan\strhistory\bin\tick.ps1 -Force"
+ssh finprint-host "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\ethan\strhistory\bin\tick.ps1 -Force"
 
 # roll back to an earlier release (list, then choose)
-ssh finprint-host "powershell -NoProfile -File C:\Users\ethan\strhistory\repo\deploy\server\rollback.ps1"
-ssh finprint-host "powershell -NoProfile -File C:\Users\ethan\strhistory\repo\deploy\server\rollback.ps1 -To 1a2b3c4"
+ssh finprint-host "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\ethan\strhistory\repo\deploy\server\rollback.ps1"
+ssh finprint-host "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\ethan\strhistory\repo\deploy\server\rollback.ps1 -To 1a2b3c4"
 ```
 
 A failed deploy leaves the previous release live; it is retried up to 3 times,

@@ -1,7 +1,7 @@
 <#
     status.ps1 - what is live, what happened last, and whether the poller is healthy.
 
-        powershell -File C:\Users\ethan\strhistory\repo\deploy\server\status.ps1 [-Lines 40]
+        powershell -ExecutionPolicy Bypass -File C:\Users\ethan\strhistory\repo\deploy\server\status.ps1 [-Lines 40]
 #>
 [CmdletBinding()]
 param(

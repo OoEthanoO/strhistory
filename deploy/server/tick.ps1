@@ -11,8 +11,8 @@
     this poller still picks up the commit that fixes it. After changing this
     file, re-run install.ps1 on the server.
 
-        powershell -File C:\Users\ethan\strhistory\bin\tick.ps1            # normal run
-        powershell -File C:\Users\ethan\strhistory\bin\tick.ps1 -Force     # redeploy even if up to date
+        powershell -ExecutionPolicy Bypass -File C:\Users\ethan\strhistory\bin\tick.ps1            # normal run
+        powershell -ExecutionPolicy Bypass -File C:\Users\ethan\strhistory\bin\tick.ps1 -Force     # redeploy even if up to date
 #>
 [CmdletBinding()]
 param(
@@ -42,6 +42,20 @@ function Log([string]$Message) {
     Write-Host $line
 }
 
+# Run a repo script in a child PowerShell. The child writes its own progress
+# to the log; its console output is only kept (appended as UTF-8) when it
+# fails, to capture errors it could not log itself. (Redirecting with *>> would
+# lock the log file and, in PowerShell 5.1, write UTF-16.)
+function Invoke-RepoScript([string]$Script, [string[]]$Arguments) {
+    $output = & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Script @Arguments 2>&1 | Out-String
+    $code = $LASTEXITCODE
+    if ($code -ne 0) {
+        Log "$(Split-Path $Script -Leaf) exited with code $code; its output follows"
+        $output -split "`r?`n" | Where-Object { $_.Trim() } | ForEach-Object { Add-Content -Path $Log -Value "    | $_" -Encoding UTF8 }
+    }
+    return $code
+}
+
 # One run at a time (the task is also set to ignore overlapping starts).
 try { $lock = [IO.File]::Open($LockFile, 'OpenOrCreate', 'ReadWrite', 'None') } catch { exit 0 }
 
@@ -57,7 +71,7 @@ try {
     $main = Get-Content $config.mainCaddyfile -Raw -ErrorAction SilentlyContinue
     if ($main -and $main -notmatch [regex]::Escape('# BEGIN strhistory (managed)')) {
         Log 'main Caddyfile lost the strhistory import block - restoring it'
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Repo 'deploy\server\caddy.ps1') -Root $Root *>> $Log
+        Invoke-RepoScript (Join-Path $Repo 'deploy\server\caddy.ps1') @('-Root', $Root) | Out-Null
     }
 
     Git fetch --quiet origin $config.branch 2>&1 | Out-Null
@@ -91,8 +105,8 @@ try {
     # Remove build leftovers but keep installed dependencies.
     Git clean -fdx --quiet -e node_modules 2>&1 | Out-Null
 
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Repo 'deploy\server\deploy.ps1') -Root $Root -Sha $target *>> $Log
-    if ($LASTEXITCODE -ne 0) { Log "deploy of $short failed - see above"; exit 1 }
+    $code = Invoke-RepoScript (Join-Path $Repo 'deploy\server\deploy.ps1') @('-Root', $Root, '-Sha', $target)
+    if ($code -ne 0) { Log "deploy of $short failed - see above"; exit 1 }
 }
 catch {
     Log "tick error: $($_.Exception.Message)"
