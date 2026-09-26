@@ -12,3 +12,8 @@ The upstream project notes that borders are approximate, especially for earlier
 periods, and should be checked against other sources before academic use.
 
 `../land.geojson` is derived from Natural Earth (public domain).
+
+`world_2026.geojson`, the present-day map, is the exception: it is derived from
+[Natural Earth](https://www.naturalearthdata.com/) (public domain), not from
+historical-basemaps — Admin 0 countries in the ISO 3166 point of view, with
+gaps for contested territories filled from Natural Earth's disputed areas.

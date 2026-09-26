@@ -243,7 +243,9 @@ markdown file and `public/data/snapshots/world_<year>.geojson` together.
 Negative filenames are BCE; the pipeline maps them to upstream `world_bc...`
 files. `borderYear: null` creates a land-only exploration stop, and a numeric
 `borderYear` reuses an available reconstruction with its actual date visible.
-Never relabel an old reconstruction as current borders. After changing the
+Never relabel an old reconstruction as current borders. The present-day stop
+(`PRESENT_YEAR` in the script) is built from Natural Earth instead: ISO 3166
+countries, with contested territories dashed and named "(disputed)". After changing the
 1783 map, regenerate the initial SVG geometry with
 `node scripts/data/build-prebaked.mjs` and commit `src/features/globe/baked/`.
 
@@ -508,6 +510,7 @@ the same checks before switching releases, so a failing commit never goes live).
 - Code: all rights reserved by the repository owner unless a licence is added.
 - Historical borders: aourednik/historical-basemaps, **GPL-3.0** — the derived
   files in `public/data/snapshots/` stay under GPL-3.0 (see the LICENSE.md there).
-- Natural Earth (land, and the home-page globe via world-atlas): public domain.
+- Natural Earth (land, present-day borders in `world_2026.geojson`, and the
+  home-page globe via world-atlas): public domain.
 - Map label glyphs: Noto Sans, SIL Open Font License 1.1.
 - MapLibre GL JS: BSD-3-Clause. Fonts via Fontsource: OFL.
