@@ -391,7 +391,9 @@ parallel with few conflicts:
 - `src/config/site.ts` — site name ("STR History"), department, **school name
   (currently empty — to be confirmed)**, public email, nav.
 - `astro.config.mjs` — `site` URL (override with `SITE_URL`), MDX, React,
-  whitespace handling, Vite options.
+  sitemap, whitespace handling, Vite options. Every built page is listed in
+  `/sitemap-index.xml` automatically; `/robots.txt` (`src/pages/robots.txt.ts`)
+  points to it. Both use `site`, so set `SITE_URL` if the domain changes.
 - Environment variables: `GIT_SHA` (set by deploy/CI; written to
   `/version.json`), `SITE_URL` (optional).
 
@@ -499,7 +501,7 @@ the same checks before switching releases, so a failing commit never goes live).
   Vietnam is not shown divided in 1960). Fix names via
   `name-overrides.json`; geometry fixes belong upstream in
   aourednik/historical-basemaps.
-- Site search (e.g. Pagefind over `dist/`) and a sitemap.
+- Site search (e.g. Pagefind over `dist/`).
 - Verify detailed prescribed Paper 1 pairings and Europe study boundaries
   against the school's full 2028 History guide; only the public brief is verified.
 
