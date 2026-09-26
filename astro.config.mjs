@@ -16,7 +16,7 @@ export default defineConfig({
   integrations: [mdx(), react()],
   vite: {
     build: {
-      // MapLibre is large (~1 MB); it is only loaded by the /globe island.
+      // MapLibre is large (~1 MB); the home and explorer islands import it lazily.
       chunkSizeWarningLimit: 1600,
       rolldownOptions: {
         // Astro's MDX pipeline emits one harmless MODULE_LEVEL_DIRECTIVE warning

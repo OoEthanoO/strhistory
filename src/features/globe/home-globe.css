@@ -1,0 +1,19 @@
+.home-globe { position: relative; height: 610px; min-width: 0; overflow: hidden; border-radius: var(--radius-l); color: var(--night-ink); background: radial-gradient(ellipse at 50% 45%, var(--night-2), var(--night) 75%); }
+.home-globe__caption { position: absolute; z-index: 2; top: 26px; left: 28px; display: flex; gap: 14px; align-items: baseline; pointer-events: none; }
+.home-globe__caption span:first-child { font-size: 10px; letter-spacing: .16em; }
+.home-globe__caption strong { font: 500 32px var(--font-serif); }
+.home-globe__caption span:last-child { font-size: 11px; opacity: .65; }
+.home-globe__surface { position: absolute; inset: 38px 0 42px; }
+.home-globe__surface > .home-globe__map { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.home-globe[data-ready] .home-globe__map { opacity: 1; pointer-events: auto; }
+.home-globe__enter { position: absolute; z-index: 3; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 24px; white-space: nowrap; font-size: 12px; color: var(--night-ink); text-decoration: none; border: 1px solid color-mix(in srgb, var(--night-ink) 25%, transparent); border-radius: 99px; padding: 10px 18px; }
+.home-globe__enter:hover { color: var(--night-ink); background: var(--night-2); }
+.home-globe .globe-pin { color: var(--night-ink); text-decoration: none; position: absolute; width: 14px; height: 14px; }
+.home-globe .globe-pin__dot { display: block; width: 10px; height: 10px; border-radius: 50%; background: var(--brass); border: 2px solid var(--night-ink); }
+.home-globe .globe-pin__label { display: none; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 11px; text-shadow: 0 1px 4px var(--night); }
+.home-globe .globe-pin:hover .globe-pin__label, .home-globe .globe-pin:focus-visible .globe-pin__label { display: block; }
+.home-globe .globe-pin__stem { position: absolute; left: -93px; top: -93px; width: 200px; height: 200px; pointer-events: none; overflow: visible; }
+.home-globe .globe-pin__stem line { stroke: var(--night-ink); stroke-width: 1; opacity: .7; }
+.home-globe .globe-pin.maplibregl-marker-covered { visibility: hidden; pointer-events: none; }
+@media(max-width: 900px) { .home-globe { height: 500px; } }
+@media(max-width: 500px) { .home-globe { height: 390px; } .home-globe__caption { top: 20px; left: 18px; gap: 8px; } .home-globe__caption span:last-child { display: none; } }

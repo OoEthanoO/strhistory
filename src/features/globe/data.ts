@@ -12,8 +12,10 @@ export async function getGlobeData(): Promise<GlobeData> {
   const topics = await getTopics();
 
   return {
+    currentYear: new Date().getFullYear(),
     snapshots: snapshots.map((s) => ({
       year: s.data.year,
+      borderYear: s.data.borderYear === undefined ? s.data.year : s.data.borderYear,
       title: s.data.title,
       summary: s.data.summary,
       highlights: s.data.highlights,
@@ -34,6 +36,8 @@ export async function getGlobeData(): Promise<GlobeData> {
           lng: t.data.location.lng,
           unitTitle: unit?.data.title ?? '',
           paper: unit?.data.paper ?? 2,
+          level: t.data.level,
+          curriculum: t.data.curriculum,
           snapshot: snapshotYearFor(t, years),
         };
       }),

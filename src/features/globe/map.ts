@@ -22,6 +22,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { formatRange } from './era';
 import { colorFor, LAND_BASE, OCEAN, UNCLAIMED } from './palette';
 import type { GlobeTopic, PolityHover } from './types';
+import { pinOffsets } from './pin-layout';
 
 setWorkerUrl(workerUrl);
 
@@ -40,6 +41,10 @@ export interface GlobeCallbacks {
   onPinClick(topic: GlobeTopic, event: MouseEvent): void;
   onPolityHover(hover: PolityHover | null): void;
   onLoadingChange(loading: boolean): void;
+  onSnapshotChange?(year: number | null): void;
+  onViewChange?(view: { center: [number, number]; scale: number }): void;
+  onInteractionEnd?(view: { center: [number, number]; scale: number }): void;
+  onFailure?(): void;
 }
 
 export interface PinState {
@@ -52,11 +57,10 @@ const POLYGONS: ExpressionSpecification = ['!', ['has', 'kind']];
 const EMPTY: FeatureCollection = { type: 'FeatureCollection', features: [] };
 
 /** Zoom at which the whole globe fits comfortably in the element. */
-export function fitZoom(el: HTMLElement): number {
-  const usableH = el.clientHeight - (el.clientWidth < 720 ? 230 : 190); // timeline + header
-  const m = Math.max(260, Math.min(el.clientWidth * 0.92, usableH));
-  // At zoom z the globe's diameter is roughly 512·2^z / π pixels.
-  return Math.log2((0.9 * m * Math.PI) / 512);
+export function fitZoom(el: HTMLElement, _compact = false): number {
+  const m = Math.max(100, Math.min(el.clientWidth, el.clientHeight));
+  // Calibrated to the baked SVG's 90% diameter at the fixed globe perspective.
+  return Math.log2((m * Math.PI) / 512);
 }
 
 function graticule(step: number): FeatureCollection {
@@ -184,23 +188,29 @@ export class GlobeController {
   private cb: GlobeCallbacks;
   private markers = new Map<string, HTMLAnchorElement>();
   private markerObjs: Marker[] = [];
+  private pinEntries: Array<{ topic: GlobeTopic; marker: Marker; element: HTMLAnchorElement }> = [];
   private cache = new Map<number, Promise<FeatureCollection>>();
-  private year: number | null = null;
   private hoveredId: number | string | null = null;
   private spinning = false;
   private readonly ready: Promise<void>;
   private readonly reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  private readonly container: HTMLElement;
+  private readonly compact: boolean;
+  private destroyed = false;
+  private snapshotRequest = 0;
+  private snapshotCleanup: (() => void) | undefined;
+  private fitLevel: number;
+  private readonly resizeObserver: ResizeObserver;
 
-  constructor(container: HTMLElement, cb: GlobeCallbacks, center: [number, number]) {
-    this.container = container;
+  constructor(container: HTMLElement, cb: GlobeCallbacks, center: [number, number] = [15, 30], options: { compact?: boolean } = {}) {
     this.cb = cb;
+    this.compact = options.compact ?? false;
+    this.fitLevel = fitZoom(container, this.compact);
     this.map = new MapLibreMap({
       container,
       style: buildStyle(),
       center,
-      zoom: fitZoom(container),
-      minZoom: 0.2,
+      zoom: this.fitLevel,
+      minZoom: -1,
       maxZoom: 7,
       attributionControl: false,
       dragRotate: false,
@@ -210,7 +220,39 @@ export class GlobeController {
     });
     this.map.touchZoomRotate.disableRotation();
     this.map.keyboard.disableRotation();
-    this.ready = new Promise((resolve) => this.map.once('load', () => resolve()));
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.destroyed || !container.clientWidth || !container.clientHeight) return;
+      const next = fitZoom(container, this.compact);
+      const delta = next - this.fitLevel;
+      if (Math.abs(delta) < 0.001) return;
+      this.fitLevel = next;
+      this.map.resize();
+      this.map.jumpTo({ zoom: this.map.getZoom() + delta });
+    });
+    this.resizeObserver.observe(container);
+    // A loaded style is not a rendered globe. Keep the interactive baked globe
+    // visible until the land source is available and has reached a render frame.
+    this.ready = new Promise((resolve) => {
+      let pending = false;
+      const check = () => {
+        if (pending || this.destroyed || !this.map.isStyleLoaded() || !this.map.isSourceLoaded('land')) return;
+        pending = true;
+        this.map.off('sourcedata', check);
+        this.map.once('render', () => { if (!this.destroyed) resolve(); });
+        this.map.triggerRepaint();
+      };
+      this.map.on('sourcedata', check);
+      this.map.once('load', check);
+    });
+    this.map.on('error', (event) => {
+      if ('sourceId' in event && event.sourceId === 'land') this.cb.onFailure?.();
+    });
+    this.map.getCanvas().addEventListener('webglcontextlost', () => this.cb.onFailure?.());
+    this.map.on('move', () => { this.cb.onViewChange?.(this.getView()); this.layoutPins(); });
+    for (const type of ['dragend', 'zoomend'] as const) {
+      this.map.on(type, (event) => { if (event.originalEvent) this.cb.onInteractionEnd?.(this.getView()); });
+    }
+    this.map.on('click', () => this.cb.onInteractionEnd?.(this.getView()));
     this.bindInteractions();
   }
 
@@ -220,20 +262,38 @@ export class GlobeController {
 
   // ---------- snapshots ----------
 
-  async setSnapshot(year: number) {
-    this.year = year;
+  async setSnapshot(year: number | null) {
+    const request = ++this.snapshotRequest;
+    this.snapshotCleanup?.();
     this.cb.onLoadingChange(true);
+    this.cb.onSnapshotChange?.(null);
     try {
-      const data = await this.load(year);
       await this.ready;
-      if (this.year !== year) return; // a newer request won
+      if (this.destroyed || request !== this.snapshotRequest) return;
       this.clearHover();
       this.map.removeFeatureState({ source: 'polities' });
-      (this.map.getSource('polities') as GeoJSONSource).setData(data as never);
+      const source = this.map.getSource('polities') as GeoJSONSource;
+      await source.setData(EMPTY as never);
+      if (year === null || this.destroyed || request !== this.snapshotRequest) return;
+      const data = await this.load(year);
+      if (this.destroyed || request !== this.snapshotRequest) return;
+      await source.setData(data as never);
+      if (this.destroyed || request !== this.snapshotRequest) return;
+      const reveal = () => {
+        if (this.destroyed || request !== this.snapshotRequest || !this.map.isSourceLoaded('polities')) return;
+        this.map.off('sourcedata', reveal);
+        this.map.once('render', () => {
+          if (!this.destroyed && request === this.snapshotRequest) this.cb.onSnapshotChange?.(year);
+        });
+        this.map.triggerRepaint();
+      };
+      this.snapshotCleanup = () => this.map.off('sourcedata', reveal);
+      this.map.on('sourcedata', reveal);
+      reveal();
     } catch (err) {
       console.error(`Could not load snapshot ${year}`, err);
     } finally {
-      if (this.year === year) this.cb.onLoadingChange(false);
+      if (request === this.snapshotRequest && !this.destroyed) this.cb.onLoadingChange(false);
     }
   }
 
@@ -264,6 +324,7 @@ export class GlobeController {
   setTopics(topics: GlobeTopic[]) {
     for (const m of this.markerObjs) m.remove();
     this.markerObjs = [];
+    this.pinEntries = [];
     this.markers.clear();
     for (const topic of topics) {
       const el = document.createElement('a');
@@ -272,7 +333,7 @@ export class GlobeController {
       el.dataset.slug = topic.slug;
       el.dataset.paper = String(topic.paper);
       el.innerHTML =
-        '<span class="globe-pin__pulse"></span><span class="globe-pin__dot"></span><span class="globe-pin__label"></span>';
+        '<svg class="globe-pin__stem" viewBox="-100 -100 200 200" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="0" /></svg><span class="globe-pin__dot"></span><span class="globe-pin__label"></span>';
       el.querySelector('.globe-pin__label')!.textContent = topic.shortTitle;
       el.addEventListener('mouseenter', () => this.cb.onPinEnter(topic));
       el.addEventListener('mouseleave', () => this.cb.onPinLeave(topic));
@@ -283,8 +344,25 @@ export class GlobeController {
         .setLngLat([topic.lng, topic.lat])
         .addTo(this.map);
       this.markerObjs.push(marker);
+      this.pinEntries.push({ topic, marker, element: el });
       this.markers.set(topic.slug, el);
-      this.describePin(el, topic, false);
+      this.describePin(el, topic);
+      el.classList.add('is-active');
+    }
+    this.layoutPins();
+  }
+
+  private layoutPins() {
+    const offsets = pinOffsets(this.pinEntries.map(({ topic }) => {
+      const point = this.map.project([topic.lng, topic.lat]);
+      return { id: topic.slug, x: point.x, y: point.y };
+    }));
+    for (const { topic, marker, element } of this.pinEntries) {
+      const [x, y] = offsets.get(topic.slug) ?? [0, 0];
+      marker.setOffset([x, y]);
+      const stem = element.querySelector('line')!;
+      stem.setAttribute('x2', String(-x));
+      stem.setAttribute('y2', String(-y));
     }
   }
 
@@ -293,27 +371,35 @@ export class GlobeController {
       const el = this.markers.get(topic.slug);
       if (!el) continue;
       const active = state.active.has(topic.slug);
+      el.hidden = !active;
       el.classList.toggle('is-active', active);
       el.classList.toggle('is-selected', state.selected === topic.slug);
       el.classList.toggle('is-hovered', state.hovered === topic.slug);
-      this.describePin(el, topic, active);
+      this.describePin(el, topic);
     }
   }
 
-  private describePin(el: HTMLAnchorElement, topic: GlobeTopic, active: boolean) {
+  private describePin(el: HTMLAnchorElement, topic: GlobeTopic) {
     const range = formatRange(topic.start, topic.end);
     el.setAttribute(
       'aria-label',
-      active
-        ? `${topic.title} (${range}), ${topic.place} — open notes`
-        : `${topic.title} (${range}) — show on the ${topic.snapshot} map`,
+      `${topic.title} (${range}), ${topic.place} — open notes`,
     );
   }
 
   // ---------- camera ----------
 
   baseZoom() {
-    return fitZoom(this.container);
+    return this.fitLevel;
+  }
+
+  getView(): { center: [number, number]; scale: number } {
+    const center = this.map.getCenter();
+    return { center: [center.lng, center.lat], scale: 2 ** (this.map.getZoom() - this.baseZoom()) };
+  }
+
+  setView(center: [number, number], scale = 1) {
+    this.map.jumpTo({ center, zoom: this.baseZoom() + Math.log2(Math.max(0.4, scale)) });
   }
 
   flyTo(topic: GlobeTopic) {
@@ -333,7 +419,7 @@ export class GlobeController {
 
   resetView() {
     this.stopSpin();
-    this.map.easeTo({ zoom: this.baseZoom(), duration: this.reducedMotion ? 0 : 900 });
+    this.map.easeTo({ center: [15, 30], zoom: this.baseZoom(), duration: this.reducedMotion ? 0 : 900 });
   }
 
   /** Slow idle rotation until the user touches the globe. */
@@ -395,6 +481,9 @@ export class GlobeController {
   }
 
   destroy() {
+    this.destroyed = true;
+    this.resizeObserver.disconnect();
+    this.snapshotCleanup?.();
     this.stopSpin();
     this.map.remove();
   }

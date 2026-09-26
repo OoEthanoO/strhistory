@@ -13,12 +13,16 @@ export interface GlobeTopic {
   lng: number;
   unitTitle: string;
   paper: 1 | 2 | 3;
+  level: 'SL' | 'HL';
+  curriculum: '2028' | 'archive';
   /** Snapshot year the globe switches to when this topic is selected. */
   snapshot: number;
 }
 
 export interface GlobeSnapshot {
   year: number;
+  /** Actual year of the available border reconstruction; null means land only. */
+  borderYear: number | null;
   title: string;
   summary: string;
   highlights: string[];
@@ -27,6 +31,7 @@ export interface GlobeSnapshot {
 export interface GlobeData {
   topics: GlobeTopic[];
   snapshots: GlobeSnapshot[];
+  currentYear: number;
 }
 
 /** What the pointer is over on the map (a polity/region). */

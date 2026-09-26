@@ -22,6 +22,7 @@ import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync }
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import polylabel from 'polylabel';
+import { load as parseYaml } from 'js-yaml';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const SNAPSHOT_CONTENT = join(ROOT, 'src/content/snapshots');
@@ -32,9 +33,13 @@ const SOURCE = 'https://raw.githubusercontent.com/aourednik/historical-basemaps/
 const MAPSHAPER = 'mapshaper@0.7.67';
 
 const requested = process.argv.slice(2).map(Number).filter(Boolean);
-const years = readdirSync(SNAPSHOT_CONTENT)
-  .filter((f) => /^\d+\.mdx?$/.test(f))
-  .map((f) => Number.parseInt(f, 10))
+const years = [...new Set(readdirSync(SNAPSHOT_CONTENT)
+  .filter((f) => /^-?\d+\.mdx?$/.test(f))
+  .flatMap((f) => {
+    const source = readFileSync(join(SNAPSHOT_CONTENT, f), 'utf8').replace(/\r\n/g, '\n');
+    const data = parseYaml(source.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? '') ?? {};
+    return data.borderYear === null ? [] : [data.borderYear ?? data.year];
+  }))]
   .filter((y) => requested.length === 0 || requested.includes(y))
   .sort((a, b) => a - b);
 
@@ -62,7 +67,8 @@ for (const year of years) {
     statSync(raw);
   } catch {
     process.stdout.write(`${year}: downloading... `);
-    const res = await fetch(`${SOURCE}/world_${year}.geojson`);
+    const upstreamYear = year < 0 ? `bc${Math.abs(year)}` : year;
+    const res = await fetch(`${SOURCE}/world_${upstreamYear}.geojson`);
     if (!res.ok) throw new Error(`download failed for ${year}: HTTP ${res.status}`);
     writeFileSync(raw, Buffer.from(await res.arrayBuffer()));
   }

@@ -12,17 +12,26 @@ Live site: **https://history.ethanyanxu.com** · Repo: https://github.com/OoEtha
 
 ## 1. Purpose
 
-A website for a high-school history department with two jobs:
+A website for a high-school history department with four connected jobs:
 
-1. **An interactive, timeline-based globe of IB History.** A 3D globe shows the
-   world's political borders at a chosen snapshot in time (1100 → 2010). Each
-   IB History topic is a pin. Clicking a lit pin opens that topic's study notes.
-   A timeline along the bottom moves between snapshots. Inspired by
-   globeofhistory.com.
+1. **An interactive, timeline-based globe with individual history notes.** The
+   home page places the live globe on the left and smaller event previews on
+   the right, with department information below. A click or completed gesture
+   enters `/globe`, preserving the camera. The exploration timeline runs from
+   approximate human origins (300,000 BCE) to the present, independently of the
+   course. Each note has its own place, inclusive date range and direct pin link.
+   The explorer has a searchable catalogue on the left, year context above the
+   bottom timeline, SL/HL filtering and a switch to show pins from all years.
 2. **Interactive study notes** for each topic: key quotations are highlighted and
    attributed, key terms reveal their *significance* when clicked, and each
    topic ends with self-test questions and a historians' debate.
-3. **The department's home online**: courses, teacher profiles, news, study
+3. **A searchable notes library** at `/topics`, plus a glossary. The selected
+   first-assessment-2028 course is Political and economic transitions (Paper 1),
+   Authoritarian rule (Paper 2), and Europe: the French Revolution and German
+   and Italian unification (Paper 3, HL). Earlier notes retain their URLs in a
+   clearly labelled archive. SL shows the shared core; HL includes that core
+   and the regional studies.
+4. **The department's home online**: courses, teacher profiles, news, study
    guides (exam papers, IA, extended essay), and an about page.
 
 Audience: IB Diploma History students (SL and HL, grades 11–12), pre-IB
@@ -44,9 +53,12 @@ This is an educational site; accuracy matters more than volume.
 - **Placeholders are labelled.** Sample teachers, courses and news carry
   `placeholder: true`, which shows a "Sample" badge. Never present invented
   people or events as real.
-- The IB assessment details on the site follow the History guide first
-  assessed in 2017 (and the EE guide first assessed in 2018). Pages say so.
-  Verify against the current guide before changing them.
+- Current assessment information follows the official IB History subject brief
+  for first assessment in 2028, linked from the course and guide pages. The
+  public brief confirms the framework; detailed prescribed case-study pairings
+  and regional boundaries still require the school's full current guide.
+  The older EE guidance is explicitly archived and must not be presented as
+  current. Verify assessment changes against official IB sources.
 
 ---
 
@@ -78,7 +90,7 @@ package, restart it (Vite's dependency cache is stale).
 | Framework | **Astro 7** (static output) | Content-first site; pages are HTML with zero JS unless a component needs it. Static output means the server only serves files — nothing to crash or restart. |
 | Interactive globe | **React 19** island + **MapLibre GL 6** (globe projection) | MapLibre renders GeoJSON borders on a WebGL globe with smooth interaction and no API keys. React only for the globe UI state. |
 | Content | **Astro content collections** (Markdown / MDX + Zod schemas) | One file per topic/term/teacher; schemas catch mistakes at build time. |
-| Home-page globe | **d3-geo** at build time | An orthographic SVG rendered during the build — no client JS. |
+| Immediate globe | **d3-geo** SVG + React | A baked initial frame is in the HTML; drag, pinch, wheel, keyboard and note links work while MapLibre details arrive. The initial 1783 border geometry uses the same palette as the detailed map. |
 | Styling | Plain CSS with design tokens + Astro scoped styles | No framework to learn; tokens keep both themes consistent. |
 | Fonts | Newsreader (serif, variable, optical sizes) + Inter (sans), self-hosted via Fontsource | No third-party font requests (student privacy). |
 | Hosting | Home server (Windows 11) behind **Caddy** (automatic HTTPS) | See §10. |
@@ -107,7 +119,7 @@ bottom are the only places where parallel work can collide.
 ```
 src/
   content/                 ← CONTENT: one file per entry (see §5). Most PRs live here.
-    topics/<slug>.mdx        IB topics = globe pins + study notes
+    topics/<slug>.mdx        one event/source note = one pin + one study page
     glossary/<id>.md         key terms used by <Term id="…">
     syllabus/<id>.md         IB syllabus units (papers 1–3)
     snapshots/<year>.md      globe timeline stops + "world in <year>" text
@@ -116,6 +128,10 @@ src/
   features/
     globe/                 ← FEATURE: the /globe explorer (React island)
       GlobeExplorer.tsx      state, URL sync, playback; composes the pieces below
+      HomeGlobe.tsx          home-page gesture handoff to the full explorer
+      PrebakedGlobe.tsx      immediate interactive SVG and WebGL fallback
+      baked/                generated initial border geometry (GPL-3.0)
+      pin-layout.ts         separates nearby note pins, with stems to their places
       map.ts                 GlobeController — the only file that touches MapLibre
       Timeline.tsx EraPanel.tsx TopicList.tsx TopicPreview.tsx
       era.ts                 pure timeline maths (eras, lanes, positions)
@@ -191,6 +207,12 @@ Rules:
   `related`) are ids of files in the target folder. `npm run check:content`
   reports broken ones.
 - `draft: true` (topics, news) shows in `npm run dev` but is excluded from builds.
+- Notes use `curriculum: '2028'` for the selected course and `archive` for older
+  material (the safe default). `level: SL` means shared SL and HL content;
+  `level: HL` is the additional Europe study. Each file describes one event or
+  focused source, with required `location` and inclusive `period.start/end`.
+  A single-year event uses the same start and end. An optional `snapshot` on a
+  current note must lie within that range; it does not require a new border file.
 - **YAML gotcha:** a value containing `": "` or starting with a quote must be
   wrapped in quotes, e.g. `title: "Guest lecture: archives"`. The content lint
   catches this.
@@ -200,8 +222,9 @@ Rules:
 **Add a topic (a new pin + notes)**
 1. Copy `src/content/topics/_template.mdx` to `src/content/topics/<slug>.mdx`.
 2. Fill in the frontmatter. `unit` must be a file in `src/content/syllabus/`.
-   `location` is where the pin goes — choose a place that is distinct from
-   existing pins (check the globe).
+   `location` is the event's actual place, even when other events happened there.
+   Nearby pins fan out with fine stems to their true positions. Set the
+   curriculum and level, and keep the date range as focused as the note.
 3. Write the notes (see "Writing notes" below). Create any glossary terms you
    reference.
 4. `npm run check:content && npm run dev`, open `/topics/<slug>` and `/globe`.
@@ -217,6 +240,12 @@ aourednik/historical-basemaps — available years are listed in that repo's
 `geojson/` folder), check the names on the globe, add fixes to
 `scripts/data/name-overrides.json` and re-run if needed, then commit the
 markdown file and `public/data/snapshots/world_<year>.geojson` together.
+Negative filenames are BCE; the pipeline maps them to upstream `world_bc...`
+files. `borderYear: null` creates a land-only exploration stop, and a numeric
+`borderYear` reuses an available reconstruction with its actual date visible.
+Never relabel an old reconstruction as current borders. After changing the
+1783 map, regenerate the initial SVG geometry with
+`node scripts/data/build-prebaked.mjs` and commit `src/features/globe/baked/`.
 
 **Fix a wrong country name on the globe** — add an entry for that year in
 `scripts/data/name-overrides.json` (string = new display name; object =
@@ -247,7 +276,9 @@ House style for topics: sections in this order — Overview (with
 `<Chronology>`), analytical sections answering the key questions, "Historians'
 debate", "Test yourself". Use `##` for sections (they build the page's
 contents list). British spelling (the IB's), past tense, no second-person
-pep talk. Aim for 800–1,500 words of prose. Every key term that a student
+pep talk. Broad archive studies may run 800–1,500 words; current event modules
+should stay focused on one question or source rather than pad to a word count.
+Every key term that a student
 should be able to define gets a `<Term>` the first time it appears.
 
 In JSX attributes, use typographic quotes (“ ” ‘ ’) or single quotes inside
@@ -258,28 +289,37 @@ double-quoted values; never raw `{`, `}` or `<` in MDX text.
 ## 6. The globe
 
 Data flow: `src/pages/globe.astro` calls `getGlobeData()` (build time) →
-serialisable `{ topics, snapshots }` → `<GlobeExplorer client:only="react">`.
+serialisable `{ topics, snapshots, currentYear }` → `<GlobeExplorer client:load>`.
+The home page uses `HomeGlobe` with the same data and fixed initial camera.
+`PrebakedGlobe` renders SVG in the HTML and handles gestures before WebGL is
+ready. MapLibre is dynamically imported; the initial coloured globe is retained
+until land and historical polygons have reached a rendered frame. No loading
+screen replaces the globe. WebGL failures leave the SVG usable.
 
-- **Snapshots** are the timeline stops. Each has a border file
+- **Snapshots** are independent exploration stops. Normally each has a border file
   `public/data/snapshots/world_<year>.geojson`, fetched when selected and
   cached; neighbours are prefetched. Polygon features carry `name`,
   `subjecto` (controlling power — drives colour), `partof`, `precision`
   (1 = approximate border → drawn dashed). Point features with `kind: "label"`
-  are pre-computed label anchors (one per polity).
-- **Eras**: snapshot *i* covers `[year_i, year_{i+1})`. A topic's pin is **lit**
-  in an era if its period overlaps the era *and* the snapshot year is within 10
-  years of the topic's dates, or if it is the topic's own `snapshot`
-  (`era.ts → topicInEra`). Lit pins link to the notes; faint pins move the
-  timeline to their era.
+  are pre-computed label anchors (one per polity). `borderYear` can reuse a
+  dated file or be null for physical geography only. The year panel states the
+  actual reconstruction and summary dates. Modern coastlines are a reference,
+  not a claim about ancient shorelines.
+- **Pins** appear only when `start <= selectedYear <= end`, unless show-all is
+  enabled. Course level, archive/current selection and search also filter them.
+  Every visible pin links directly to its note. Locate buttons in the catalogue
+  choose the note's exact start year and fly to its geographical position.
 - **URL state**: `/globe?year=1938&topic=<slug>` — used by the "See the world in
-  …" button on every topic page. Keep it working.
+  …" button on every topic page. `level`, `curriculum`, `all` and `q` also persist
+  in the URL. Home handoffs carry `lng`, `lat` and `scale`. The shared saved level
+  uses localStorage key `history-level`; storage failure must not break controls.
 - **Colours**: `palette.ts` hashes the controlling power's name, with fixed
   colours for major empires so they stay recognisable across years.
 - **Rendering**: MapLibre globe projection with a light atmosphere; labels use
   self-hosted glyphs (`public/glyphs/noto-sans`); MapLibre's worker is bundled via
   `?worker&url` + `setWorkerUrl` (MapLibre 6 cannot find it on its own when
   bundled).
-- Keyboard: timeline is a `role="slider"` (arrows, Home/End, PageUp/Down); pins
+- Keyboard: timeline is a native slider (arrows, Home/End, PageUp/Down); pins
   are real links; Escape closes panels.
 - In development `window.__globe` exposes the controller for debugging.
 
@@ -309,8 +349,8 @@ about sources, never gamified beyond the key-term progress bar.
   styles; all interactive elements reachable by keyboard; `alt` text on images;
   colour is never the only signal; respect `prefers-reduced-motion`; check
   contrast in both themes.
-- **Performance:** pages ship no JS unless they need it; the globe's MapLibre
-  bundle (~1 MB) loads only on `/globe`.
+- **Performance:** pages ship no JS unless they need it; MapLibre loads lazily on
+  the home page and `/globe`. The notes directory uses a small search/filter script.
 
 ---
 
@@ -451,14 +491,15 @@ the same checks before switching releases, so a failing commit never goes live).
 
 - School name, contact email, real teacher profiles and real course details
   (current ones are labelled samples).
-- More topics: Richard I (PS1), final stages of Muslim rule in Spain and the
-  conquest of Peru (PS2), and more Paper 2 / Paper 3 content.
+- Expand the seven initial event modules across the selected 2028 studies.
+  This is a growing collection, not complete curriculum coverage.
 - Some upstream border data is approximate or anachronistic (for example,
   Vietnam is not shown divided in 1960). Fix names via
   `name-overrides.json`; geometry fixes belong upstream in
   aourednik/historical-basemaps.
 - Site search (e.g. Pagefind over `dist/`) and a sitemap.
-- Verify assessment details against the current IB History guide.
+- Verify detailed prescribed Paper 1 pairings and Europe study boundaries
+  against the school's full 2028 History guide; only the public brief is verified.
 
 ---
 

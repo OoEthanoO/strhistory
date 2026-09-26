@@ -4,21 +4,23 @@
 # Field reference: src/schemas/topics.ts. Quote any value containing ": ".
 title: The title students see
 shortTitle: Short pin label        # optional, max 36 characters
-unit: ps3-move-to-global-war       # a file name from src/content/syllabus/
+unit: p1-political-economic-transitions # a file name from src/content/syllabus/
+level: SL                        # shared SL & HL notes; use HL for the Europe studies
+curriculum: '2028'                # use archive for older or extra-curricular notes
 period:
-  start: 1931
-  end: 1941
+  start: 1868                     # inclusive; use the same year for a single event
+  end: 1868
 location:
-  place: Mukden (Shenyang), Manchuria
-  lat: 41.80
-  lng: 123.43
+  place: Kyoto Imperial Palace, Kyoto, Japan
+  lat: 35.0254
+  lng: 135.7621
 summary: One or two sentences for cards, pin previews and search (max 320 characters).
 keyQuestions:
   - The first big question these notes answer?
   - A second?
 related: []                        # other topic slugs
 authors: []                        # teacher slugs from src/content/teachers/
-# snapshot: 1938                   # optional: which globe year to open on
+snapshot: 1868                    # selected year; must fall within this note's period
 updated: 2026-09-25
 draft: true                        # remove when the notes are ready to publish
 ---
@@ -26,11 +28,11 @@ draft: true                        # remove when the notes are ready to publish
 ## Overview
 
 Two or three sentences that set the scene. Mark key terms with
-<Term id="league-of-nations">League of Nations</Term> — the id must match a file
+<Term id="charter-oath">Charter Oath</Term> — the id must match a file
 in src/content/glossary/ (create it if needed).
 
 <Chronology title="Key dates">
-  <Event date="18 Sep 1931">What happened, in one line.</Event>
+  <Event date="April 1868">What happened, in one line.</Event>
 </Chronology>
 
 ## A section heading

@@ -32,6 +32,9 @@ jobs:
       - name: Type check
         run: npx astro check
 
+      - name: Timeline and note pin behaviour
+        run: node --test src/features/globe/era.test.ts src/features/globe/pin-layout.test.ts
+
       - name: Build
         run: npm run build
         env:

@@ -1,4 +1,4 @@
-import { formatRange } from './era';
+import { formatRange, formatYear } from './era';
 import type { GlobeTopic } from './types';
 
 interface Props {
@@ -43,7 +43,7 @@ export default function TopicPreview({ topic, inEra, onClose, onJump }: Props) {
         </a>
         {!inEra && (
           <button type="button" className="gx-btn" onClick={() => onJump(topic)}>
-            Show {topic.snapshot} map
+            Locate in {formatYear(topic.start)}
           </button>
         )}
       </div>

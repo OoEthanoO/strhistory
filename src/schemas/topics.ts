@@ -11,6 +11,10 @@ export const topicSchema = z.object({
   shortTitle: z.string().max(36).optional(),
   /** The IB syllabus unit this topic belongs to (src/content/syllabus/<id>.md). */
   unit: reference('syllabus'),
+  /** SL is shared core content; HL adds the regional study notes. */
+  level: z.enum(['SL', 'HL']).default('SL'),
+  /** Older notes remain readable without appearing in the current course. */
+  curriculum: z.enum(['2028', 'archive']).default('archive'),
   /** Years covered. Controls which timeline eras show the pin. */
   period: z
     .object({ start: z.number().int(), end: z.number().int() })
@@ -28,8 +32,8 @@ export const topicSchema = z.object({
   related: z.array(reference('topics')).default([]),
   authors: z.array(reference('teachers')).default([]),
   /**
-   * Snapshot year the globe should show for this topic. Defaults to the latest
-   * snapshot at or before `period.start`.
+   * Legacy preferred border snapshot. The globe opens at period.start so the
+   * note's pin is always within its exact date range.
    */
   snapshot: z.number().int().optional(),
   updated: z.coerce.date().optional(),
