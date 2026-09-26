@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
 
 // The site is fully static: `astro build` writes plain files to dist/, and the
 // home server's Caddy serves them. See AGENTS.md → "Deployment".
@@ -13,7 +14,8 @@ export default defineConfig({
   // inline elements in prose ("<em>a</em> <strong>b</strong>" → "ab"). Notes are
   // prose-heavy, so keep HTML-aware whitespace handling.
   compressHTML: true,
-  integrations: [mdx(), react()],
+  // sitemap() lists every built page in /sitemap-index.xml (see src/pages/robots.txt.ts).
+  integrations: [mdx(), react(), sitemap()],
   vite: {
     build: {
       // MapLibre is large (~1 MB); the home and explorer islands import it lazily.
