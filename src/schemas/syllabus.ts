@@ -7,6 +7,7 @@ import { z } from 'astro/zod';
  */
 export const syllabusSchema = z.object({
   title: z.string(),
+  curriculum: z.enum(['2028', 'archive']).default('archive'),
   /** Which exam paper assesses this unit. */
   paper: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   /** e.g. "Prescribed subject 3", "World history topic 10", "HL option: History of Europe". */

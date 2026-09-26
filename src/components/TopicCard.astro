@@ -20,6 +20,7 @@ const paper = unit?.data.paper ?? 2;
     <Badge tone={`paper-${paper}`}>Paper {paper}</Badge>
     <span class="years">{formatYearRange(topic.data.period.start, topic.data.period.end)}</span>
   </div>
+  <p class="scope">{topic.data.curriculum === 'archive' ? 'Earlier syllabus archive' : '2028 course'} · {topic.data.level === 'HL' ? 'HL only' : 'SL & HL'}</p>
   <Heading class="title">{topic.data.title}</Heading>
   <p class="summary">{topic.data.summary}</p>
   <p class="foot">
@@ -60,6 +61,12 @@ const paper = unit?.data.paper ?? 2;
     font-weight: 600;
     color: var(--ink-3);
     font-variant-numeric: tabular-nums;
+  }
+  .scope {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 0.76rem;
+    font-weight: 550;
   }
   .title {
     margin: 4px 0 0;

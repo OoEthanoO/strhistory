@@ -7,270 +7,225 @@ import { formatYearRange } from '@/lib/format';
 
 const topics = await getTopics();
 const units = await getUnits();
-
 const papers = [
-  { paper: 1, name: 'Paper 1 — Prescribed subjects', note: 'Source-based. Your school studies one prescribed subject.' },
-  { paper: 2, name: 'Paper 2 — World history topics', note: 'Two essays, each on a different world history topic.' },
-  { paper: 3, name: 'Paper 3 — HL regional options', note: 'Higher Level only. Three essays on one region.' },
+  { paper: 1, name: 'Political and economic transitions', level: 'SL & HL' },
+  { paper: 2, name: 'Authoritarian rule', level: 'SL & HL' },
+  { paper: 3, name: 'Europe', level: 'HL' },
 ].map((p) => ({
   ...p,
-  units: units
-    .filter((u) => u.data.paper === p.paper)
+  units: units.filter((u) => u.data.paper === p.paper && (u.data.curriculum === '2028' || topics.some((t) => t.data.unit.id === u.id)))
     .map((u) => ({ unit: u, topics: topics.filter((t) => t.data.unit.id === u.id) })),
 }));
+const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data.level === 'SL').length;
 ---
 
-<BaseLayout
-  title="Study notes"
-  description="IB History study notes organised by exam paper and syllabus unit, with interactive key terms and quotes."
->
-  <PageHeader
-    eyebrow="Study notes"
-    title="Every topic, by exam paper"
-    lede="Notes follow the IB History syllabus. Each topic is also a pin on the globe — open it there to see the world as it was."
-  >
+<BaseLayout title="Study notes" description="Search individual IB History notes by event, place or year. Explore the 2028 course at Standard or Higher Level, with interactive terms and quotations.">
+  <PageHeader eyebrow="The notes library" title="A place for every story."
+    lede="Find an event, follow an argument, explore a source. Every note has its own place and time on the globe — and can be read right here.">
     <div class="tools">
       <label class="search">
-        <span class="visually-hidden">Filter topics</span>
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
-          ><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path
-            d="m16 16 4.5 4.5"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"></path></svg
-        >
-        <input type="search" placeholder="Filter by name, place or year…" data-filter autocomplete="off" />
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+        <span class="visually-hidden">Search notes by event, place, theme or year</span>
+        <input type="search" placeholder="Search an event, place, theme or year…" data-filter autocomplete="off" />
       </label>
-      <nav class="jump" aria-label="Jump to paper">
-        {papers.map((p) => <a href={`#paper-${p.paper}`}>Paper {p.paper}</a>)}
-        <a href="/globe">Open the globe →</a>
-      </nav>
+      <fieldset class="level-filter">
+        <legend class="visually-hidden">Course level</legend>
+        <label><input type="radio" name="level" value="SL" checked /><span>SL</span></label>
+        <label><input type="radio" name="level" value="HL" /><span>HL</span></label>
+      </fieldset>
+      <label class="collection-filter">
+        <span class="visually-hidden">Notes collection</span>
+        <select data-curriculum aria-label="Notes collection">
+          <option value="2028">2028 course</option>
+          <option value="archive">Earlier syllabus archive</option>
+        </select>
+      </label>
+    </div>
+    <div class="library-meta">
+      <p data-level-hint>SL includes the shared Paper 1 and Paper 2 notes. HL also includes Europe.</p>
+      <a href="/globe?level=SL&curriculum=2028" data-globe-link>Explore these notes on the globe ↗</a>
     </div>
   </PageHeader>
 
   <div class="container papers">
-    {
-      papers.map((p) => (
-        <section class="paper" id={`paper-${p.paper}`} aria-labelledby={`paper-${p.paper}-title`}>
-          <div class="paper-head">
-            <h2 id={`paper-${p.paper}-title`}>{p.name}</h2>
-            <p class="muted">{p.note}</p>
+    <div class="results-head">
+      <p role="status" aria-live="polite" aria-atomic="true" data-result-count>{initialCount} notes · 2028 course · SL</p>
+      <nav class="jump" aria-label="Jump to paper">
+        {papers.map((p) => <a href={`#paper-${p.paper}`} data-paper-link={p.paper} hidden={p.paper === 3}>Paper {p.paper}</a>)}
+      </nav>
+    </div>
+    <p class="archive-notice" data-archive-notice hidden>These notes belong to the earlier syllabus and are retained for wider reading. They are outside this department’s selected 2028 course.</p>
+    {papers.map((p) => (
+      <section class="paper" id={`paper-${p.paper}`} data-paper={p.paper} aria-labelledby={`paper-${p.paper}-title`} hidden={p.paper === 3}>
+        <div class="paper-head">
+          <div>
+            <p class="paper-number">Paper {p.paper} <span>· {p.level}</span></p>
+            <h2 id={`paper-${p.paper}-title`} data-paper-title data-current-title={p.name}>{p.name}</h2>
           </div>
-          <div class="units">
-            {p.units.map(({ unit, topics }) => (
-              <div class="unit" data-unit>
-                <div class="unit-head">
-                  <p class="unit-component">{unit.data.component}</p>
-                  <h3>{unit.data.title}</h3>
-                  <p class="unit-desc">{unit.data.description}</p>
-                </div>
-                {topics.length ? (
-                  <ul class="topic-list">
-                    {topics.map((t) => (
-                      <li
-                        data-topic
-                        data-text={`${t.data.title} ${t.data.location.place} ${t.data.period.start} ${t.data.period.end} ${t.data.summary} ${unit.data.title}`.toLowerCase()}
-                      >
-                        <a href={`/topics/${t.id}`}>
-                          <span class="t-title">{t.data.title}</span>
-                          <span class="t-meta">
-                            {formatYearRange(t.data.period.start, t.data.period.end)} · {t.data.location.place}
-                          </span>
-                        </a>
-                        {t.data.draft && <Badge tone="sample">Draft</Badge>}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p class="empty">Notes for this unit are coming soon.</p>
-                )}
+        </div>
+        <div class="units">
+          {p.units.map(({ unit, topics: unitTopics }) => (
+            <div class="unit" data-unit data-curriculum={unit.data.curriculum} data-level={unit.data.levels === 'HL only' ? 'HL' : 'SL'} hidden={unit.data.curriculum !== '2028' || p.paper === 3}>
+              <div class="unit-head">
+                <p class="unit-component">{unit.data.component}</p>
+                <h3>{unit.data.title}</h3>
+                <p class="unit-desc">{unit.data.description}</p>
               </div>
-            ))}
-          </div>
-        </section>
-      ))
-    }
-    <p class="no-results" hidden data-no-results>No topics match that filter.</p>
+              {unitTopics.length ? (
+                <ul class="topic-list">
+                  {unitTopics.map((t) => (
+                    <li data-topic data-level={t.data.level} data-start={t.data.period.start} data-end={t.data.period.end}
+                      data-text={`${t.data.title} ${t.data.location.place} ${t.data.period.start} ${t.data.period.end} ${t.data.summary} ${t.data.keyQuestions.join(' ')} ${unit.data.title}`}
+                      hidden={t.data.level === 'HL'}>
+                      <a href={`/topics/${t.id}`} class="note-link">
+                        <span class="t-meta">{formatYearRange(t.data.period.start, t.data.period.end)} <span aria-hidden="true">/</span> {t.data.location.place}</span>
+                        <span class="t-title">{t.data.title}<span aria-hidden="true" class="go">↗</span></span>
+                        <span class="t-summary">{t.data.summary}</span>
+                        {t.data.level === 'HL' && <span class="hl-label">Higher Level</span>}
+                        {t.data.draft && <Badge tone="sample">Draft</Badge>}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p class="empty">Notes for this unit are being prepared.</p>}
+            </div>
+          ))}
+        </div>
+      </section>
+    ))}
+    <div class="no-results" hidden data-no-results>
+      <h2>No notes found</h2>
+      <p>Try a different event, place or year, or change the course level or collection.</p>
+      <button class="btn" type="button" data-clear-search>Clear search</button>
+    </div>
+    <noscript><p>Search and course filters need JavaScript. The shared 2028 notes are listed above; all individual note pages remain directly accessible.</p></noscript>
   </div>
 </BaseLayout>
 
 <script>
-  const input = document.querySelector<HTMLInputElement>('[data-filter]');
+  const input = document.querySelector<HTMLInputElement>('[data-filter]')!;
+  const curriculumInput = document.querySelector<HTMLSelectElement>('[data-curriculum]')!;
+  const levelInputs = [...document.querySelectorAll<HTMLInputElement>('input[name="level"]')];
   const items = [...document.querySelectorAll<HTMLElement>('[data-topic]')];
   const units = [...document.querySelectorAll<HTMLElement>('[data-unit]')];
-  const none = document.querySelector<HTMLElement>('[data-no-results]');
-  input?.addEventListener('input', () => {
-    const q = input.value.trim().toLowerCase();
+  const papers = [...document.querySelectorAll<HTMLElement>('[data-paper]')];
+  const count = document.querySelector<HTMLElement>('[data-result-count]')!;
+  const none = document.querySelector<HTMLElement>('[data-no-results]')!;
+  const normalise = (value: string) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  let level: 'SL' | 'HL' = 'SL';
+
+  function readFilters() {
+    const params = new URLSearchParams(window.location.search);
+    let saved: string | null = null;
+    try { saved = localStorage.getItem('history-level'); } catch { /* Storage is optional. */ }
+    level = (params.get('level') ?? saved) === 'HL' ? 'HL' : 'SL';
+    for (const radio of levelInputs) radio.checked = radio.value === level;
+    curriculumInput.value = params.get('curriculum') === 'archive' ? 'archive' : '2028';
+    input.value = params.get('q') ?? '';
+  }
+
+  function filterNotes(updateUrl = true) {
+    const curriculum = curriculumInput.value;
+    const query = normalise(input.value.trim());
+    const words = query.split(/\s+/).filter(Boolean);
     let shown = 0;
-    for (const li of items) {
-      const hit = !q || li.dataset.text!.includes(q);
-      li.hidden = !hit;
+    for (const item of items) {
+      const text = normalise(item.dataset.text ?? '');
+      const textMatches = words.every((word) => text.includes(word) || (/^-?\d+$/.test(word) && Number(word) >= Number(item.dataset.start) && Number(word) <= Number(item.dataset.end)));
+      const unit = item.closest<HTMLElement>('[data-unit]')!;
+      const hit = textMatches && (level === 'HL' || (item.dataset.level === 'SL' && unit.dataset.level === 'SL')) && unit.dataset.curriculum === curriculum;
+      item.hidden = !hit;
       if (hit) shown++;
     }
-    for (const u of units) {
-      const anyTopics = u.querySelector('[data-topic]');
-      u.hidden = !!q && (!anyTopics || !u.querySelector('[data-topic]:not([hidden])'));
+    for (const unit of units) {
+      const levelMatches = level === 'HL' || unit.dataset.level === 'SL';
+      const anyTopics = unit.querySelector('[data-topic]');
+      unit.hidden = unit.dataset.curriculum !== curriculum || !levelMatches || (anyTopics ? !unit.querySelector('[data-topic]:not([hidden])') : !!query);
     }
-    if (none) none.hidden = shown > 0;
+    for (const paper of papers) {
+      paper.hidden = !paper.querySelector('[data-unit]:not([hidden])');
+      const title = paper.querySelector<HTMLElement>('[data-paper-title]')!;
+      title.textContent = curriculum === 'archive' ? 'Earlier syllabus notes' : title.dataset.currentTitle!;
+      const link = document.querySelector<HTMLElement>(`[data-paper-link="${paper.dataset.paper}"]`);
+      if (link) link.hidden = paper.hidden;
+    }
+    const collectionName = curriculum === '2028' ? '2028 course' : 'Earlier syllabus archive';
+    count.textContent = `${shown} ${shown === 1 ? 'note' : 'notes'} · ${collectionName} · ${level}${query ? ` · “${input.value.trim()}”` : ''}`;
+    none.hidden = shown > 0;
+    document.querySelector<HTMLElement>('[data-archive-notice]')!.hidden = curriculum !== 'archive';
+    document.querySelector<HTMLAnchorElement>('[data-globe-link]')!.href = `/globe?level=${level}&curriculum=${curriculum}`;
+    if (updateUrl) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('level', level);
+      url.searchParams.set('curriculum', curriculum);
+      if (input.value.trim()) url.searchParams.set('q', input.value.trim());
+      else url.searchParams.delete('q');
+      history.replaceState(null, '', url);
+    }
+  }
+
+  for (const radio of levelInputs) radio.addEventListener('change', () => {
+    level = radio.value === 'HL' ? 'HL' : 'SL';
+    try { localStorage.setItem('history-level', level); } catch { /* Storage is optional. */ }
+    filterNotes();
   });
+  input.addEventListener('input', () => filterNotes());
+  curriculumInput.addEventListener('change', () => filterNotes());
+  document.querySelector('[data-clear-search]')?.addEventListener('click', () => {
+    input.value = '';
+    filterNotes();
+    input.focus();
+  });
+  window.addEventListener('popstate', () => { readFilters(); filterNotes(false); });
+  readFilters();
+  filterNotes(false);
 </script>
 
 <style>
-  .tools {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 16px 24px;
-    margin-top: 28px;
-  }
-  .search {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1 1 320px;
-    max-width: 480px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    border: 1px solid var(--rule-strong);
-    background: var(--card);
-    color: var(--ink-3);
-  }
-  .search:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
-  }
-  .search input {
-    flex: 1;
-    min-width: 0;
-    border: 0;
-    background: none;
-    font: inherit;
-    color: var(--ink);
-    outline: none;
-  }
-  .jump {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 18px;
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-  .jump a {
-    text-decoration: none;
-  }
-  .jump a:hover {
-    text-decoration: underline;
-  }
-
-  .papers {
-    padding-bottom: clamp(48px, 7vw, 96px);
-  }
-  .paper + .paper {
-    margin-top: clamp(48px, 6vw, 80px);
-  }
-  .paper-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 4px 24px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--ink);
-    margin-bottom: 8px;
-  }
-  .paper-head h2 {
-    margin: 0;
-  }
-  .paper-head p {
-    margin: 0;
-  }
-  .units {
-    display: grid;
-  }
-  .unit {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
-    gap: 12px 40px;
-    padding: 24px 0;
-    border-bottom: 1px solid var(--rule);
-  }
-  .unit[hidden] {
-    display: none;
-  }
-  .unit-component {
-    margin: 0 0 4px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--brass);
-  }
-  .unit h3 {
-    font-size: 1.35rem;
-    margin-bottom: 6px;
-  }
-  .unit-desc {
-    margin: 0;
-    font-size: 0.93rem;
-    color: var(--ink-2);
-  }
-  .topic-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .topic-list li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .topic-list li[hidden] {
-    display: none;
-  }
-  .topic-list a {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    border: 1px solid var(--rule);
-    background: var(--card);
-    text-decoration: none;
-    color: var(--ink);
-    transition: border-color 0.15s, transform 0.15s;
-  }
-  .topic-list a:hover {
-    border-color: var(--accent);
-    transform: translateX(3px);
-    color: var(--ink);
-  }
-  .t-title {
-    font-family: var(--font-serif);
-    font-size: 1.15rem;
-    font-weight: 560;
-  }
-  .t-meta {
-    font-size: 0.85rem;
-    color: var(--ink-3);
-  }
-  .empty {
-    margin: 0;
-    align-self: center;
-    font-size: 0.92rem;
-    color: var(--ink-3);
-    font-style: italic;
-  }
-  .no-results {
-    padding: 40px 0;
-    text-align: center;
-    color: var(--ink-3);
-  }
-  @media (max-width: 760px) {
-    .unit {
-      grid-template-columns: 1fr;
-    }
-  }
+  .tools { display: flex; flex-wrap: wrap; align-items: stretch; gap: 12px; margin-top: 30px; }
+  .search { display: flex; align-items: center; gap: 12px; flex: 1 1 340px; padding: 14px 18px; border: 1px solid var(--rule-strong); border-radius: var(--radius); background: var(--card); color: var(--ink-2); }
+  .search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .search input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; color: var(--ink); outline: none; }
+  .search input::placeholder { color: var(--ink-2); opacity: 1; }
+  .level-filter { display: flex; padding: 4px; margin: 0; border: 1px solid var(--rule-strong); border-radius: var(--radius); background: var(--paper-2); }
+  .level-filter label { position: relative; display: flex; }
+  .level-filter input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .level-filter span { display: grid; place-items: center; min-width: 58px; padding: 8px 15px; border-radius: var(--radius-s); font-weight: 650; cursor: pointer; color: var(--ink-2); }
+  .level-filter input:checked + span { background: var(--ink); color: var(--paper); }
+  .level-filter input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .collection-filter { display: flex; }
+  .collection-filter select { width: 100%; border: 1px solid var(--rule-strong); border-radius: var(--radius); background: var(--card); color: var(--ink); font: inherit; padding: 12px 34px 12px 14px; }
+  .library-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; margin-top: 14px; font-size: 0.85rem; }
+  .library-meta p { margin: 0; color: var(--ink-2); }
+  .library-meta a { font-weight: 600; }
+  .papers { padding-bottom: clamp(48px, 7vw, 96px); }
+  .results-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-bottom: 20px; color: var(--ink-2); font-size: 0.85rem; }
+  .results-head p { margin: 0; }
+  .jump { display: flex; flex-wrap: wrap; gap: 18px; font-weight: 600; }
+  .jump a { color: var(--ink-2); }
+  .archive-notice { padding: 18px 22px; margin-bottom: 28px; border: 1px solid var(--rule-strong); border-radius: var(--radius); background: var(--paper-2); color: var(--ink-2); }
+  .paper + .paper { margin-top: clamp(44px, 6vw, 72px); }
+  .paper-head { padding-bottom: 20px; border-bottom: 2px solid var(--ink); }
+  .paper-number { margin: 0 0 8px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .paper-number span { color: var(--ink-2); }
+  .paper-head h2 { margin: 0; font-size: var(--step-3); }
+  .units { display: grid; }
+  .unit { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr); gap: 22px 56px; padding: 30px 0; border-bottom: 1px solid var(--rule); }
+  .unit-component { margin: 0 0 8px; font-size: 0.75rem; font-weight: 650; color: var(--ink-2); letter-spacing: 0.07em; text-transform: uppercase; }
+  .unit h3 { font-size: 1.45rem; margin-bottom: 10px; }
+  .unit-desc { margin: 0; font-size: 0.93rem; color: var(--ink-2); }
+  .topic-list { display: flex; flex-direction: column; gap: 12px; list-style: none; margin: 0; padding: 0; }
+  .note-link { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--card); text-decoration: none; color: var(--ink); transition: border-color 0.15s; }
+  .note-link:hover { border-color: var(--accent); color: var(--ink); }
+  .t-meta { font-size: 0.75rem; color: var(--ink-2); }
+  .t-meta > span { padding-inline: 6px; color: var(--rule-strong); }
+  .t-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-family: var(--font-serif); font-size: 1.3rem; font-weight: 560; line-height: 1.25; }
+  .go { flex-shrink: 0; font-family: var(--font-sans); font-size: 1rem; color: var(--accent); }
+  .t-summary { color: var(--ink-2); font-size: 0.88rem; line-height: 1.55; }
+  .hl-label { color: var(--c-historiography); font-size: 0.75rem; font-weight: 650; }
+  .empty { margin: 0; padding-block: 20px; align-self: center; color: var(--ink-2); font-size: 0.92rem; }
+  .no-results { padding: 48px 24px; border: 1px solid var(--rule); border-radius: var(--radius); text-align: center; color: var(--ink-2); }
+  .no-results h2 { color: var(--ink); }
+  [hidden] { display: none !important; }
+  @media (max-width: 760px) { .unit { grid-template-columns: 1fr; } .collection-filter { flex: 1; } .level-filter span { min-width: 52px; } }
 </style>

@@ -29,11 +29,9 @@ export async function getUnits(): Promise<Unit[]> {
   return units.sort((a, b) => a.data.paper - b.data.paper || a.data.order - b.data.order);
 }
 
-/** The snapshot year the globe should open on for a topic. */
-export function snapshotYearFor(topic: Topic, snapshotYears: number[]): number {
-  if (topic.data.snapshot !== undefined) return topic.data.snapshot;
-  const atOrBefore = snapshotYears.filter((y) => y <= topic.data.period.start);
-  return atOrBefore.length ? atOrBefore[atOrBefore.length - 1] : snapshotYears[0];
+/** Open within the note's date range; the globe chooses available border data. */
+export function snapshotYearFor(topic: Topic, _snapshotYears: number[] = []): number {
+  return topic.data.period.start;
 }
 
 /** Glossary lookup used by <Term>. Throws on unknown ids so typos fail the build. */

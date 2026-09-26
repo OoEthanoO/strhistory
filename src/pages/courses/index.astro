@@ -5,8 +5,8 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getCourses, getTopics, getUnits } from '@/lib/content';
 
 const courses = await getCourses();
-const units = await getUnits();
-const topics = await getTopics();
+const units = (await getUnits()).filter((u) => u.data.curriculum === '2028');
+const topics = (await getTopics()).filter((t) => t.data.curriculum === '2028');
 const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === unitId);
 ---
 
@@ -41,11 +41,11 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
 
   <section class="section">
     <div class="container">
-      <p class="eyebrow">The IB History syllabus</p>
+      <p class="eyebrow">IB History · First assessment 2028</p>
       <h2>Units and their notes</h2>
       <p class="lede">
-        Every unit of the IB History guide, grouped by the paper that assesses it. Your teachers choose which units your
-        class studies.
+        Our selected course covers political and economic transitions and authoritarian rule at SL and HL.
+        Higher Level adds Europe: the French Revolution and the unification of Germany and Italy.
       </p>
       <div class="table-wrap">
         <table class="syllabus">
@@ -92,8 +92,8 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
         </table>
       </div>
       <p class="note muted">
-        Based on the IB Diploma Programme History guide. Always check the current guide and your teacher's course outline
-        for assessment details.
+        These are the department’s selected options for the revised course, first assessed in 2028.
+        Consult your teacher’s course outline for the complete required coverage. <a href="/topics?curriculum=archive">Earlier syllabus notes</a> remain available for wider reading.
       </p>
     </div>
   </section>

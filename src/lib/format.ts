@@ -11,7 +11,8 @@ export function formatYear(year: number): string {
   return year < 0 ? `${Math.abs(year)} BCE` : String(year);
 }
 
-const dateFmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+// YAML date-only values are UTC midnight; do not shift them into the prior day.
+const dateFmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 export function formatDate(date: Date): string {
   return dateFmt.format(date);

@@ -1,58 +1,31 @@
+import { formatYear } from './era';
 import type { GlobeSnapshot } from './types';
 
 interface Props {
-  snapshot: GlobeSnapshot;
-  topicCount: number;
+  year: number;
+  snapshot?: GlobeSnapshot;
+  borderYear: number | null;
   open: boolean;
   onToggle(): void;
-  onShowTopics(): void;
 }
 
-/** Top-left card: the snapshot year, what the world looked like, and a way into its topics. */
-export default function EraPanel({ snapshot, topicCount, open, onToggle, onShowTopics }: Props) {
+/** Selected date and independently sourced world context, just above the timeline. */
+export default function EraPanel({ year, snapshot, borderYear, open, onToggle }: Props) {
   return (
-    <section className="gx-panel gx-era" aria-live="polite" aria-label={`The world in ${snapshot.year}`}>
+    <section className="gx-panel gx-era" aria-label={`The world in ${formatYear(year)}`}>
       <div className="gx-era__head">
-        <p className="gx-era__year">{snapshot.year}</p>
-        <button
-          type="button"
-          className="gx-icon-btn gx-era__toggle"
-          onClick={onToggle}
-          aria-expanded={open}
-          aria-label={open ? 'Hide era summary' : 'Show era summary'}
-        >
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <path
-              d={open ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        <div><span className="gx-eyebrow">The world in</span><p className="gx-era__year">{formatYear(year)}</p></div>
+        <button type="button" className="gx-icon-btn" onClick={onToggle} aria-expanded={open} aria-label={open ? 'Hide year summary' : 'Show year summary'}>{open ? '−' : '+'}</button>
       </div>
-      <h2 className="gx-era__title">{snapshot.title}</h2>
-      {open && (
-        <div className="gx-era__body">
+      <p className="gx-era__mapdate">{borderYear === null ? 'Physical geography · no political borders shown' : `Political borders: ${formatYear(borderYear)} reconstruction`}</p>
+      {open && <div className="gx-era__body">
+        {snapshot ? <>
+          <h2 className="gx-era__title">{snapshot.title}</h2>
+          {snapshot.year !== year && <p className="gx-era__context">Context from {formatYear(snapshot.year)}</p>}
           <p>{snapshot.summary}</p>
-          {snapshot.highlights.length > 0 && (
-            <ul>
-              {snapshot.highlights.map((h) => (
-                <li key={h}>{h}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-      <button type="button" className="gx-era__topics" onClick={onShowTopics}>
-        <span className="gx-era__count">{topicCount}</span>
-        {topicCount === 1 ? 'IB topic in this era' : 'IB topics in this era'}
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-          <path d="m9.5 6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      </button>
+        </> : <p>Explore this year on the globe. A historical summary has not yet been added.</p>}
+        <p className="gx-era__caveat">Modern coastlines are a reference; historical borders and early dates are approximate.</p>
+      </div>}
     </section>
   );
 }

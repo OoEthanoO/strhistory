@@ -1,201 +1,52 @@
-import { useEffect, useMemo, useRef, type KeyboardEvent, type PointerEvent } from 'react';
-import { formatRange, packLanes, timelineX } from './era';
-import type { GlobeSnapshot, GlobeTopic } from './types';
+import { useEffect, useMemo, useState } from 'react';
+import { clampYear, FIRST_YEAR, formatYear, timelineX, yearAtTimelineX } from './era';
+import type { GlobeSnapshot } from './types';
 
 interface Props {
   snapshots: GlobeSnapshot[];
-  index: number;
-  onIndex(index: number): void;
-  topics: GlobeTopic[];
-  activeSet: Set<string>;
-  selected: string | null;
-  onSelectTopic(topic: GlobeTopic): void;
-  onHoverTopic(topic: GlobeTopic | null): void;
+  year: number;
+  currentYear: number;
+  onYear(year: number): void;
   playing: boolean;
   onTogglePlay(): void;
 }
 
-const LANE_H = 7;
-
-/**
- * Bottom timeline: snapshot ticks (evenly spaced), the current era shaded, and
- * each topic's date range drawn as a bar above the track.
- */
-export default function Timeline({
-  snapshots,
-  index,
-  onIndex,
-  topics,
-  activeSet,
-  selected,
-  onSelectTopic,
-  onHoverTopic,
-  playing,
-  onTogglePlay,
-}: Props) {
-  const years = useMemo(() => snapshots.map((s) => s.year), [snapshots]);
-  const n = snapshots.length;
-  const trackRef = useRef<HTMLDivElement>(null);
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const tickX = (i: number) => (n > 1 ? i / (n - 1) : 0);
-
-  const bars = useMemo(() => {
-    const spans = topics.map((t): [number, number] => [timelineX(years, t.start), timelineX(years, t.end + 1)]);
-    const lanes = packLanes(spans);
-    return topics.map((t, i) => ({ topic: t, x0: spans[i][0], x1: spans[i][1], lane: lanes[i] }));
-  }, [topics, years]);
-  const laneCount = Math.max(1, ...bars.map((b) => b.lane + 1));
-
-  const clamp = (i: number) => Math.max(0, Math.min(n - 1, i));
-
-  const indexAt = (clientX: number) => {
-    const rect = trackRef.current!.getBoundingClientRect();
-    return clamp(Math.round(((clientX - rect.left) / rect.width) * (n - 1)));
-  };
-
-  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    onIndex(indexAt(e.clientX));
-  };
-  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
-    const i = indexAt(e.clientX);
-    if (i !== index) onIndex(i);
-  };
-
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const moves: Record<string, number> = {
-      ArrowLeft: index - 1,
-      ArrowDown: index - 1,
-      ArrowRight: index + 1,
-      ArrowUp: index + 1,
-      PageDown: index - 3,
-      PageUp: index + 3,
-      Home: 0,
-      End: n - 1,
-    };
-    if (e.key in moves) {
-      e.preventDefault();
-      onIndex(clamp(moves[e.key]));
-    }
-  };
-
-  // Keep the current year in view when the timeline scrolls (narrow screens).
-  useEffect(() => {
-    const scroller = scrollerRef.current;
-    const tick = scroller?.querySelector<HTMLElement>('.tl__tick.is-current');
-    if (!scroller || !tick || scroller.scrollWidth <= scroller.clientWidth) return;
-    const target = tick.offsetLeft - scroller.clientWidth / 2;
-    scroller.scrollTo({ left: target, behavior: 'smooth' });
-  }, [index]);
-
-  const current = snapshots[index];
-
+/** Exploration stops and an exact year field: neither depends on course notes. */
+export default function Timeline({ snapshots, year, currentYear, onYear, playing, onTogglePlay }: Props) {
+  const years = useMemo(() => [...new Set([FIRST_YEAR, ...snapshots.map((s) => s.year), currentYear])].sort((a, b) => a - b), [snapshots, currentYear]);
+  const [input, setInput] = useState(String(year));
+  useEffect(() => setInput(String(year)), [year]);
+  const previous = [...years].reverse().find((value) => value < year);
+  const next = years.find((value) => value > year);
   return (
-    <div className="tl" role="group" aria-label="Timeline">
-      <div className="tl__controls">
-        <button
-          type="button"
-          className="tl__btn"
-          onClick={() => onIndex(clamp(index - 1))}
-          disabled={index === 0}
-          aria-label="Earlier snapshot"
-        >
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-            <path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          className="tl__btn tl__btn--play"
-          onClick={onTogglePlay}
-          aria-label={playing ? 'Pause' : 'Play through time'}
-          aria-pressed={playing}
-        >
-          {playing ? (
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-              <path d="M8 6v12M16 6v12" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-              <path d="M8 5.5v13l10.5-6.5L8 5.5Z" fill="currentColor" />
-            </svg>
-          )}
-        </button>
-        <button
-          type="button"
-          className="tl__btn"
-          onClick={() => onIndex(clamp(index + 1))}
-          disabled={index === n - 1}
-          aria-label="Later snapshot"
-        >
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-            <path d="m9.5 6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="tl__scroller" ref={scrollerRef}>
-        <div className="tl__inner" style={{ minWidth: `${n * 54}px` }}>
-          <div className="tl__lanes" style={{ height: `${laneCount * LANE_H}px` }}>
-            {bars.map(({ topic, x0, x1, lane }) => (
-              <button
-                key={topic.slug}
-                type="button"
-                className="tl__bar"
-                data-active={activeSet.has(topic.slug) || undefined}
-                data-selected={selected === topic.slug || undefined}
-                style={{
-                  left: `${x0 * 100}%`,
-                  width: `max(8px, ${(x1 - x0) * 100}%)`,
-                  top: `${lane * LANE_H}px`,
-                }}
-                title={`${topic.title} (${formatRange(topic.start, topic.end)})`}
-                aria-label={`${topic.title}, ${formatRange(topic.start, topic.end)}`}
-                onClick={() => onSelectTopic(topic)}
-                onMouseEnter={() => onHoverTopic(topic)}
-                onMouseLeave={() => onHoverTopic(null)}
-                tabIndex={-1}
-              />
-            ))}
-          </div>
-
-          <div
-            ref={trackRef}
-            className="tl__track"
-            role="slider"
-            tabIndex={0}
-            aria-label="Snapshot year"
-            aria-valuemin={years[0]}
-            aria-valuemax={years[n - 1]}
-            aria-valuenow={current.year}
-            aria-valuetext={`${current.year}: ${current.title}`}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onKeyDown={onKeyDown}
-          >
-            <div className="tl__rail" />
-            <div
-              className="tl__era"
-              style={{
-                left: `${tickX(index) * 100}%`,
-                width: `${(index < n - 1 ? tickX(index + 1) - tickX(index) : 0) * 100}%`,
-              }}
-            />
-            {snapshots.map((s, i) => (
-              <div
-                key={s.year}
-                className={`tl__tick${i === index ? ' is-current' : ''}`}
-                style={{ left: `${tickX(i) * 100}%` }}
-              >
-                <span className="tl__year">{s.year}</span>
-              </div>
-            ))}
-            <div className="tl__thumb" style={{ left: `${tickX(index) * 100}%` }} />
-          </div>
+    <section className="tl" aria-label="Explore the timeline">
+      <div className="tl__top">
+        <div className="tl__controls">
+          <button className="tl__btn" type="button" disabled={previous === undefined} aria-label="Previous historical snapshot" onClick={() => previous !== undefined && onYear(previous)}>‹</button>
+          <button className="tl__btn tl__btn--play" type="button" aria-label={playing ? 'Pause timeline' : 'Play through snapshots'} onClick={onTogglePlay}>{playing ? 'Ⅱ' : '▶'}</button>
+          <button className="tl__btn" type="button" disabled={next === undefined} aria-label="Next historical snapshot" onClick={() => next !== undefined && onYear(next)}>›</button>
         </div>
+        <form className="tl__jump" onSubmit={(event) => { event.preventDefault(); const value = Number(input); if (input.trim() && Number.isFinite(value)) { const valid = clampYear(value, currentYear); setInput(String(valid)); onYear(valid); } }}>
+          <label htmlFor="globe-year">Year <span>(− = BCE)</span></label>
+          <input id="globe-year" type="number" min={FIRST_YEAR} max={currentYear} step="1" value={input} onChange={(event) => setInput(event.target.value)} />
+          <button type="submit">Go</button>
+        </form>
+        <label className="tl__snapshot">Snapshot
+          <select aria-label="Choose a historical snapshot" value={years.includes(year) ? year : ''} onChange={(event) => onYear(Number(event.target.value))}>
+            {!years.includes(year) && <option value="">{formatYear(year)} · between snapshots</option>}
+            {years.map((value) => <option value={value} key={value}>{formatYear(value)}{value === currentYear ? ' · today' : ''}</option>)}
+          </select>
+        </label>
       </div>
-    </div>
+      <div className="tl__scale">
+        <input className="tl__range" type="range" min="0" max="10000" step="1" value={Math.round(timelineX(years, year) * 10000)} aria-label="Historical year" aria-valuetext={formatYear(year)} onChange={(event) => onYear(yearAtTimelineX(years, Number(event.target.value) / 10000))} onKeyDown={(event) => {
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') { event.preventDefault(); onYear(year === 1 ? -1 : year - 1); }
+          if (event.key === 'ArrowRight' || event.key === 'ArrowUp') { event.preventDefault(); onYear(year === -1 ? 1 : year + 1); }
+          if (event.key === 'PageDown') { event.preventDefault(); if (previous !== undefined) onYear(previous); }
+          if (event.key === 'PageUp') { event.preventDefault(); if (next !== undefined) onYear(next); }
+        }} />
+        <div className="tl__labels" aria-hidden="true"><span>300,000 BCE</span><span>Explore human history · uneven time scale</span><span>{currentYear}</span></div>
+      </div>
+    </section>
   );
 }

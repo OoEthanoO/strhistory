@@ -10,4 +10,4 @@ placeholder: true
 
 The extended essay is an independent research project of up to 4,000 words. History supervisors help students narrow a topic into a focused research question, find and evaluate sources, and structure an argument.
 
-See the [extended essay guide](/resources/extended-essay-history) for how the essay is assessed and how to choose a question.
+The [archived extended essay guide](/resources/extended-essay-history) includes general research advice, but its older assessment criteria should not be used for the current cohort. Supervisors supply the current EE requirements.
