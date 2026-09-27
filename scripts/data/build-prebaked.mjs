@@ -14,7 +14,11 @@ source.features = source.features.filter(f => f.geometry && f.geometry.type !== 
 const input = resolve(cache, 'prebaked-source.geojson');
 const output = resolve(cache, 'prebaked-1783.geojson');
 writeFileSync(input, JSON.stringify(source));
-execFileSync('npx', ['-y', 'mapshaper@0.7.67', '-i', input, '-simplify', 'weighted', '12%', 'keep-shapes', '-filter-fields', 'name,subjecto', '-o', output, 'format=geojson', 'precision=0.01', 'force'], { shell: process.platform === 'win32', stdio: 'inherit' });
+// Keep a light first frame without the old second percentage-based reduction,
+// which distorted small states before the detailed map could arrive.
+const shell = process.platform === 'win32';
+const interval = 'interval=this.area<1e8?5:2000';
+execFileSync('npx', ['-y', 'mapshaper@0.7.67', '-i', input, '-simplify', 'dp', 'variable', shell ? `"${interval}"` : interval, 'keep-shapes', '-filter-fields', 'name,subjecto', '-o', output, 'format=geojson', 'precision=0.00001', 'force'], { shell, stdio: 'inherit' });
 const simplified = JSON.parse(readFileSync(output, 'utf8'));
 // D3 spherical geometry uses clockwise exterior rings. Normalise each polygon
 // independently so a reversed ring cannot paint the entire globe.

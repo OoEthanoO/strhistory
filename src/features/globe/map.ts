@@ -55,6 +55,11 @@ export interface PinState {
 
 const POLYGONS: ExpressionSpecification = ['!', ['has', 'kind']];
 const EMPTY: FeatureCollection = { type: 'FeatureCollection', features: [] };
+// Keep URLs aligned so cached low-resolution geometry is replaced on upgrade.
+const GEOMETRY_VERSION = '2';
+// MapLibre creates finer tiles as zoom increases. Retain subpixel coastlines
+// and small borders instead of applying the default 0.375-pixel tolerance.
+const GEOMETRY_TOLERANCE = 0.1;
 
 /** Zoom at which the whole globe fits comfortably in the element. */
 export function fitZoom(el: HTMLElement, _compact = false): number {
@@ -91,8 +96,8 @@ function buildStyle(): StyleSpecification {
     light: { anchor: 'map', position: [1.5, 90, 80] },
     sources: {
       graticule: { type: 'geojson', data: graticule(15) as never },
-      land: { type: 'geojson', data: '/data/land.geojson' },
-      polities: { type: 'geojson', data: EMPTY as never },
+      land: { type: 'geojson', data: `/data/land.geojson?v=${GEOMETRY_VERSION}`, tolerance: GEOMETRY_TOLERANCE },
+      polities: { type: 'geojson', data: EMPTY as never, tolerance: GEOMETRY_TOLERANCE },
     },
     layers: [
       { id: 'ocean', type: 'background', paint: { 'background-color': OCEAN } },
@@ -307,7 +312,7 @@ export class GlobeController {
   private load(year: number): Promise<FeatureCollection> {
     let p = this.cache.get(year);
     if (!p) {
-      p = fetch(`/data/snapshots/world_${year}.geojson`)
+      p = fetch(`/data/snapshots/world_${year}.geojson?v=${GEOMETRY_VERSION}`)
         .then((r) => {
           if (!r.ok) throw new Error(`HTTP ${r.status}`);
           return r.json() as Promise<FeatureCollection>;

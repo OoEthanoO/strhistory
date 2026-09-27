@@ -12,8 +12,9 @@
  * The present-day stop (PRESENT_YEAR) is built from Natural Earth instead
  * (public domain), because historical-basemaps ends in 2010. See presentDay().
  *
- * Output: public/data/snapshots/world_<year>.geojson, simplified to a size that
- * is reasonable to download on a school Chromebook (~100-300 KB each).
+ * Output: public/data/snapshots/world_<year>.geojson. A 100 m simplification
+ * threshold (5 m for features under 100 km²) retains outlines at close zoom; Caddy compresses the
+ * downloads and MapLibre builds progressively finer tiles from this geometry.
  *
  * mapshaper is run through npx on demand rather than installed as a dependency:
  * it pulls in native SQLite modules that every `npm ci` (including the deploy on
@@ -98,7 +99,7 @@ async function cached(name, url) {
  * through a shell, which would split a path containing spaces and drop an empty
  * argument, so paths are passed relative to the repo and "" is quoted.
  */
-function simplify(input, output, fields, percent) {
+function simplify(input, output, fields) {
   const shell = process.platform === 'win32';
   execFileSync(
     'npx',
@@ -106,9 +107,13 @@ function simplify(input, output, fields, percent) {
       '-y', MAPSHAPER,
       '-i', relative(ROOT, input),
       '-filter-fields', shell && fields === '' ? '""' : fields,
-      // keep-shapes stops small islands (and small states) from disappearing.
-      '-simplify', 'weighted', percent, 'keep-shapes',
-      '-o', relative(ROOT, output), 'format=geojson', 'precision=0.001',
+      // A fixed percentage can reduce a small country to a triangle. Bound
+      // distance instead, with shared topology and intersection repair intact.
+      '-simplify', 'dp', 'variable',
+      // Geographic datasets use square metres for area and metres for interval.
+      // Protect microstates whose entire width can be only a few hundred metres.
+      shell ? '"interval=this.area<1e8?5:100"' : 'interval=this.area<1e8?5:100', 'keep-shapes',
+      '-o', relative(ROOT, output), 'format=geojson', 'precision=0.00001', 'force',
     ],
     { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'], shell },
   );
@@ -119,7 +124,7 @@ async function historical(year, tmp) {
   const upstreamYear = year < 0 ? `bc${Math.abs(year)}` : year;
   const raw = await cached(`world_${year}.geojson`, `${SOURCE}/world_${upstreamYear}.geojson`);
   process.stdout.write(`${year}: simplifying... `);
-  simplify(raw, tmp, 'NAME,SUBJECTO,PARTOF,BORDERPRECISION', '12%');
+  simplify(raw, tmp, 'NAME,SUBJECTO,PARTOF,BORDERPRECISION');
 
   const fixes = OVERRIDES[String(year)] ?? {};
   return readJson(tmp).features.map((f) => {
@@ -215,7 +220,7 @@ async function presentDay(year, tmp) {
     features: features.map(({ geometry, ...properties }) => ({ type: 'Feature', properties, geometry })),
   }));
   process.stdout.write(`${year}: simplifying... `);
-  simplify(raw, tmp, 'name,subjecto,precision', '1.2%');
+  simplify(raw, tmp, 'name,subjecto,precision');
   return readJson(tmp).features.map((f) => ({
     name: f.properties.name,
     subjecto: f.properties.subjecto ?? null,
@@ -274,9 +279,9 @@ for (const year of years) {
 // polities so land the historical data leaves uncovered still reads as land.
 const landOut = join(ROOT, 'public/data/land.geojson');
 if (requested.length === 0 || process.argv.includes('--land')) {
-  const landRaw = await cached('ne_50m_land.geojson', `${NATURAL_EARTH}/ne_50m_land.geojson`);
+  const landRaw = await cached('ne_10m_land.geojson', `${NATURAL_EARTH}/ne_10m_land.geojson`);
   process.stdout.write('land: simplifying... ');
-  simplify(landRaw, landOut, '', '10%');
+  simplify(landRaw, landOut, '');
   console.log(`${(statSync(landOut).size / 1024).toFixed(0)} KB`);
 }
 
