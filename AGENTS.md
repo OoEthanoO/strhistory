@@ -321,6 +321,14 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   self-hosted glyphs (`public/glyphs/noto-sans`); MapLibre's worker is bundled via
   `?worker&url` + `setWorkerUrl` (MapLibre 6 cannot find it on its own when
   bundled).
+- **Border detail**: the data pipeline uses topology-aware Douglas–Peucker
+  simplification at 100 m, or 5 m for features smaller than 100 km², with five
+  decimal places. These are processing tolerances, not historical accuracy
+  claims. Never replace them with a fixed vertex percentage: that can turn
+  small countries into triangles. MapLibre's 0.1-pixel tolerance reveals finer
+  geometry at higher zoom. The immediate SVG uses 2 km for larger features.
+  Rebuild all snapshots and the baked geometry together; bump `GEOMETRY_VERSION`
+  in `map.ts` to refresh cached downloads. Run `node --test scripts/data/geometry.test.mjs`.
 - Keyboard: timeline is a native slider (arrows, Home/End, PageUp/Down); pins
   are real links; Escape closes panels.
 - In development `window.__globe` exposes the controller for debugging.
