@@ -180,12 +180,17 @@ function buildStyle(): StyleSpecification {
   };
 }
 
-function colorize(fc: FeatureCollection): FeatureCollection {
-  for (const f of fc.features) {
-    const p = f.properties;
-    p.color = p.name ? colorFor((p.subjecto as string) ?? (p.name as string)) : UNCLAIMED;
-  }
-  return fc;
+function colorize(fc: FeatureCollection, borderYear: number): FeatureCollection {
+  return {
+    ...fc,
+    features: fc.features.map((feature) => {
+      const properties = { ...feature.properties };
+      properties.color = properties.name
+        ? colorFor((properties.subjecto as string) ?? (properties.name as string), borderYear)
+        : UNCLAIMED;
+      return { ...feature, properties };
+    }),
+  };
 }
 
 export class GlobeController {
@@ -267,7 +272,7 @@ export class GlobeController {
 
   // ---------- snapshots ----------
 
-  async setSnapshot(year: number | null) {
+  async setSnapshot(borderYear: number | null) {
     const request = ++this.snapshotRequest;
     this.snapshotCleanup?.();
     this.cb.onLoadingChange(true);
@@ -279,8 +284,8 @@ export class GlobeController {
       this.map.removeFeatureState({ source: 'polities' });
       const source = this.map.getSource('polities') as GeoJSONSource;
       await source.setData(EMPTY as never);
-      if (year === null || this.destroyed || request !== this.snapshotRequest) return;
-      const data = await this.load(year);
+      if (borderYear === null || this.destroyed || request !== this.snapshotRequest) return;
+      const data = colorize(await this.load(borderYear), borderYear);
       if (this.destroyed || request !== this.snapshotRequest) return;
       await source.setData(data as never);
       if (this.destroyed || request !== this.snapshotRequest) return;
@@ -288,7 +293,7 @@ export class GlobeController {
         if (this.destroyed || request !== this.snapshotRequest || !this.map.isSourceLoaded('polities')) return;
         this.map.off('sourcedata', reveal);
         this.map.once('render', () => {
-          if (!this.destroyed && request === this.snapshotRequest) this.cb.onSnapshotChange?.(year);
+          if (!this.destroyed && request === this.snapshotRequest) this.cb.onSnapshotChange?.(borderYear);
         });
         this.map.triggerRepaint();
       };
@@ -296,7 +301,7 @@ export class GlobeController {
       this.map.on('sourcedata', reveal);
       reveal();
     } catch (err) {
-      console.error(`Could not load snapshot ${year}`, err);
+      console.error(`Could not load snapshot ${borderYear}`, err);
     } finally {
       if (request === this.snapshotRequest && !this.destroyed) this.cb.onLoadingChange(false);
     }
@@ -316,8 +321,7 @@ export class GlobeController {
         .then((r) => {
           if (!r.ok) throw new Error(`HTTP ${r.status}`);
           return r.json() as Promise<FeatureCollection>;
-        })
-        .then(colorize);
+        });
       this.cache.set(year, p);
       p.catch(() => this.cache.delete(year));
     }

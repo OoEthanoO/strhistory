@@ -135,7 +135,7 @@ src/
       map.ts                 GlobeController — the only file that touches MapLibre
       Timeline.tsx EraPanel.tsx TopicList.tsx TopicPreview.tsx
       era.ts                 pure timeline maths (eras, lanes, positions)
-      palette.ts             polity colours
+      palette.ts             period-aware polity colour schemes
       data.ts                build-time loader → JSON props for the island
       globe.css              the explorer's own dark theme
     notes/                 ← FEATURE: components usable inside MDX notes
@@ -315,8 +315,11 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   …" button on every topic page. `level`, `curriculum`, `all` and `q` also persist
   in the URL. Home handoffs carry `lng`, `lat` and `scale`. The shared saved level
   uses localStorage key `history-level`; storage failure must not break controls.
-- **Colours**: `palette.ts` hashes the controlling power's name, with fixed
-  colours for major empires so they stay recognisable across years.
+- **Colours**: `palette.ts` selects a colour scheme from the source year of the
+  border geometry, then hashes the controlling power's name within that scheme. Schemes
+  are listed in ascending `fromYear` order; the last matching scheme wins.
+  Fixed colours keep major empires recognisable across nearby snapshots. When
+  timeline snapshots reuse one reconstruction, they also reuse its scheme.
 - **Rendering**: MapLibre globe projection with a light atmosphere; labels use
   self-hosted glyphs (`public/glyphs/noto-sans`); MapLibre's worker is bundled via
   `?worker&url` + `setWorkerUrl` (MapLibre 6 cannot find it on its own when

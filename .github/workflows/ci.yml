@@ -33,7 +33,7 @@ jobs:
         run: npx astro check
 
       - name: Timeline and note pin behaviour
-        run: node --test src/features/globe/era.test.ts src/features/globe/pin-layout.test.ts
+        run: node --test src/features/globe/era.test.ts src/features/globe/palette.test.ts src/features/globe/pin-layout.test.ts
 
       - name: Small-country border fidelity
         run: node --test scripts/data/geometry.test.mjs

@@ -116,7 +116,7 @@ export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale =
       <circle cx={width / 2} cy={height / 2} r={radius} fill={OCEAN} />
       <path d={path(graticule) ?? ''} fill="none" stroke="#a9c1e0" strokeOpacity="0.1" strokeWidth="0.6" />
       <path d={path(land as never) ?? ''} fill={LAND_BASE} />
-      {borderYear === 1783 && initialBorders.features.map((f, i) => <path key={i} d={path(f as never) ?? ''} fill={colorFor(f.properties?.subjecto ?? f.properties?.name)} fillOpacity="0.88" stroke={OCEAN} strokeWidth="0.5" />)}
+      {borderYear === 1783 && initialBorders.features.map((f, i) => <path key={i} d={path(f as never) ?? ''} fill={colorFor(f.properties?.subjecto ?? f.properties?.name, borderYear)} fillOpacity="0.88" stroke={OCEAN} strokeWidth="0.5" />)}
       <circle cx={width / 2} cy={height / 2} r={radius} fill="none" stroke="#a9c1e0" strokeOpacity="0.2" />
       {pins.map(t => {
         const point = projection([t.lng, t.lat]);
