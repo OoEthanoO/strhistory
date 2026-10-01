@@ -3,13 +3,10 @@
 The `world_<year>.geojson` files in this folder are simplified derivatives of
 [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)
 by André Ourednik and contributors, licensed under the
-[GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html),
-built from commit `da7a4b735ecef70aebdc9c73e409d8a2500d50f3`.
+[GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
 They remain under GPL-3.0. They were produced by `scripts/data/build-snapshots.mjs`
 (simplification with mapshaper, per-year name corrections from
-`scripts/data/name-overrides.json`, controlling powers normalised with
-`scripts/data/powers.json` and colonial rulers from `scripts/data/rulers.json`,
-label points added with polylabel).
+`scripts/data/name-overrides.json`, label points added with polylabel).
 
 The upstream project notes that borders are approximate, especially for earlier
 periods, and should be checked against other sources before academic use.

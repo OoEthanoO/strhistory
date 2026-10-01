@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import PrebakedGlobe, { type GlobeView } from './PrebakedGlobe';
 import type { GlobeController } from './map';
-import { prefetchWorld } from './tile-cache';
 import type { GlobeData } from './types';
 import './home-globe.css';
 
@@ -11,11 +10,12 @@ export default function HomeGlobe({ topics }: GlobeData) {
   const controller = useRef<GlobeController | null>(null);
   const view = useRef<GlobeView>(START);
   const [mapReady, setMapReady] = useState(false);
+  const [borderYear, setBorderYear] = useState<number | null>(null);
   const [level, setLevel] = useState('HL');
   const levelRef = useRef(level);
   levelRef.current = level;
   const [handoffHref, setHandoffHref] = useState('/globe?year=1789&level=HL');
-  const ready = mapReady;
+  const ready = mapReady && borderYear === 1783;
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pointers = useRef(new Set<number>());
   const navigating = useRef(false);
@@ -33,7 +33,6 @@ export default function HomeGlobe({ topics }: GlobeData) {
   useEffect(() => {
     try { setLevel(localStorage.getItem('history-level') === 'SL' ? 'SL' : 'HL'); } catch {}
     let disposed = false;
-    if (container.current) prefetchWorld(container.current, view.current.scale);
     import('./map').then(({ GlobeController }) => {
       if (disposed || !container.current) return;
       const c = new GlobeController(container.current, {
@@ -42,9 +41,11 @@ export default function HomeGlobe({ topics }: GlobeData) {
         onPolityHover: () => {}, onLoadingChange: () => {},
         onViewChange: next => { view.current = next; setHandoffHref(href()); },
         onInteractionEnd: next => { view.current = next; enter(); },
+        onSnapshotChange: setBorderYear,
         onFailure: () => { mapFailed.current = true; setMapReady(false); },
-      }, view.current.center, { compact: true, year: 1789 });
+      }, view.current.center, { compact: true });
       controller.current = c;
+      c.setSnapshot(1783);
       c.whenReady().then(() => { if (!disposed && !mapFailed.current) { c.setView(view.current.center, view.current.scale); setMapReady(true); } });
     }).catch(() => {});
     // MapLibre listens for document mouseup: a drag can finish outside the card.
@@ -67,9 +68,9 @@ export default function HomeGlobe({ topics }: GlobeData) {
   }, [ready, level]);
   const finishSoon = () => { clearTimeout(timer.current); timer.current = setTimeout(enter, 60); };
   return <div className="home-globe" data-ready={ready || undefined}>
-    <div className="home-globe__caption"><span>THE WORLD IN</span><strong>1789</strong><span>Borders: OpenHistoricalMap</span></div>
+    <div className="home-globe__caption"><span>THE WORLD IN</span><strong>1789</strong><span>Borders: 1783</span></div>
     <div className="home-globe__surface">
-      {!ready && <PrebakedGlobe topics={current} onViewChange={next => { view.current = next; setHandoffHref(href()); controller.current?.setView(next.center, next.scale); }} onInteractionEnd={enter} pinHref={() => handoffHref} />}
+      {!ready && <PrebakedGlobe topics={current} borderYear={1783} onViewChange={next => { view.current = next; setHandoffHref(href()); controller.current?.setView(next.center, next.scale); }} onInteractionEnd={enter} pinHref={() => handoffHref} />}
       <div ref={container} className="home-globe__map" aria-hidden={!ready} inert={!ready}
         onPointerDownCapture={event => { if (event.button === 0) pointers.current.add(event.pointerId); }}
         onWheelCapture={() => { clearTimeout(timer.current); timer.current = setTimeout(enter, 220); }}

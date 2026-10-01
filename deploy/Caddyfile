@@ -38,8 +38,7 @@ history.ethanyanxu.com {
 	# Explicit public surface. Everything else (including / and direct .html
 	# URLs) requires a signed session before Caddy reads the file.
 	@publicPage path /globe /globe/ /globe/index.html /access /access/ /access/index.html /favicon.svg /robots.txt /sitemap-index.xml /sitemap-0.xml /version.json
-	# The globe also loads the sea layer (public/data/sea.geojson).
-	@publicAsset path_regexp publicAsset ^(/_astro/[^/]+\.(js|css|woff2|woff|svg|png|jpg|jpeg|webp|avif)|/data/land\.geojson|/data/sea\.geojson|/data/snapshots/world_-?[0-9]+\.geojson|/data/snapshots/LICENSE\.md|/glyphs/noto-sans/[0-9]+-[0-9]+\.pbf)$
+	@publicAsset path_regexp publicAsset ^(/_astro/[^/]+\.(js|css|woff2|woff|svg|png|jpg|jpeg|webp|avif)|/data/land\.geojson|/data/snapshots/world_-?[0-9]+\.geojson|/data/snapshots/LICENSE\.md|/glyphs/noto-sans/[0-9]+-[0-9]+\.pbf)$
 	@accessAction path /access/unlock /access/logout /access/session
 	route {
 		handle @accessAction {
