@@ -107,18 +107,16 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 26px;
+    padding: 22px;
     border-radius: var(--radius-l);
     border: 1px solid var(--rule);
     background: var(--card);
     color: var(--ink);
     text-decoration: none;
-    box-shadow: var(--shadow-s);
-    transition: transform 0.2s var(--ease), box-shadow 0.2s;
+    transition: border-color 0.15s;
   }
   .course:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow);
+    border-color: var(--ink-3);
     color: var(--ink);
   }
   .course-top {
@@ -184,9 +182,8 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
   }
   .u-title {
     display: block;
-    font-family: var(--font-serif);
-    font-size: 1.08rem;
-    font-weight: 560;
+    font-size: 1rem;
+    font-weight: 550;
   }
   .u-comp {
     font-size: 0.82rem;

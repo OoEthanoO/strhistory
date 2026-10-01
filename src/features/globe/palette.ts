@@ -11,9 +11,9 @@ const PALETTE = [
 ];
 
 /** Land with no recorded polity. */
-export const UNCLAIMED = '#3a3931';
-export const OCEAN = '#0c1a2b';
-export const LAND_BASE = '#34332c';
+export const UNCLAIMED = '#3d3d3a';
+export const OCEAN = '#1c1f23';
+export const LAND_BASE = '#383835';
 
 // A few powers get fixed colours so the most-studied empires are easy to tell
 // apart in the 20th-century snapshots, where students look most often.

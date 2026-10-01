@@ -8,7 +8,7 @@
 
 .prose {
   font-family: var(--font-serif);
-  font-size: clamp(1.08rem, 1.02rem + 0.25vw, 1.22rem);
+  font-size: clamp(1.05rem, 1rem + 0.2vw, 1.15rem);
   line-height: 1.7;
   color: var(--ink);
   max-width: var(--prose);
@@ -22,12 +22,14 @@
   margin: 0 0 1.1em;
 }
 .prose h2 {
-  font-size: var(--step-3);
-  margin: 2.2em 0 0.6em;
+  font-size: var(--step-2);
+  font-weight: 600;
+  margin: 2.4em 0 0.6em;
   padding-top: 0.2em;
 }
 .prose h3 {
-  font-size: var(--step-2);
+  font-size: var(--step-1);
+  font-weight: 600;
   margin: 1.8em 0 0.5em;
 }
 .prose h4 {
@@ -46,13 +48,14 @@
   margin-bottom: 0.4em;
 }
 .prose li::marker {
-  color: var(--brass);
+  color: var(--ink-3);
 }
 .prose strong {
   font-weight: 650;
 }
 .prose a {
-  color: var(--accent);
+  color: inherit;
+  text-decoration-color: var(--accent);
 }
 .prose table {
   width: 100%;
@@ -72,12 +75,12 @@
 .prose th {
   font-weight: 650;
   color: var(--ink-2);
-  border-bottom: 2px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
 }
 .prose blockquote {
   margin: 1.5em 0;
   padding: 0.2em 0 0.2em 1.2em;
-  border-left: 3px solid var(--brass);
+  border-left: 2px solid var(--rule-strong);
   color: var(--ink-2);
   font-style: italic;
 }
@@ -178,9 +181,9 @@
   }
 }
 .note-pop__kicker {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--term);
 }
@@ -188,8 +191,8 @@
   color: var(--brass);
 }
 .note-pop__title {
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -230,17 +233,12 @@
 
 .note-kq {
   position: relative;
-  margin: 2em 0;
-  padding: 24px 26px 20px;
-  border-radius: var(--radius-l);
-  background: var(--brass-soft);
-  border: 1px solid color-mix(in srgb, var(--brass) 30%, transparent);
+  margin: 2.2em 0;
+  padding: 4px 0 4px 24px;
+  border-left: 2px solid var(--brass);
 }
 .note-kq__mark {
-  position: absolute;
-  top: -12px;
-  left: 22px;
-  color: var(--brass);
+  display: none;
 }
 /* Doubled class beats .prose blockquote. */
 .note-kq .note-kq__quote {
@@ -290,7 +288,7 @@
 .note-kq__analysis {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px dashed color-mix(in srgb, var(--brass) 40%, transparent);
+  border-top: 1px solid var(--rule);
   font-family: var(--font-sans);
   font-size: 0.95rem;
 }
@@ -314,7 +312,7 @@
   padding: 16px 20px 6px;
   border-radius: var(--radius);
   background: var(--c-soft);
-  border-left: 4px solid var(--c);
+  border-left: 2px solid var(--c);
   font-family: var(--font-sans);
   font-size: 0.97rem;
   line-height: 1.6;
@@ -361,8 +359,7 @@
   border: 1px solid var(--rule);
   background: var(--card);
   font-family: var(--font-sans);
-  font-size: 0.97rem;
-  box-shadow: var(--shadow-s);
+  font-size: 0.95rem;
 }
 .note-view__head {
   display: flex;
@@ -380,8 +377,8 @@
   color: var(--c-historiography);
 }
 .note-view__historian {
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 600;
 }
 .note-view__work {
@@ -475,7 +472,6 @@
 }
 .note-recall[open] {
   border-color: var(--rule-strong);
-  box-shadow: var(--shadow-s);
 }
 .note-recall summary {
   display: flex;

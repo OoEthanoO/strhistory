@@ -1,22 +1,16 @@
 ---
 import { footerNav, site } from '@/config/site';
-import Logo from './Logo.astro';
 
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
   <div class="container inner">
-    <div class="about">
-      <a class="brand" href="/">
-        <Logo size={26} />
-        <span>{site.name}</span>
-      </a>
-      <p>
-        {site.department}{site.school && `, ${site.school}`}. Study notes for IB History, mapped onto the world they describe.
-      </p>
-      {site.email && <p><a href={`mailto:${site.email}`}>{site.email}</a></p>}
-    </div>
+    <p class="about">
+      <span class="name">{site.name}</span>
+      {site.department}{site.school && `, ${site.school}`}
+      {site.email && <> · <a href={`mailto:${site.email}`}>{site.email}</a></>}
+    </p>
     <nav aria-label="Footer">
       <ul>
         {footerNav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
@@ -35,62 +29,50 @@ const year = new Date().getFullYear();
 <style>
   .site-footer {
     border-top: 1px solid var(--rule);
-    background: var(--paper-2);
-    color: var(--ink-2);
-    font-size: 0.94rem;
+    color: var(--ink-3);
+    font-size: 12px;
     margin-top: auto;
   }
   .inner {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    gap: 32px;
-    padding-block: 48px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px 32px;
+    padding-block: 28px 12px;
   }
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+  .about {
+    margin: 0;
+  }
+  .name {
     color: var(--ink);
-    text-decoration: none;
-    font-family: var(--font-serif);
-    font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 12px;
-  }
-  .about p {
-    max-width: 44ch;
+    margin-right: 8px;
   }
   ul {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
   }
-  nav a {
-    color: var(--ink-2);
+  a {
+    color: var(--ink-3);
     text-decoration: none;
   }
-  nav a:hover {
-    color: var(--accent);
-    text-decoration: underline;
+  a:hover {
+    color: var(--ink);
   }
   .legal {
-    border-top: 1px solid var(--rule);
-    padding-block: 18px 28px;
-    font-size: 0.85rem;
-    color: var(--ink-3);
+    padding-block: 0 28px;
+    font-size: 11px;
   }
   .legal p {
     margin: 0;
   }
   .legal a {
-    color: inherit;
-  }
-  @media (max-width: 720px) {
-    .inner {
-      grid-template-columns: 1fr;
-    }
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
   }
 </style>

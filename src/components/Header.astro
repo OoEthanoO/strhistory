@@ -4,7 +4,7 @@ import Logo from './Logo.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
-  /** `immersive` = dark, translucent header floating over the globe. */
+  /** `immersive` = transparent header floating over the full-screen globe. */
   variant?: 'default' | 'immersive';
 }
 const { variant = 'default' } = Astro.props;
@@ -16,7 +16,7 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 <header class:list={['site-header', variant]}>
   <div class="inner">
     <a class="brand" href="/" aria-label={`${site.name} — home`}>
-      <Logo size={30} />
+      <Logo size={22} />
       <span class="brand-name">{site.name}</span>
     </a>
 
@@ -35,7 +35,7 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     </nav>
 
     <div class="actions">
-      {variant === 'default' && <ThemeToggle />}
+      <ThemeToggle />
       <button
         type="button"
         class="menu-btn"
@@ -86,7 +86,7 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     top: 0;
     z-index: 50;
     background: var(--overlay);
-    backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--rule);
   }
   .inner {
@@ -101,14 +101,16 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     color: var(--ink);
     text-decoration: none;
     flex-shrink: 0;
   }
+  .brand:hover {
+    color: var(--ink);
+  }
   .brand-name {
-    font-family: var(--font-serif);
-    font-size: 1.3rem;
+    font-size: 14px;
     font-weight: 600;
     letter-spacing: -0.01em;
   }
@@ -123,40 +125,40 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
   }
   .primary ul {
     display: flex;
-    gap: 4px;
+    gap: 2px;
   }
   .primary a,
   .mobile-nav a {
     display: block;
-    padding: 8px 12px;
-    border-radius: 999px;
-    color: var(--ink-2);
+    padding: 6px 10px;
+    border-radius: var(--radius-s);
+    color: var(--ink-3);
     text-decoration: none;
-    font-size: 0.94rem;
-    font-weight: 500;
-    transition: background 0.15s, color 0.15s;
+    font-size: 13px;
+    font-weight: 450;
+    transition: color 0.15s;
   }
   .primary a:hover {
-    background: var(--paper-2);
     color: var(--ink);
   }
   .primary a[aria-current='page'] {
-    color: var(--accent);
-    background: var(--accent-soft);
+    color: var(--ink);
+    font-weight: 550;
   }
   .actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .menu-btn {
     display: none;
-    width: 40px;
-    height: 40px;
-    border: 1px solid var(--rule);
-    border-radius: 999px;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: var(--radius);
     background: transparent;
+    color: var(--ink);
     cursor: pointer;
     padding: 0;
     flex-direction: column;
@@ -167,32 +169,36 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
   .menu-btn span {
     display: block;
     width: 16px;
-    height: 1.6px;
+    height: 1.5px;
     background: currentColor;
     border-radius: 2px;
     transition: transform 0.2s var(--ease), opacity 0.2s;
   }
   .menu-btn[aria-expanded='true'] span:nth-child(1) {
-    transform: translateY(5.6px) rotate(45deg);
+    transform: translateY(5.5px) rotate(45deg);
   }
   .menu-btn[aria-expanded='true'] span:nth-child(2) {
     opacity: 0;
   }
   .menu-btn[aria-expanded='true'] span:nth-child(3) {
-    transform: translateY(-5.6px) rotate(-45deg);
+    transform: translateY(-5.5px) rotate(-45deg);
   }
 
   .mobile-nav {
     border-top: 1px solid var(--rule);
+    background: var(--paper);
     padding: 8px var(--gutter) 16px;
   }
   .mobile-nav a {
-    border-radius: var(--radius-s);
-    padding: 12px;
-    font-size: 1.05rem;
+    padding: 12px 0;
+    font-size: 15px;
+    color: var(--ink-2);
+    border-bottom: 1px solid var(--rule);
+    border-radius: 0;
   }
   .mobile-nav a[aria-current='page'] {
-    color: var(--accent);
+    color: var(--ink);
+    font-weight: 550;
   }
 
   @media (max-width: 960px) {
@@ -207,37 +213,41 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     }
   }
 
-  /* Immersive: over the globe, always dark regardless of site theme. */
+  /* Immersive: floats over the full-screen globe without a bar of its own. */
   .immersive {
     position: fixed;
     inset: 0 0 auto 0;
-    background: rgb(6 10 18 / 0.97);
+    background: transparent;
     backdrop-filter: none;
     border-bottom: 0;
-    color: var(--night-ink);
-    --paper: #0b1220;
   }
+  .immersive .inner {
+    max-width: none;
+    padding-inline: 18px;
+  }
+  .immersive .primary ul,
   .immersive .brand,
-  .immersive .primary a {
-    color: rgb(233 228 216 / 0.86);
+  .immersive .actions :global(.theme-toggle),
+  .immersive .menu-btn {
+    background: var(--gx-panel, var(--overlay));
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-l);
+    backdrop-filter: blur(12px);
   }
-  .immersive .primary a:hover {
-    background: rgb(255 255 255 / 0.08);
-    color: #fff;
+  .immersive .brand {
+    height: 38px;
+    padding: 0 12px 0 10px;
   }
-  .immersive .primary a[aria-current='page'] {
-    background: rgb(255 255 255 / 0.12);
-    color: #fff;
+  .immersive .primary ul {
+    padding: 3px;
   }
   .immersive .menu-btn {
-    border-color: rgb(255 255 255 / 0.2);
-    color: #fff;
+    width: 38px;
+    height: 38px;
   }
   .immersive .mobile-nav {
-    background: rgb(11 18 32 / 0.96);
-    border-top-color: rgb(255 255 255 / 0.1);
-  }
-  .immersive .mobile-nav a {
-    color: rgb(233 228 216 / 0.9);
+    margin: 0 18px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-l);
   }
 </style>

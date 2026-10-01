@@ -58,20 +58,19 @@ const categories = ['Assessment', 'Skills', 'Research'] as const;
     padding: 22px 24px;
     border-radius: var(--radius-l);
     border: 1px solid var(--rule);
-    border-top: 4px solid var(--brass);
     background: var(--card);
     color: var(--ink);
     text-decoration: none;
-    transition: transform 0.2s var(--ease), box-shadow 0.2s;
+    transition: border-color 0.15s;
   }
   .guide:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow);
+    border-color: var(--ink-3);
     color: var(--ink);
   }
   .guide h3 {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
+    font-weight: 550;
   }
   .guide p {
     margin: 0;

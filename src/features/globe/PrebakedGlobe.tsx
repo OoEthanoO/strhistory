@@ -111,21 +111,21 @@ export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale =
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onInteractionEnd?.(live.current); }
       }}
       onKeyUp={e => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', 'Home'].includes(e.key)) onInteractionEnd?.(live.current); }}>
-      <defs><radialGradient id={`${id}-halo`}><stop offset="80%" stopColor="#6f9bd8" stopOpacity="0.16" /><stop offset="100%" stopColor="#6f9bd8" stopOpacity="0" /></radialGradient></defs>
+      <defs><radialGradient id={`${id}-halo`}><stop offset="80%" stopColor="#9a9a9a" stopOpacity="0.16" /><stop offset="100%" stopColor="#9a9a9a" stopOpacity="0" /></radialGradient></defs>
       <circle cx={width / 2} cy={height / 2} r={radius * 1.08} fill={`url(#${id}-halo)`} />
       <circle cx={width / 2} cy={height / 2} r={radius} fill={OCEAN} />
-      <path d={path(graticule) ?? ''} fill="none" stroke="#a9c1e0" strokeOpacity="0.1" strokeWidth="0.6" />
+      <path d={path(graticule) ?? ''} fill="none" stroke="#ffffff" strokeOpacity="0.05" strokeWidth="0.6" />
       <path d={path(land as never) ?? ''} fill={LAND_BASE} />
       {borderYear === 1783 && initialBorders.features.map((f, i) => <path key={i} d={path(f as never) ?? ''} fill={colorFor(f.properties?.subjecto ?? f.properties?.name)} fillOpacity="0.88" stroke={OCEAN} strokeWidth="0.5" />)}
-      <circle cx={width / 2} cy={height / 2} r={radius} fill="none" stroke="#a9c1e0" strokeOpacity="0.2" />
+      <circle cx={width / 2} cy={height / 2} r={radius} fill="none" stroke="#ffffff" strokeOpacity="0.2" />
       {pins.map(t => {
         const point = projection([t.lng, t.lat]);
         if (!point) return null;
         const [dx, dy] = offsets.get(t.slug) ?? [0, 0];
         return <a key={t.slug} href={pinHref?.(t) ?? t.href} aria-label={`${t.title}, ${t.place} — ${pinHref ? 'explore the globe' : 'open notes'}`}>
           <g transform={`translate(${point[0] + dx} ${point[1] + dy})`} className="prebaked-pin">
-            {(dx !== 0 || dy !== 0) && <line x1="0" y1="0" x2={-dx} y2={-dy} stroke="#f2b35b" strokeOpacity="0.7" />}
-            <circle r="13" fill="transparent" /><circle r="7" fill="#f2b35b" fillOpacity="0.2" /><circle r="4" fill="#f2b35b" stroke={OCEAN} strokeWidth="1.5" />
+            {(dx !== 0 || dy !== 0) && <line x1="0" y1="0" x2={-dx} y2={-dy} stroke="#ff7171" strokeOpacity="0.7" />}
+            <circle r="13" fill="transparent" /><circle r="7" fill="#ff7171" fillOpacity="0.2" /><circle r="4" fill="#ff7171" stroke={OCEAN} strokeWidth="1.5" />
             <title>{t.title}</title>
           </g>
         </a>;

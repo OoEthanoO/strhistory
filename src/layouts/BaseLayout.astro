@@ -2,7 +2,7 @@
 /**
  * The HTML shell every page uses: <head>, fonts, theme, header and footer.
  * Pages pass a title and description; `immersive` is for full-screen tools
- * (the globe) — dark floating header, no footer, no page scroll.
+ * (the globe) — floating header, no footer, no page scroll.
  */
 import '@fontsource-variable/inter';
 import '@fontsource-variable/newsreader/opsz.css';
@@ -35,7 +35,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content={immersive ? '#0b1220' : '#f6f3ec'} />
+    <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={fullTitle} />
@@ -69,6 +70,6 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   html[data-immersive] body {
     height: 100%;
     overflow: hidden;
-    background: #060a12;
+    background: var(--globe-bg);
   }
 </style>

@@ -4,88 +4,92 @@
  * consistent. Theme = light by default, dark via prefers-color-scheme or the
  * header toggle (html[data-theme]).
  *
- * The globe explorer is always dark; its own palette is in
+ * The look is deliberately quiet: neutral greys, one accent, one sans-serif
+ * for interface and headings, and a serif only for long-form reading text.
+ * The globe explorer follows the site theme; its extra tokens are in
  * src/features/globe/globe.css.
  */
 :root {
   color-scheme: light;
 
   /* Surfaces */
-  --paper: #f6f3ec;
-  --paper-2: #eee8dc;
-  --card: #fffdf8;
-  --overlay: rgb(246 243 236 / 0.9);
+  --paper: #fafaf8;
+  --paper-2: #f2f2ef;
+  --card: #ffffff;
+  --overlay: rgb(250 250 248 / 0.82);
 
   /* Text */
-  --ink: #1d1b18;
-  --ink-2: #48443d;
-  --ink-3: #736d62;
+  --ink: #141414;
+  --ink-2: #4a4a47;
+  --ink-3: #6b6b68;
 
   /* Lines */
-  --rule: #ddd4c4;
-  --rule-strong: #c4b8a3;
+  --rule: #e6e6e2;
+  --rule-strong: #d2d2cd;
 
-  /* Brand: oxblood + brass */
-  --accent: #8e2c32;
-  --accent-hover: #74222a;
-  --accent-ink: #fffaf3;
-  --accent-soft: #f2e1de;
-  --brass: #9a7426;
-  --brass-soft: #f3e8cf;
+  /* One accent, used sparingly: links, the current item, pins */
+  --accent: #b3372f;
+  --accent-hover: #922b24;
+  --accent-ink: #ffffff;
+  --accent-soft: #f7e4e2;
+  /* Quiet warm tone for quotations and source attributions */
+  --brass: #8a6a2a;
+  --brass-soft: #f4eddd;
 
   /* Notes */
-  --highlight: rgb(236 196 82 / 0.38);
-  --highlight-strong: rgb(236 196 82 / 0.62);
+  --highlight: rgb(236 196 82 / 0.32);
+  --highlight-strong: rgb(236 196 82 / 0.55);
   --term: #1f5f7a;
-  --term-soft: #e0edf1;
+  --term-soft: #e4eef2;
   --seen: #3d7a4b;
 
   /* Callout families */
   --c-exam: #1f5f7a;
-  --c-exam-soft: #e3eef2;
+  --c-exam-soft: #e8f0f3;
   --c-historiography: #6b4a8e;
-  --c-historiography-soft: #ece5f3;
+  --c-historiography-soft: #efe9f5;
   --c-context: #8a6a1f;
-  --c-context-soft: #f4ecd8;
+  --c-context-soft: #f5efe0;
   --c-warning: #a33b2b;
-  --c-warning-soft: #f6e2dd;
+  --c-warning-soft: #f7e6e2;
 
-  /* Deep colour used behind the globe and in hero panels, both themes */
-  --night: #0b1220;
-  --night-2: #131d31;
-  --night-ink: #e9e4d8;
+  /* Night tones used for text over the globe's dark ocean, both themes */
+  --night: #141414;
+  --night-2: #212121;
+  --night-ink: #eaeaea;
 
-  /* Off-white backdrop behind the globe (home and /globe), both themes */
-  --globe-bg: #fbf8f1;
-  --globe-bg-2: #ebe4d6;
-  --globe-ink: #1d1b18;
+  /* Backdrop behind the globe (home and /globe) */
+  --globe-bg: #fafaf8;
+  --globe-bg-2: #ededea;
+  --globe-ink: #141414;
 
   /* Type */
   --font-serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: var(--font-sans);
   --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
 
-  --step--1: clamp(0.83rem, 0.8rem + 0.12vw, 0.9rem);
-  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
-  --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.4rem);
-  --step-2: clamp(1.44rem, 1.3rem + 0.7vw, 1.85rem);
-  --step-3: clamp(1.73rem, 1.5rem + 1.15vw, 2.5rem);
-  --step-4: clamp(2.07rem, 1.7rem + 1.9vw, 3.4rem);
-  --step-5: clamp(2.5rem, 1.9rem + 3vw, 4.6rem);
+  --step--1: clamp(0.8rem, 0.78rem + 0.1vw, 0.86rem);
+  --step-0: clamp(0.95rem, 0.92rem + 0.15vw, 1.02rem);
+  --step-1: clamp(1.1rem, 1.05rem + 0.25vw, 1.25rem);
+  --step-2: clamp(1.3rem, 1.2rem + 0.45vw, 1.55rem);
+  --step-3: clamp(1.55rem, 1.4rem + 0.75vw, 2rem);
+  --step-4: clamp(1.9rem, 1.6rem + 1.4vw, 2.8rem);
+  --step-5: clamp(2.3rem, 1.8rem + 2.4vw, 3.8rem);
 
-  /* Shape & depth */
+  /* Shape & depth: flat by default, a whisper of shadow for floating panels */
   --radius-s: 6px;
-  --radius: 10px;
-  --radius-l: 16px;
-  --shadow-s: 0 1px 2px rgb(29 27 24 / 0.06), 0 1px 1px rgb(29 27 24 / 0.04);
-  --shadow: 0 4px 16px rgb(29 27 24 / 0.08), 0 1px 3px rgb(29 27 24 / 0.06);
-  --shadow-l: 0 18px 48px rgb(29 27 24 / 0.16), 0 4px 12px rgb(29 27 24 / 0.08);
+  --radius: 8px;
+  --radius-l: 12px;
+  --shadow-s: none;
+  --shadow: 0 1px 2px rgb(20 20 20 / 0.04);
+  --shadow-l: 0 12px 32px rgb(20 20 20 / 0.12), 0 2px 6px rgb(20 20 20 / 0.06);
 
   /* Layout */
-  --container: 1200px;
+  --container: 1120px;
   --prose: 68ch;
   --gutter: clamp(16px, 4vw, 40px);
-  --header-h: 64px;
+  --header-h: 56px;
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
@@ -93,72 +97,76 @@
 /* Dark theme. Keep the two dark blocks below identical. */
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --paper: #121315;
-  --paper-2: #18191c;
-  --card: #1d1f23;
-  --overlay: rgb(18 19 21 / 0.9);
-  --ink: #ece7dd;
-  --ink-2: #c2bbae;
-  --ink-3: #8f887c;
-  --rule: #2d3036;
-  --rule-strong: #41454c;
-  --accent: #e0737b;
-  --accent-hover: #ea8d94;
-  --accent-ink: #1a0d0e;
-  --accent-soft: #3a2225;
+  --paper: #141414;
+  --paper-2: #1a1a1a;
+  --card: #1c1c1c;
+  --overlay: rgb(20 20 20 / 0.82);
+  --ink: #eaeaea;
+  --ink-2: #c9c9c9;
+  --ink-3: #979797;
+  --rule: #2a2a2a;
+  --rule-strong: #434343;
+  --accent: #ff7171;
+  --accent-hover: #ff9090;
+  --accent-ink: #141414;
+  --accent-soft: #2e1e1e;
   --brass: #d6b061;
-  --brass-soft: #33291a;
-  --highlight: rgb(214 176 97 / 0.26);
-  --highlight-strong: rgb(214 176 97 / 0.45);
-  --term: #7cc1dc;
-  --term-soft: #1b2e36;
-  --seen: #7fc08e;
-  --c-exam: #7cc1dc;
-  --c-exam-soft: #182a31;
-  --c-historiography: #b99be0;
-  --c-historiography-soft: #261f31;
+  --brass-soft: #2a2418;
+  --highlight: rgb(214 176 97 / 0.24);
+  --highlight-strong: rgb(214 176 97 / 0.42);
+  --term: #8cc6dc;
+  --term-soft: #1a2a30;
+  --seen: #92e4b3;
+  --c-exam: #8cc6dc;
+  --c-exam-soft: #1a2529;
+  --c-historiography: #b9a6e0;
+  --c-historiography-soft: #231f2b;
   --c-context: #d6b061;
-  --c-context-soft: #2c2517;
-  --c-warning: #ef8a7a;
-  --c-warning-soft: #33201d;
-  --shadow-s: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow: 0 4px 16px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.3);
-  --shadow-l: 0 18px 48px rgb(0 0 0 / 0.5), 0 4px 12px rgb(0 0 0 / 0.3);
+  --c-context-soft: #26221a;
+  --c-warning: #ff8a7a;
+  --c-warning-soft: #2c1f1c;
+  --globe-bg: #141414;
+  --globe-bg-2: #0e0e0e;
+  --globe-ink: #eaeaea;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-l: 0 16px 40px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --paper: #121315;
-    --paper-2: #18191c;
-    --card: #1d1f23;
-    --overlay: rgb(18 19 21 / 0.9);
-    --ink: #ece7dd;
-    --ink-2: #c2bbae;
-    --ink-3: #8f887c;
-    --rule: #2d3036;
-    --rule-strong: #41454c;
-    --accent: #e0737b;
-    --accent-hover: #ea8d94;
-    --accent-ink: #1a0d0e;
-    --accent-soft: #3a2225;
+    --paper: #141414;
+    --paper-2: #1a1a1a;
+    --card: #1c1c1c;
+    --overlay: rgb(20 20 20 / 0.82);
+    --ink: #eaeaea;
+    --ink-2: #c9c9c9;
+    --ink-3: #979797;
+    --rule: #2a2a2a;
+    --rule-strong: #434343;
+    --accent: #ff7171;
+    --accent-hover: #ff9090;
+    --accent-ink: #141414;
+    --accent-soft: #2e1e1e;
     --brass: #d6b061;
-    --brass-soft: #33291a;
-    --highlight: rgb(214 176 97 / 0.26);
-    --highlight-strong: rgb(214 176 97 / 0.45);
-    --term: #7cc1dc;
-    --term-soft: #1b2e36;
-    --seen: #7fc08e;
-    --c-exam: #7cc1dc;
-    --c-exam-soft: #182a31;
-    --c-historiography: #b99be0;
-    --c-historiography-soft: #261f31;
+    --brass-soft: #2a2418;
+    --highlight: rgb(214 176 97 / 0.24);
+    --highlight-strong: rgb(214 176 97 / 0.42);
+    --term: #8cc6dc;
+    --term-soft: #1a2a30;
+    --seen: #92e4b3;
+    --c-exam: #8cc6dc;
+    --c-exam-soft: #1a2529;
+    --c-historiography: #b9a6e0;
+    --c-historiography-soft: #231f2b;
     --c-context: #d6b061;
-    --c-context-soft: #2c2517;
-    --c-warning: #ef8a7a;
-    --c-warning-soft: #33201d;
-    --shadow-s: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow: 0 4px 16px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.3);
-    --shadow-l: 0 18px 48px rgb(0 0 0 / 0.5), 0 4px 12px rgb(0 0 0 / 0.3);
+    --c-context-soft: #26221a;
+    --c-warning: #ff8a7a;
+    --c-warning-soft: #2c1f1c;
+    --globe-bg: #141414;
+    --globe-bg-2: #0e0e0e;
+    --globe-ink: #eaeaea;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-l: 0 16px 40px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
   }
 }

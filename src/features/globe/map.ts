@@ -100,7 +100,7 @@ function buildStyle(): StyleSpecification {
         id: 'graticule',
         type: 'line',
         source: 'graticule',
-        paint: { 'line-color': '#a9c1e0', 'line-opacity': 0.07, 'line-width': 0.6 },
+        paint: { 'line-color': '#ffffff', 'line-opacity': 0.05, 'line-width': 0.6 },
       },
       { id: 'land', type: 'fill', source: 'land', paint: { 'fill-color': LAND_BASE } },
       {

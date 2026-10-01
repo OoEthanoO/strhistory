@@ -39,18 +39,16 @@ const courses = compact ? [] : await getEntries(data.courses);
     align-items: flex-start;
     gap: 16px;
     height: 100%;
-    padding: 22px;
+    padding: 20px;
     border-radius: var(--radius-l);
     border: 1px solid var(--rule);
     background: var(--card);
     color: var(--ink);
     text-decoration: none;
-    box-shadow: var(--shadow-s);
-    transition: transform 0.2s var(--ease), box-shadow 0.2s;
+    transition: border-color 0.15s;
   }
   .teacher-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow);
+    border-color: var(--ink-3);
     color: var(--ink);
   }
   .compact {
@@ -68,15 +66,16 @@ const courses = compact ? [] : await getEntries(data.courses);
   }
   .name {
     margin: 0;
-    font-size: 1.3rem;
+    font-size: 1.05rem;
+    font-weight: 550;
   }
   .compact .name {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
   }
   .role {
     margin: 0;
-    color: var(--ink-2);
-    font-size: 0.92rem;
+    color: var(--ink-3);
+    font-size: 13px;
   }
   .courses {
     list-style: none;
@@ -87,10 +86,10 @@ const courses = compact ? [] : await getEntries(data.courses);
     gap: 6px;
   }
   .courses li {
-    padding: 2px 10px;
-    border-radius: 999px;
-    background: var(--paper-2);
-    font-size: 0.8rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    font-size: 11px;
     color: var(--ink-2);
   }
 </style>

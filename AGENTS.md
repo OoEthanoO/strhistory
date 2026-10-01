@@ -329,24 +329,29 @@ screen replaces the globe. WebGL failures leave the SVG usable.
 
 ## 7. Design system
 
-**Personality:** a modern archive — warm paper, ink, oxblood and brass in the
-department pages; a dark "planetarium" for the globe. Calm, editorial, serious
-about sources, never gamified beyond the key-term progress bar.
+**Personality:** minimal and quiet, in the spirit of globeofhistory.com —
+neutral greys, one accent (deep red in light, coral `#ff7171` in dark), small
+grey UI type, hairline borders instead of shadows and tinted bands. The globe
+is full-bleed with floating panels. Calm, serious about sources, never
+gamified beyond the key-term progress bar.
 
 - **Tokens only.** Colours, fonts, radii and shadows come from
   `src/styles/tokens.css` (`--paper`, `--ink`, `--accent`, `--brass`,
   `--term`, callout families…). Both themes are defined there; components
-  never hard-code colours. The globe has its own palette in `globe.css`
-  (always dark).
+  never hard-code colours. `globe.css` maps its `--gx-*` tokens onto these, so
+  the explorer follows the site theme; only the ocean, polity palette and pins
+  (`palette.ts`, `--gx-pin`) stay fixed for legibility.
 - **Themes:** light by default, dark via `prefers-color-scheme` or the header
-  toggle (`html[data-theme]`, stored in `localStorage`). Check both.
-- **Type:** Newsreader for headings and reading text (optical sizing on),
-  Inter for UI. Fluid type scale `--step--1 … --step-5`.
+  toggle (`html[data-theme]`, stored in `localStorage`; also on `/globe`). Check both.
+- **Type:** Inter (`--font-display` / `--font-sans`) for headings and UI;
+  Newsreader only for long-form reading text (`.prose`, key questions, quotes).
+  Fluid type scale `--step--1 … --step-5`.
 - **Semantics:** key terms = teal dotted underline (`--term`); quotations =
   brass highlighter (`--highlight`); exam callouts = teal, historiography =
   violet, context = brass, warnings = red.
-- **Layout:** `.container` (max 1200px), prose max 68ch, generous whitespace,
-  cards with 16px radius and soft shadows.
+- **Layout:** `.container` (max 1120px), prose max 68ch, generous whitespace,
+  hairline-separated rows for lists, cards with 12px radius and a 1px border
+  (no shadow, no hover lift — the border darkens instead).
 - **Accessibility (required):** semantic headings in order; visible focus
   styles; all interactive elements reachable by keyboard; `alt` text on images;
   colour is never the only signal; respect `prefers-reduced-motion`; check
