@@ -1,0 +1,71 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+<BaseLayout title="Unlock the site" description="Enter the department access code to read study notes and explore the rest of STR History.">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="access-wrap container" aria-labelledby="access-title">
+    <div class="access-card">
+      <p class="eyebrow">STR HISTORY · DEPARTMENT ACCESS</p>
+      <h1 id="access-title">A little further<br /><em>into history.</em></h1>
+      <p class="intro">Enter the access code to open study notes, courses and the rest of the department website.</p>
+      <p id="access-error" class="access-error" role="alert" hidden></p>
+      <form id="unlock-form" method="post" action="/access/unlock">
+        <input type="hidden" name="next" value="/" />
+        <label for="access-code">Access code</label>
+        <input id="access-code" name="code" type="password" required maxlength="128" autocomplete="current-password" autocapitalize="none" spellcheck="false" aria-describedby="access-hint" />
+        <p id="access-hint" class="hint">Use the code shared by the history department. This browser stays unlocked for seven days.</p>
+        <button class="btn btn--primary" type="submit">Unlock and continue <span aria-hidden="true">→</span></button>
+      </form>
+      <div id="unlocked-panel" hidden>
+        <p>This browser is already unlocked.</p>
+        <a id="access-continue" class="btn btn--primary" href="/">Continue <span aria-hidden="true">→</span></a>
+        <form method="post" action="/access/logout"><button class="lock-again" type="submit">Lock this browser again</button></form>
+      </div>
+      <div class="public-globe"><span>No code needed to explore the globe.</span><a href="/globe">Explore the globe <span aria-hidden="true">↗</span></a></div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const next = params.get('next') ?? '/';
+  // The service validates this independently, including with JavaScript disabled.
+  const field = document.querySelector<HTMLInputElement>('[name="next"]');
+  if (field) field.value = next;
+  const errors: Record<string, string> = {
+    invalid: 'That code wasn’t recognised. Please try again.',
+    limited: 'Too many attempts. Please wait 15 minutes before trying again. You can still explore the globe.',
+  };
+  const error = document.getElementById('access-error');
+  const message = errors[params.get('error') ?? ''];
+  if (error && message) { error.textContent = message; error.hidden = false; }
+  const code = document.getElementById('access-code');
+  if (message && code) { code.setAttribute('aria-invalid', 'true'); code.focus(); }
+  // Cookies are HttpOnly; the public page can ask only whether a session exists.
+  fetch('/access/session', { cache: 'no-store' }).then((r) => r.ok ? r.json() : null).then((state) => {
+    if (!state?.unlocked) return;
+    document.getElementById('unlock-form')!.hidden = true;
+    document.getElementById('unlocked-panel')!.hidden = false;
+    const link = document.getElementById('access-continue') as HTMLAnchorElement;
+    try {
+      const dest = new URL(next, location.origin);
+      if (dest.origin === location.origin && !dest.pathname.startsWith('/access')) link.href = dest.href;
+    } catch { /* Keep the home-page link. */ }
+  }).catch(() => { /* The standard HTML form remains usable. */ });
+</script>
+
+<style>
+  .access-wrap { display: grid; place-items: center; padding-block: clamp(40px, 8vw, 100px); }
+  .access-card { width: 100%; max-width: 540px; background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: clamp(24px, 5vw, 48px); box-shadow: var(--shadow); }
+  h1 { font-size: var(--step-4); line-height: 1.08; margin: 20px 0; }
+  h1 em { color: var(--accent); font-weight: inherit; }
+  .intro { color: var(--ink-2); margin-bottom: 28px; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; }
+  input[type='password'] { width: 100%; min-height: 48px; border: 1px solid var(--rule-strong); border-radius: var(--radius-s); padding: 12px; background: var(--paper); color: var(--ink); font-size: 1.1rem; }
+  .hint { font-size: .85rem; color: var(--ink-3); margin: 10px 0 22px; }
+  .btn { width: 100%; justify-content: center; }
+  .access-error { padding: 14px; color: var(--c-warning); background: var(--c-warning-soft); border-radius: var(--radius-s); }
+  .public-globe { display: grid; gap: 8px; border-top: 1px solid var(--rule); margin-top: 28px; padding-top: 22px; font-size: .9rem; color: var(--ink-2); }
+  .public-globe a { color: var(--accent); font-weight: 600; }
+  .lock-again { display: block; border: 0; padding: 14px; margin: 8px auto 0; background: transparent; color: var(--ink-2); text-decoration: underline; cursor: pointer; }
+</style>
