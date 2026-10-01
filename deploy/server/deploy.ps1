@@ -69,6 +69,7 @@ try {
 
     # 2. Content check and build.
     Run 'content check' { & $npm run --silent check:content }
+    Run 'access checks' { & $config.node --test deploy/access/server.test.mjs }
     Run 'build' { & $npm run --silent build }
 
     $dist = Join-Path $paths.Repo 'dist'
@@ -82,7 +83,9 @@ try {
     if ($LASTEXITCODE -ge 8) { Fail "robocopy failed ($LASTEXITCODE)" }
     Step "release copied to releases\$short"
 
-    # 4. Caddy site block: apply repo changes only if Caddy accepts them.
+    # 4. Start/refresh the access service before enabling its Caddy gate.
+    Run 'access service' { & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'access.ps1') -Root $Root }
+    # Caddy site block: apply repo changes only if Caddy accepts them.
     $candidate = Join-Path $paths.Repo 'deploy\Caddyfile'
     $caddyError = $null
     $changed = (-not (Test-Path $paths.SiteCaddy)) -or ((Get-FileHash $candidate).Hash -ne (Get-FileHash $paths.SiteCaddy).Hash)
@@ -98,6 +101,7 @@ try {
                 Copy-Item $backup $paths.SiteCaddy -Force
                 Update-Caddy $config | Out-Null
             }
+            Fail 'Caddy access configuration was rejected; release was not switched.'
         } else {
             Step 'Caddy config updated and reloaded'
         }

@@ -35,7 +35,33 @@ history.ethanyanxu.com {
 		-Server
 	}
 
-	file_server
+	# Explicit public surface. Everything else (including / and direct .html
+	# URLs) requires a signed session before Caddy reads the file.
+	@publicPage path /globe /globe/ /globe/index.html /access /access/ /access/index.html /favicon.svg /robots.txt /sitemap-index.xml /sitemap-0.xml /version.json
+	@publicAsset path_regexp publicAsset ^(/_astro/[^/]+\.(js|css|woff2|woff|svg|png|jpg|jpeg|webp|avif)|/data/land\.geojson|/data/snapshots/world_-?[0-9]+\.geojson|/data/snapshots/LICENSE\.md|/glyphs/noto-sans/[0-9]+-[0-9]+\.pbf)$
+	@accessAction path /access/unlock /access/logout /access/session
+	route {
+		handle @accessAction {
+			reverse_proxy 127.0.0.1:4310 {
+				header_up X-Access-Client {remote_host}
+			}
+		}
+		handle @publicPage {
+			header Cache-Control "no-store"
+			file_server
+		}
+		handle @publicAsset {
+			file_server
+		}
+		handle {
+			header Cache-Control "private, no-store"
+			header X-Robots-Tag "noindex, nofollow"
+			forward_auth 127.0.0.1:4310 {
+				uri /verify
+			}
+			file_server
+		}
+	}
 
 	handle_errors {
 		@notfound expression {err.status_code} == 404

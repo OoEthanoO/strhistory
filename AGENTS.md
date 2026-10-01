@@ -37,6 +37,18 @@ A website for a high-school history department with four connected jobs:
 Audience: IB Diploma History students (SL and HL, grades 11–12), pre-IB
 students, parents, and the department's teachers, who add and edit content.
 
+### Access
+
+Only `/globe` is publicly accessible as a content page. Its event titles, short
+summaries, dates, places and map data remain public so the explorer works.
+Everything else, including the department home page, notes, glossary, courses,
+teachers, news and resources, requires the shared department code. `/access`
+provides the unlock form, a link to the public globe and a way to lock the browser
+again. A successful unlock returns to the requested page and lasts seven days.
+Never commit the access code or session signing key, or embed them in frontend JS.
+This gate protects the deployed website, not the source files in the public GitHub
+repository. Making source content confidential requires a separate repository decision.
+
 ### Content standards (non-negotiable)
 
 This is an educational site; accuracy matters more than volume.
@@ -87,7 +99,8 @@ package, restart it (Vite's dependency cache is stale).
 
 | Concern | Choice | Why |
 | --- | --- | --- |
-| Framework | **Astro 7** (static output) | Content-first site; pages are HTML with zero JS unless a component needs it. Static output means the server only serves files — nothing to crash or restart. |
+| Framework | **Astro 7** (static output) | Content-first site; pages are HTML with zero JS unless a component needs it. Caddy serves the build after checking access. |
+| Access control | **Caddy forward_auth + Node built-in HTTP/crypto** | A small loopback service checks the shared code and signed HttpOnly cookies; no extra npm dependencies. |
 | Interactive globe | **React 19** island + **MapLibre GL 6** (globe projection) | MapLibre renders GeoJSON borders on a WebGL globe with smooth interaction and no API keys. React only for the globe UI state. |
 | Content | **Astro content collections** (Markdown / MDX + Zod schemas) | One file per topic/term/teacher; schemas catch mistakes at build time. |
 | Immediate globe | **d3-geo** SVG + React | A baked initial frame is in the HTML; drag, pinch, wheel, keyboard and note links work while MapLibre details arrive. The initial 1783 border geometry uses the same palette as the detailed map. |
@@ -162,6 +175,7 @@ scripts/
   data/name-overrides.json per-year fixes for anachronistic names in the border data
 deploy/
   Caddyfile                the site's Caddy config (source of truth)
+  access/                  code/session service, provisioning helper, tests
   server/*.ps1             install / poll / deploy / status / rollback on the home server
 .github/workflows/ci.yml   check + build on every push and PR
 ```
@@ -402,9 +416,9 @@ parallel with few conflicts:
 - `src/config/site.ts` — site name ("STR History"), department, **school name
   (currently empty — to be confirmed)**, public email, nav.
 - `astro.config.mjs` — `site` URL (override with `SITE_URL`), MDX, React,
-  sitemap, whitespace handling, Vite options. Every built page is listed in
-  `/sitemap-index.xml` automatically; `/robots.txt` (`src/pages/robots.txt.ts`)
-  points to it. Both use `site`, so set `SITE_URL` if the domain changes.
+  sitemap, whitespace handling, Vite options. Only `/globe` is included in the
+  sitemap. `/robots.txt` allows the globe and its assets; protected responses
+  carry `X-Robots-Tag: noindex, nofollow`. Both use `site` for URLs.
 - Environment variables: `GIT_SHA` (set by deploy/CI; written to
   `/version.json`), `SITE_URL` (optional).
 
@@ -445,6 +459,39 @@ shell, Node 24, Git, Caddy 2.11 (also serving finprint and ai subdomains).
 | `server.json` | paths to caddy, node, git, main Caddyfile (written by install.ps1) |
 | `state.json` | last attempted/deployed commit, status, errors |
 | `logs\deploy.log`, `logs\access.log` | deploy log; Caddy access log |
+| `private\access.json` | salted scrypt code hash + random session signing key; outside repo/releases, restricted ACL |
+| `bin\access\server.mjs` | running access service, copied and restarted only when changed |
+
+**Access service:** the SYSTEM task `strhistory-access` starts on boot, runs
+Node directly on `127.0.0.1:4310`, and restarts on failure. Every deploy runs
+`deploy/server/access.ps1` and checks health before installing the Caddy gate.
+The default Caddy route requires `forward_auth` before `file_server`; only the
+explicit globe/access endpoints, operational version/robots/sitemap files and
+map/JS/CSS/font assets are public. Keep that allowlist narrow, never use an
+extension-only exception across the site. An unavailable service fails closed
+for protected content while the public globe still works. Direct `index.html`
+URLs, mixed case and encoded paths must also remain protected.
+
+The code is checked with scrypt and a constant-time comparison. Seven-day sessions
+use a signed `__Host-history-access` cookie (Secure, HttpOnly, SameSite=Lax).
+Protected responses and authentication responses are `private, no-store`;
+`/access` is not cached. Unlock/logout accept same-origin POSTs only. Caddy
+overwrites the client-address header used for the 10-attempt/15-minute limit.
+Logout removes the cookie; rotating the signing key invalidates all sessions.
+
+Before first deployment, provision `private/access.json` with
+`deploy/access/configure.mjs`, supplying the code on stdin and the destination
+path as the argument. Do this outside the checkout and document root; restrict
+the private directory to SYSTEM and Administrators. The helper stores only a
+salted hash and generates a new session key. To rotate the code, repeat this and
+restart `strhistory-access`. Never put the code in docs, examples or CI.
+
+Tests: `node --test deploy/access/server.test.mjs` runs in CI and before deploys.
+`deploy/access/smoke.mjs <base-url>` (code on stdin) tests the actual Caddy gate
+against all built HTML pages and assets. `astro dev` and `astro preview` are
+trusted authoring tools and do **not** enforce authentication; production must
+always serve through this Caddyfile. The access page can be previewed locally,
+but its unlock action requires the access service and the configured origin.
 
 The main Caddyfile (`C:\Users\ethan\finprint\scripts\selfhost\Caddyfile`, run by
 the `finprint-caddy` task) contains a managed block:

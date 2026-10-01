@@ -14,8 +14,8 @@ export default defineConfig({
   // inline elements in prose ("<em>a</em> <strong>b</strong>" → "ab"). Notes are
   // prose-heavy, so keep HTML-aware whitespace handling.
   compressHTML: true,
-  // sitemap() lists every built page in /sitemap-index.xml (see src/pages/robots.txt.ts).
-  integrations: [mdx(), react(), sitemap()],
+  // Only the public globe is indexable; department pages require access.
+  integrations: [mdx(), react(), sitemap({ filter: (page) => new URL(page).pathname.replace(/\/$/, '') === '/globe' })],
   vite: {
     build: {
       // MapLibre is large (~1 MB); the home and explorer islands import it lazily.
