@@ -94,11 +94,11 @@
 .globe-pin.is-selected, .globe-pin.is-hovered { z-index: 3; }
 .globe-pin.is-selected .globe-pin__dot, .globe-pin.is-hovered .globe-pin__dot { background: #fff3de; box-shadow: 0 0 0 2px var(--gx-pin); }
 .globe-pin__pulse { display: none; }
-.globe-pin__stem { position: absolute; left: -93px; top: -93px; width: 200px; height: 200px; pointer-events: none; overflow: visible; }
-.globe-pin__stem line { stroke: var(--gx-pin); stroke-width: 1; opacity: .7; }
+.globe-pin__count { position: absolute; left: 9px; top: -10px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #fff3de; color: #1a1206; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; box-shadow: 0 0 0 1.5px #1a1206; pointer-events: none; }
+.globe-pin__count:empty { display: none; }
 .globe-pin__label { display: none; position: absolute; left: 22px; top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 4px 9px; border-radius: 20px; border: 1px solid var(--gx-line); background: var(--gx-panel); color: #fff6e6; font-size: 11px; pointer-events: none; }
 .globe-pin:is(.is-hovered, .is-selected, :focus-visible) .globe-pin__label { display: block; }
-.globe-pin.maplibregl-marker-covered { visibility: hidden; pointer-events: none; }
+.globe-pin:is(.is-behind, .is-grouped) { visibility: hidden; pointer-events: none; }
 .globe-pin:focus-visible .globe-pin__dot { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--gx-pin); }
 
 .tl { position: absolute; z-index: 6; left: 0; right: 0; bottom: 0; height: var(--gx-timeline-h); display: flex; flex-direction: column; justify-content: center; gap: 9px; padding: 10px 22px max(10px, env(safe-area-inset-bottom)); border-top: 1px solid var(--gx-line); background: rgb(6 10 18 / 0.97); }

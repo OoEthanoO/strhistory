@@ -86,6 +86,8 @@ npm run build            # static site → dist/
 npm run preview          # serve dist/ locally
 npm run check:content    # fast lint of all content, reports every problem at once
 npm run data:snapshots   # rebuild globe border files (only when snapshots change)
+npm run data:sea         # rebuild the sea layer drawn over the polities (see §6)
+npm run data:check       # cross-check the old border files against Wikidata (network; see §5)
 ```
 
 Before every push: `npm run check && npm run build` must pass. CI runs the same.
@@ -101,9 +103,9 @@ package, restart it (Vite's dependency cache is stale).
 | --- | --- | --- |
 | Framework | **Astro 7** (static output) | Content-first site; pages are HTML with zero JS unless a component needs it. Caddy serves the build after checking access. |
 | Access control | **Caddy forward_auth + Node built-in HTTP/crypto** | A small loopback service checks the shared code and signed HttpOnly cookies; no extra npm dependencies. |
-| Interactive globe | **React 19** island + **MapLibre GL 6** (globe projection) | MapLibre renders GeoJSON borders on a WebGL globe with smooth interaction and no API keys. React only for the globe UI state. |
+| Interactive globe | **React 19** island + **MapLibre GL 6** (globe projection) | MapLibre renders dated borders (OpenHistoricalMap tiles, from 1700) on a WebGL globe with smooth interaction and no API keys. React only for the globe UI state. |
 | Content | **Astro content collections** (Markdown / MDX + Zod schemas) | One file per topic/term/teacher; schemas catch mistakes at build time. |
-| Immediate globe | **d3-geo** SVG + React | A baked initial frame is in the HTML; drag, pinch, wheel, keyboard and note links work while MapLibre details arrive. The initial 1783 border geometry uses the same palette as the detailed map. |
+| Immediate globe | **d3-geo** SVG + React | A baked initial frame (land and pins) is in the HTML; drag, pinch, wheel, keyboard and note links work while MapLibre and the border data arrive. |
 | Styling | Plain CSS with design tokens + Astro scoped styles | No framework to learn; tokens keep both themes consistent. |
 | Fonts | Newsreader (serif, variable, optical sizes) + Inter (sans), self-hosted via Fontsource | No third-party font requests (student privacy). |
 | Hosting | Home server (Windows 11) behind **Caddy** (automatic HTTPS) | See §10. |
@@ -143,8 +145,9 @@ src/
       GlobeExplorer.tsx      state, URL sync, playback; composes the pieces below
       HomeGlobe.tsx          home-page gesture handoff to the full explorer
       PrebakedGlobe.tsx      immediate interactive SVG and WebGL fallback
-      baked/                generated initial border geometry (GPL-3.0)
-      pin-layout.ts         separates nearby note pins, with stems to their places
+      pin-layout.ts         groups overlapping note pins into one counted pin
+      label-layout.ts       where each polity's label goes (visible land, not sea)
+      tile-cache.ts         keeps OHM tiles for a week; starts the first ones early
       map.ts                 GlobeController — the only file that touches MapLibre
       Timeline.tsx EraPanel.tsx TopicList.tsx TopicPreview.tsx
       era.ts                 pure timeline maths (eras, lanes, positions)
@@ -167,12 +170,19 @@ src/
   styles/base.css          ← element defaults and a few utilities (.container, .btn…)
 public/
   data/snapshots/world_<year>.geojson   generated border files (GPL-3.0, see LICENSE.md there)
-  data/land.geojson                     generated base land layer
+  data/sea.geojson                      generated sea (drawn over the polities) and sea graticule
+  data/land.geojson                     generated land layer (unused by the globe)
   glyphs/noto-sans/                     map label glyphs
 scripts/
   check-content.mjs        content lint (npm run check:content)
   data/build-snapshots.mjs border data pipeline (npm run data:snapshots)
   data/name-overrides.json per-year fixes for anachronistic names in the border data
+  data/powers.json         spellings of each controlling power → one colour key
+  data/build-cliopatria.mjs  unused: Cliopatria border files, no longer on the globe (see §6)
+  data/build-sea.mjs       the sea drawn over the polities (npm run data:sea)
+  data/rulers.json         dated colonial rulers for colonies upstream records as self-ruling
+  data/check-sovereignty.mjs  Wikidata cross-check (npm run data:check)
+  data/sovereignty-reviewed.json  data:check findings reviewed as correct, with reasons
 deploy/
   Caddyfile                the site's Caddy config (source of truth)
   access/                  code/session service, provisioning helper, tests
@@ -251,22 +261,46 @@ Rules:
 **Add a timeline snapshot year** — add `src/content/snapshots/<year>.md`, run
 `npm run data:snapshots -- <year>` (downloads and simplifies that year from
 aourednik/historical-basemaps — available years are listed in that repo's
-`geojson/` folder), check the names on the globe, add fixes to
+`geojson/` folder), read the script's warnings and its list of inferred colonial
+rulers, check the names on the globe, add fixes to
 `scripts/data/name-overrides.json` and re-run if needed, then commit the
-markdown file and `public/data/snapshots/world_<year>.geojson` together.
+markdown file and `public/data/snapshots/world_<year>.geojson` together. If the
+reconstruction has a known quirk (a missing state, an undivided country, an
+unusual level of detail), say so in the snapshot's `summary`.
+Both upstream sources are pinned to a commit (`BASEMAPS_COMMIT`,
+`NATURAL_EARTH_COMMIT` in the script) so rebuilds are reproducible; to take
+upstream corrections, bump the commit, rebuild every year, and review the diff.
 Negative filenames are BCE; the pipeline maps them to upstream `world_bc...`
 files. `borderYear: null` creates a land-only exploration stop, and a numeric
 `borderYear` reuses an available reconstruction with its actual date visible.
 Never relabel an old reconstruction as current borders. The present-day stop
 (`PRESENT_YEAR` in the script) is built from Natural Earth instead: ISO 3166
-countries, with contested territories dashed and named "(disputed)". After changing the
-1783 map, regenerate the initial SVG geometry with
-`node scripts/data/build-prebaked.mjs` and commit `src/features/globe/baked/`.
+countries, with contested territories dashed and named "(disputed)".
 
 **Fix a wrong country name on the globe** — add an entry for that year in
 `scripts/data/name-overrides.json` (string = new display name; object =
-`{ "name": …, "subjecto": … }` to also change the controlling power used for
-colour), then `npm run data:snapshots -- <year>`.
+`{ "name": …, "subjecto": … }` to also change the controlling power), then
+`npm run data:snapshots -- <year>`. The script warns about entries that no
+longer match anything upstream.
+
+**Fix a wrong colour on the globe** — colours follow the canonical power in
+`scripts/data/powers.json`. Add a missing spelling to `aliases` (e.g. a new way
+upstream writes "United Kingdom"). Upstream records many colonies as ruling
+themselves (Nigeria, Kenya, India in 1938, the Philippines…); give such a
+territory its ruler in `scripts/data/rulers.json` with inclusive `from`/`to`
+years (`to` is usually the year before independence), or with a `{ name,
+subjecto }` override for one year. Leave occupations and protected states with
+their own rulers as they are, and check the dates like any other fact (§1).
+
+**Check the maps against Wikidata** — after changing border data, run
+`npm run data:check`. It lists polities shown ruling themselves while Wikidata
+has them as a colony or protectorate, shown under a foreign power after the
+present-day state was founded, or shown after every state of that name ended
+(`--too-early` adds a noisier check). Wikidata is a lead, not an authority, and
+names are matched exactly. Fix real errors in `rulers.json` or
+`name-overrides.json`; record a finding that is right on the map in
+`scripts/data/sovereignty-reviewed.json` with the reason. It needs the network,
+so it is not part of CI; the answer is cached in `.cache/` (`--refresh` asks again).
 
 **Add a teacher / course / news post / guide** — copy an existing file in the
 folder, edit, remove `placeholder: true` when it is real. Teacher photos go
@@ -307,20 +341,115 @@ double-quoted values; never raw `{`, `}` or `<` in MDX text.
 Data flow: `src/pages/globe.astro` calls `getGlobeData()` (build time) →
 serialisable `{ topics, snapshots, currentYear }` → `<GlobeExplorer client:load>`.
 The home page uses `HomeGlobe` with the same data and fixed initial camera.
-`PrebakedGlobe` renders SVG in the HTML and handles gestures before WebGL is
-ready. MapLibre is dynamically imported; the initial coloured globe is retained
-until land and historical polygons have reached a rendered frame. No loading
-screen replaces the globe. WebGL failures leave the SVG usable.
+`PrebakedGlobe` renders land and pins as SVG in the HTML and handles gestures
+before WebGL is ready. MapLibre is dynamically imported; the SVG globe stays
+until the sea layer has reached a rendered frame, and borders fill in as
+they arrive (the year panel says "Loading borders…"). No loading screen
+replaces the globe. WebGL failures, or OpenHistoricalMap being unreachable,
+leave the SVG usable.
 
-- **Snapshots** are independent exploration stops. Normally each has a border file
-  `public/data/snapshots/world_<year>.geojson`, fetched when selected and
-  cached; neighbours are prefetched. Polygon features carry `name`,
-  `subjecto` (controlling power — drives colour), `partof`, `precision`
-  (1 = approximate border → drawn dashed). Point features with `kind: "label"`
-  are pre-computed label anchors (one per polity). `borderYear` can reuse a
-  dated file or be null for physical geography only. The year panel states the
-  actual reconstruction and summary dates. Modern coastlines are a reference,
-  not a claim about ancient shorelines.
+- **Borders come from OpenHistoricalMap (OHM) alone, from 1700**
+  (`BORDERS_FROM` in `era.ts`), filtered to the chosen year, so any year works,
+  not just timeline stops. Before 1700 the globe shows land and pins only: the
+  border layers are hidden, so no OHM tiles are fetched.
+  - **Why 1700**: share of land OHM covers, measured on the globe (September
+    2026). Before 1600 it is under half everywhere, and before 800 nearly
+    nothing. By 1700 Europe, East Asia and North America are 84–90%; the Middle
+    East (~50%), sub-Saharan Africa (~26%) and South Asia (~64%) stay patchy
+    until about 1900, and are left blank where OHM has nothing. From 1900 every
+    region is ≥77%, from 1920 ≥89%.
+  - **Levels** (`OHM_LEVELS` in `map.ts`): `admin_level` 2, the country
+    level, is drawn on top. Level 3 is drawn underneath, so it shows only where
+    OHM has no country: before 1804 OHM maps Austria and Bohemia inside the Holy
+    Roman Empire and Hungary and Galicia only at level 3, which would otherwise
+    be blank. Level 1 is not drawn; its colonial empires (names containing
+    "Empire") give their members the empire's colour and the hover's "Part of".
+    Not every colony lies inside its empire for every year (Brazil in 1800,
+    Mozambique in 1914), so `powers.json` aliases cover those by name. OHM
+    names that carry dates ("New Spain (1795-1803)") are shown without them.
+  - **Tiles**: polities from `vtiles.openhistoricalmap.org/maps/ohm_admin`
+    (`boundaries` layer), detailed and dated to the day. Every
+    date is in each tile (`start_decdate`/`end_decdate`, astronomical years;
+    `decimalYear()` converts), so changing year downloads nothing. Tiles are
+    heavy (4–8 MB each unzipped, ~0.2–1.2 MB over the wire, every admin level
+    and date); the source stops at zoom 6 and overzooms beyond. Unnamed
+    polities are not drawn.
+  - **Tile cache** (`tile-cache.ts`): OHM lets browsers keep tiles for only 60
+    seconds, so the source uses an `ohmtiles://` protocol (MapLibre
+    `addProtocol`) that keeps them for a week in the Cache API, gzipped again
+    (~1 MB each, oldest dropped past 150); a repeat visit downloads nothing.
+    `prefetchWorld` starts the whole-globe tiles (zoom 0 or 1) when the page
+    mounts, before MapLibre has loaded (~0.7 s sooner). Bump `CACHE` there to
+    discard every visitor's cached tiles.
+  - **Main-thread work** (measured September 2026; keep these in mind):
+    - `querySourceFeatures` decodes every feature of every loaded tile (~2,000
+      per OHM tile) to test its filter, so calling it per year change froze
+      timeline scrubbing for over a second at a time. It runs once per batch of
+      *new* tiles (`refreshIndex`, ~100 ms) into a list of polity versions with
+      their dates; a year change filters that list (`current`). A new year
+      makes MapLibre re-process tiles it already has and report them again, so
+      only tile keys not seen before mark the index stale. Geometry is decoded
+      only when first needed (`piecesOf`).
+    - A new year re-filters every tile in MapLibre's worker (~0.3–0.5 s), and
+      the timeline slider asks for a year per drag step, so `setYear` keeps
+      only the latest request while the map is still settling (`applyYear`).
+    - Labels are placed only on `idle` and only when tiles or the year changed
+      (`labelsStale`), and the same label data is never re-sent: sending it
+      re-renders, which ends in `idle` again and once looped.
+    - There is no hover-outline layer: it made the worker build line geometry
+      for every polity of every tile; the hovered fill lightens instead.
+    - Judge speed on `npm run build && npm run preview`; the dev server runs
+      unminified, development-mode React and MapLibre.
+  - **Stacking**: OHM contains overlapping polities (an empire and its members,
+    a federation and its colonies, duplicates). Fills are opaque — colours
+    pre-blended with the land by `onLand()` — and `fill-sort-key` draws larger
+    polities first, smaller on top, the same way in every tile; each outline is
+    drawn with its own fill (`fill-outline-color`) so covered borders stay
+    covered. Without this, the top polity changed from tile to tile.
+  - **Cliopatria (removed)**: the globe used to fill OHM's gaps with Cliopatria
+    (Seshat Global History Databank). Where the two disagreed (OHM puts the
+    Crimean Khanate inside the Ottoman Empire in 1512) no rule for hiding
+    Cliopatria avoided both ghost overlaps and blank fringes, so it was dropped.
+    `scripts/data/build-cliopatria.mjs` remains, unused; its output
+    (`public/data/cliopatria/`) is not served.
+- **Sea on top**: OHM's modern polities follow OpenStreetMap and include their
+  territorial waters (Canada also Hudson Bay), so filled in colour they were
+  puffy and swallowed islands. `public/data/sea.geojson` (Natural Earth 10 m
+  simplified to 800 m, 50 m for small islands — a pixel at the deepest zoom is
+  ~600 m — 3.3 MB; `npm run data:sea`, `scripts/data/build-sea.mjs`; MapLibre
+  simplifies it further per zoom, `GEOMETRY_TOLERANCE`) is drawn over every fill,
+  so polities stop at the coast; land is simply a land-coloured base beneath.
+  The sea is cut into 10° cells (one world-sized polygon, or cells over
+  MapLibre's per-tile vertex limit, painted some islands as sea) and carries
+  the graticule, clipped to the sea. Labels avoid it (see below). Hover
+  ignores the sea. Bump `SEA_VERSION` in `map.ts` after a rebuild.
+- **Access gate**: the globe is public but the rest of the site is not, so every
+  data file the globe fetches must match `@publicAsset` in `deploy/Caddyfile`
+  (`/data/sea.geojson`); add new ones there and to
+  `deploy/access/smoke.mjs`.
+- **Snapshots** (`src/content/snapshots/`) are timeline stops for the era
+  summaries only; their `borderYear` is no longer used by the globe.
+- **Labels** are computed in the browser, since labelling tiled polygons
+  repeats a name in every tile. `label-layout.ts` (tested) draws a polity's
+  pieces from all loaded tiles onto a grid, removes the sea and whatever is
+  drawn over it (smaller polities; for a level-3 polity any country), and
+  labels its largest remaining land area at the point furthest from the edges,
+  nudged towards the middle (so Canada is not labelled in the Arctic islands or
+  Hudson Bay, and New Spain where Cuba's captaincy covers it). A polity in
+  several separate areas whose largest is mostly one OHM unit of levels 3–4
+  sharing no distinctive word with it gets that unit's name there and its own
+  name on its largest other area: in 1800 OHM's Captaincy General of Cuba
+  includes Spanish Louisiana, labelled as such, with the captaincy's name on
+  Cuba. Results are cached per polity (`labelPolity`) and redone only when its
+  pieces, what covers it or the year change; a cold refresh takes ~50–70 ms. The
+  sea comes from MapLibre's loaded sea tiles (`querySourceFeatures`), not a
+  second download of `sea.geojson`. Below `LABEL_MIN_SCALE` (1.4× the
+  whole-globe view, one click of "+") labels are hidden, by a zoom step on
+  `text-opacity` (a fractional layer `minzoom` also stops MapLibre building
+  them at the next whole zoom level), and not computed at all.
+- **Hover** shows the polity's dates and, for colonies, its empire.
+- **Credit**: OHM (CC0) and Natural Earth (public domain) need none, but are
+  credited with the map (MapLibre's attribution control) and in the info panel.
 - **Pins** appear only when `start <= selectedYear <= end`, unless show-all is
   enabled. Course level, archive/current selection and search also filter them.
   Every visible pin links directly to its note. Locate buttons in the catalogue
@@ -329,26 +458,55 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   …" button on every topic page. `level`, `curriculum`, `all` and `q` also persist
   in the URL. Home handoffs carry `lng`, `lat` and `scale`. The shared saved level
   uses localStorage key `history-level`; storage failure must not break controls.
-- **Colours**: `palette.ts` selects a colour scheme from the source year of the
-  border geometry, then hashes the controlling power's name within that scheme. Schemes
-  are listed in ascending `fromYear` order; the last matching scheme wins.
-  Fixed colours keep major empires recognisable across nearby snapshots. When
-  timeline snapshots reuse one reconstruction, they also reuse its scheme.
+- **Colours**: `palette.ts` selects a colour scheme by year (schemes are listed
+  in ascending `fromYear` order; the last matching scheme wins), with named
+  colours that keep major empires recognisable. Names differ between sources and
+  periods, so `powerOf` maps a name to one power by `scripts/data/powers.json`
+  aliases, a ruler in brackets, or a leading adjective ("French Africa").
+  A polity inside an OHM colonial empire takes the empire's power colour.
+  Otherwise `colorForPolity` tries the polity's own name, then its power, and
+  uses the first with a named colour in the scheme, otherwise hashes the power,
+  so colonies named after their power ("French West Africa") share its colour. Colours are applied through
+  feature-state (style expressions cannot hash strings); crossing into another
+  scheme recolours the polities. Add an alias when one power shows in two colours.
 - **Rendering**: MapLibre globe projection with a light atmosphere; labels use
   self-hosted glyphs (`public/glyphs/noto-sans`); MapLibre's worker is bundled via
   `?worker&url` + `setWorkerUrl` (MapLibre 6 cannot find it on its own when
   bundled).
-- **Border detail**: the data pipeline uses topology-aware Douglas–Peucker
-  simplification at 100 m, or 5 m for features smaller than 100 km², with five
-  decimal places. These are processing tolerances, not historical accuracy
-  claims. Never replace them with a fixed vertex percentage: that can turn
-  small countries into triangles. MapLibre's 0.1-pixel tolerance reveals finer
-  geometry at higher zoom. The immediate SVG uses 2 km for larger features.
-  Rebuild all snapshots and the baked geometry together; bump `GEOMETRY_VERSION`
-  in `map.ts` to refresh cached downloads. Run `node --test scripts/data/geometry.test.mjs`.
+- **The old border pipeline** (`npm run data:snapshots`, `name-overrides.json`,
+  `rulers.json`, `npm run data:check`, `public/data/snapshots/`, `land.geojson`)
+  is kept but no longer feeds the globe; remove it once the new sources are
+  settled. Its §5 recipes describe those files only.
 - Keyboard: timeline is a native slider (arrows, Home/End, PageUp/Down); pins
   are real links; Escape closes panels.
 - In development `window.__globe` exposes the controller for debugging.
+- **How OHM behaves** (learned September 2026, before you "fix" the map):
+  - It maps who governed a place, not treaty claims: Louisiana stays Spanish
+    (inside the Captaincy General of Cuba) until November 1803, although it was
+    ceded to France on paper in 1800. Explain such cases rather than override.
+  - Country-level polities nest: in 1800 New Spain contains the Captaincy
+    General of Cuba, which contains Spanish Louisiana (level 4). The smaller one
+    is drawn on top; labels follow what is visible.
+  - Level 1 mixes colonial empires with confederations (German Confederation)
+    and Indigenous nations (Miwok), hence the `EMPIRE` name test.
+  - Austria-Hungary exists only from 1867 and the Austrian Empire from 1804;
+    before that the Habsburg core is inside the Holy Roman Empire.
+  - Cloudflare answers `curl` with a challenge page; Node's `fetch` and
+    browsers get tiles. Decode a tile's layers with a few lines of protobuf
+    reading; `ohm_admin` has only `boundaries`, while OHM's main `ohm` tileset
+    also has label points (`land_ohm_centroids`) at ~1 MB more per tile.
+- **Mixing sources** failed: OHM with Cliopatria (Seshat) filling its gaps gave
+  either ghost overlaps or blank fringes whatever rule decided which to show
+  (see "Cliopatria (removed)"). Prefer one source per period.
+- **Testing the globe**: the scripts used so far drive Microsoft Edge through
+  `playwright-core` (not a project dependency; run from a scratch folder) with
+  `--use-angle=swiftshader`, wait for `window.__globe.map.areTilesLoaded()` and
+  the year panel's "Borders in", and read state through `window.__globe`.
+  Software rendering exaggerates drawing costs, so compare before/after rather
+  than trusting absolute frame times; use a `longtask` PerformanceObserver and
+  CDP's `Profiler` to find main-thread work. After a change that makes the map
+  settle faster, wait for a settled state, not the next `idle` event, which may
+  already have passed.
 
 ---
 
@@ -555,10 +713,65 @@ the same checks before switching releases, so a failing commit never goes live).
   (current ones are labelled samples).
 - Expand the seven initial event modules across the selected 2028 studies.
   This is a growing collection, not complete curriculum coverage.
-- Some upstream border data is approximate or anachronistic (for example,
-  Vietnam is not shown divided in 1960). Fix names via
-  `name-overrides.json`; geometry fixes belong upstream in
-  aourednik/historical-basemaps.
+- Globe decisions still open (September 2026):
+  - Colour the Habsburg lands as Austria before 1804 (Austria, Bohemia,
+    Hungary, Galicia) from a short dated list, since OHM has no Habsburg state
+    then; the recommended option.
+  - Or split the Holy Roman Empire into its level-3 pieces; these are mostly
+    imperial circles, not states, so this is not recommended.
+  - Build and host trimmed border tiles (levels 1–4, from 1700) from OHM:
+    several times smaller than OHM's, and year changes would re-process far
+    less. The largest remaining speed gain, but a pipeline to keep refreshed.
+  - Remove the unused Cliopatria script and the old snapshot pipeline.
+- The three items below concern the old snapshot pipeline, which no longer
+  feeds the globe.
+- Some upstream border data is approximate or anachronistic. Known geometry
+  gaps, noted in the snapshot summaries: Vietnam is one territory in 1960;
+  Manchukuo is part of Japan in 1938; East Timor is blank in 1994 and 2010;
+  Kosovo is not separate in 2010; 1492 maps North America far more finely than
+  elsewhere. Fix names via `name-overrides.json`; geometry fixes belong
+  upstream in aourednik/historical-basemaps.
+- Colonial rulers in `rulers.json` were added in September 2026 for the colonies
+  found recorded as self-ruling in 1880–1960 (mainly Africa, South and South-East
+  Asia, the Caribbean and the Pacific). It is not an exhaustive audit; earlier
+  maps and smaller territories may still show colonies as independent.
+- `npm run data:check` leaves 36 findings for a teacher to review (September
+  2026), e.g. the Western Roman Empire in 500, the Inca Empire in 1600, Egypt
+  under the UK in 1930, South Africa under the UK in 1914, the Bukhara and
+  Dahomey protectorates, and Xinjiang (a name match to an older state). Fix or
+  record each one as the recipe in §5 describes.
+- The globe depends on OpenHistoricalMap's tile server (no stated usage policy
+  or uptime guarantee; behind Cloudflare). If it is down, the SVG globe shows
+  land and pins only.
+- No borders before 1700, and blank land after it wherever OHM has not mapped
+  a polity (much of the Middle East, Africa and South Asia until about 1900).
+- OHM does not map most Indigenous nations and peoples (Aboriginal and
+  Torres Strait Islander nations, much of the Americas, Africa and the Pacific
+  outside states). Candidate sources and their terms are listed under
+  "Indigenous territories" below.
+- **Indigenous territories** (checked September 2026; none is added yet). They
+  are language or nation areas, mostly undated ("traditional" or at contact),
+  so they suit an optional layer rather than the year-filtered borders, labelled
+  as approximate and contested. Consult the communities concerned before use.
+  - Glottography (github.com/Glottography): ~13,000 language areas from 29
+    sources; datasets from Asher & Moseley's *Atlas of the World's Languages*
+    are CC BY 4.0. Its Australia dataset (from Bowern 2021) is CC BY-NC 4.0.
+  - Native Land Digital (native-land.ca): territories, languages and treaties,
+    strongest for the Americas, Australia and Aotearoa. Free API with a key,
+    non-commercial use with attribution, but its Data Sovereignty Treaty forbids
+    storing or redistributing the data without permission, so it would be
+    fetched live.
+  - AIATSIS Map of Indigenous Australia (Horton, 1996): reproduction needs a
+    paid licence from Aboriginal Studies Press.
+  - Aotearoa: Te Puni Kōkiri's iwi areas of interest on data.govt.nz (modern,
+    statutory areas; check the licence on the dataset page).
+  - OpenHistoricalMap accepts Indigenous territories as edits; data from
+    restricted sources must not be copied into it.
+- CShapes 2.0 (dated borders 1886–2019) was evaluated in September 2026 and not
+  adopted. Its public files have no ruling-power field, use one modern name
+  per unit, and omit annexations that were later reversed (it shows Austria
+  independent throughout 1938–45 and has no Manchukuo). Its licence is also
+  CC BY-NC-SA.
 - Site search (e.g. Pagefind over `dist/`).
 - Verify detailed prescribed Paper 1 pairings and Europe study boundaries
   against the school's full 2028 History guide; only the public brief is verified.
@@ -568,9 +781,12 @@ the same checks before switching releases, so a failing commit never goes live).
 ## 12. Licences and credits
 
 - Code: all rights reserved by the repository owner unless a licence is added.
-- Historical borders: aourednik/historical-basemaps, **GPL-3.0** — the derived
-  files in `public/data/snapshots/` stay under GPL-3.0 (see the LICENSE.md there).
-- Natural Earth (land, present-day borders in `world_2026.geojson`, and the
-  home-page globe via world-atlas): public domain.
+- Globe borders: OpenHistoricalMap contributors, **CC0** — credited with the
+  map (MapLibre's attribution control) and in the info panel.
+- Unused old border files: aourednik/historical-basemaps, **GPL-3.0** — the
+  derived files in `public/data/snapshots/` stay under GPL-3.0 (see the LICENSE.md there).
+- Natural Earth (the globe's sea and coastlines in `sea.geojson`, the immediate
+  SVG globe via world-atlas, and the unused `land.geojson` and
+  `world_2026.geojson`): public domain.
 - Map label glyphs: Noto Sans, SIL Open Font License 1.1.
 - MapLibre GL JS: BSD-3-Clause. Fonts via Fontsource: OFL.

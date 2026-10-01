@@ -12,8 +12,10 @@
 .home-globe .globe-pin__dot { display: block; width: 10px; height: 10px; border-radius: 50%; background: var(--brass); border: 2px solid var(--night-ink); }
 .home-globe .globe-pin__label { display: none; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 11px; text-shadow: 0 1px 4px var(--night); }
 .home-globe .globe-pin:hover .globe-pin__label, .home-globe .globe-pin:focus-visible .globe-pin__label { display: block; }
-.home-globe .globe-pin__stem { position: absolute; left: -93px; top: -93px; width: 200px; height: 200px; pointer-events: none; overflow: visible; }
-.home-globe .globe-pin__stem line { stroke: var(--night-ink); stroke-width: 1; opacity: .7; }
-.home-globe .globe-pin.maplibregl-marker-covered { visibility: hidden; pointer-events: none; }
+.home-globe .globe-pin__count { position: absolute; left: 9px; top: -9px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px; background: var(--brass); color: var(--night); font-size: 9px; font-weight: 700; line-height: 15px; text-align: center; box-shadow: 0 0 0 1.5px var(--night-ink); pointer-events: none; }
+.home-globe .globe-pin__count:empty { display: none; }
+.home-globe .globe-pin:is(.is-behind, .is-grouped) { visibility: hidden; pointer-events: none; }
 @media(max-width: 900px) { .home-globe { height: 500px; } }
 @media(max-width: 500px) { .home-globe { height: 390px; } .home-globe__caption { top: 20px; left: 18px; gap: 8px; } .home-globe__caption span:last-child { display: none; } }
+/* The map credit (required by CC BY) sits at the top of the card, clear of the explore link. */
+.home-globe .maplibregl-ctrl-bottom-right { top: 10px; bottom: auto; }

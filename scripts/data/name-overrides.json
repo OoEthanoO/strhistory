@@ -1,8 +1,25 @@
 {
+  "1878": {
+    "Kingdom of Brazil": "Empire of Brazil"
+  },
+  "1880": {
+    "Kingdom of Brazil": "Empire of Brazil"
+  },
   "1900": {
-    "Kingdom of Brazil": "Brazil",
+    "Kingdom of Brazil": {
+      "name": "Brazil",
+      "subjecto": "Brazil"
+    },
     "Manchu Empire": "Qing Empire",
-    "Congo": "Congo Free State"
+    "Congo": "Congo Free State",
+    "Harer (Egypt)": {
+      "name": "Harar (Ethiopia)",
+      "subjecto": "Ethiopia"
+    },
+    "Kingdom of Hawaii": {
+      "name": "Hawaii",
+      "subjecto": "United States"
+    }
   },
   "1914": {
     "Manchu Empire": "Republic of China",
@@ -30,7 +47,19 @@
     "Equatorial Guinea": "Spanish Guinea",
     "Suriname": "Dutch Guiana",
     "Mozambique": "Mozambique (Portugal)",
-    "Libya": "Libya (Italy)"
+    "Libya": "Libya (Italy)",
+    "Gambia, The": {
+      "name": "Gambia",
+      "subjecto": "United Kingdom"
+    },
+    "Belize": {
+      "name": "British Honduras",
+      "subjecto": "United Kingdom"
+    },
+    "United States Virgin Islands": {
+      "name": "Danish West Indies",
+      "subjecto": "Denmark"
+    }
   },
   "1920": {
     "USSR": "Soviet Russia",
@@ -47,7 +76,19 @@
     "Zimbabwe": "Southern Rhodesia (UK)",
     "Suriname": "Dutch Guiana",
     "Equatorial Guinea": "Spanish Guinea",
-    "Iran": "Persia"
+    "Iran": "Persia",
+    "Gambia, The": {
+      "name": "Gambia",
+      "subjecto": "United Kingdom"
+    },
+    "Sudan": {
+      "name": "Anglo-Egyptian Sudan",
+      "subjecto": "United Kingdom"
+    },
+    "Belize": {
+      "name": "British Honduras",
+      "subjecto": "United Kingdom"
+    }
   },
   "1930": {
     "White Russia": {
@@ -72,7 +113,16 @@
     "Zimbabwe": "Southern Rhodesia (UK)",
     "Suriname": "Dutch Guiana",
     "Equatorial Guinea": "Spanish Guinea",
-    "Iran": "Persia"
+    "Iran": "Persia",
+    "Gambia, The": {
+      "name": "Gambia",
+      "subjecto": "United Kingdom"
+    },
+    "Sudan": {
+      "name": "Anglo-Egyptian Sudan",
+      "subjecto": "United Kingdom"
+    },
+    "United Kingdom of Great Britain and Ireland": "United Kingdom"
   },
   "1938": {
     "Israel": "Mandatory Palestine (UK)",
@@ -92,10 +142,34 @@
       "name": "Saudi Arabia",
       "subjecto": "Saudi Arabia"
     },
-    "Mesopotamia (GB)": "Iraq",
+    "Mesopotamia (GB)": {
+      "name": "Iraq",
+      "subjecto": "Iraq"
+    },
     "Guinea-Bissau": "Portuguese Guinea",
     "Equatorial Guinea": "Spanish Guinea",
-    "Suriname": "Dutch Guiana"
+    "Suriname": "Dutch Guiana",
+    "Gambia, The": {
+      "name": "Gambia",
+      "subjecto": "United Kingdom"
+    },
+    "Sudan": {
+      "name": "Anglo-Egyptian Sudan",
+      "subjecto": "United Kingdom"
+    },
+    "Belize": {
+      "name": "British Honduras",
+      "subjecto": "United Kingdom"
+    },
+    "Cochin China": {
+      "name": "Cochin China",
+      "subjecto": "France"
+    },
+    "Cambodia": {
+      "name": "Cambodia",
+      "subjecto": "France"
+    },
+    "United Kingdom of Great Britain and Ireland": "United Kingdom"
   },
   "1945": {
     "India": "British Raj",
@@ -123,7 +197,18 @@
     "Equatorial Guinea": "Spanish Guinea",
     "Guyana": "British Guiana (UK)",
     "Suriname": "Dutch Guiana",
-    "Sudan": "Anglo-Egyptian Sudan"
+    "Sudan": {
+      "name": "Anglo-Egyptian Sudan",
+      "subjecto": "United Kingdom"
+    },
+    "Burkina Faso": {
+      "name": "French West Africa",
+      "subjecto": "France"
+    },
+    "Egypt": {
+      "name": "Egypt",
+      "subjecto": "Egypt"
+    }
   },
   "1960": {
     "Tanzania, United Republic of": "Tanganyika (UK)",
@@ -146,7 +231,20 @@
     "Sri Lanka": "Ceylon",
     "Malaysia": "Federation of Malaya",
     "United Arab Emirates": "Trucial States (UK)",
-    "Oman": "Muscat and Oman"
+    "Oman": "Muscat and Oman",
+    "Eritrea": {
+      "name": "Eritrea (federated with Ethiopia)",
+      "subjecto": "Ethiopia"
+    },
+    "Vietnam": "Vietnam (divided 1954–1976)",
+    "Gambia, The": {
+      "name": "Gambia",
+      "subjecto": "United Kingdom"
+    },
+    "Tibet": {
+      "name": "Tibet",
+      "subjecto": "China"
+    }
   },
   "1994": {
     "Serbia": {
@@ -157,6 +255,9 @@
       "name": "FR Yugoslavia (Montenegro)",
       "subjecto": "FR Yugoslavia"
     }
+  },
+  "2010": {
+    "Zaire": "Democratic Republic of the Congo"
   },
   "$comment": "Per-year corrections for anachronistic names in the upstream historical-basemaps data. Keys are snapshot years. Each entry maps an upstream NAME (or SUBJECTO) to either a display name (string) or {\"name\": ..., \"subjecto\": ...} when the controlling power (used for colouring) must change too. Only rename what you are sure of; the geometry itself cannot be fixed here. Re-run `npm run data:snapshots -- <year>` after editing."
 }

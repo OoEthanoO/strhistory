@@ -11,6 +11,8 @@
     "check": "npm run check:content && astro check",
     "check:content": "node scripts/check-content.mjs",
     "data:snapshots": "node scripts/data/build-snapshots.mjs",
+    "data:sea": "node scripts/data/build-sea.mjs",
+    "data:check": "node scripts/data/check-sovereignty.mjs",
     "astro": "astro"
   },
   "dependencies": {

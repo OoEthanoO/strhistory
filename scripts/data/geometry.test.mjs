@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -75,5 +75,28 @@ for (const expected of CASES) {
     ) * EARTH_RADIUS_KM ** 2;
     const error = Math.abs(area - expected.area) / expected.area;
     assert.ok(error <= 0.01, `Source area changed ${(100 * error).toFixed(3)}%; limit is 1%`);
+  });
+}
+
+// Every snapshot, not just the fidelity cases above: the globe relies on these.
+const GLYPH_RANGES = readdirSync(join(ROOT, 'public/glyphs/noto-sans'))
+  .map((f) => f.match(/^(\d+)-(\d+)\.pbf$/))
+  .filter(Boolean)
+  .map((m) => [Number(m[1]), Number(m[2])]);
+const drawable = (ch) => GLYPH_RANGES.some(([a, b]) => ch.codePointAt(0) >= a && ch.codePointAt(0) <= b);
+
+for (const file of readdirSync(SNAPSHOTS).filter((f) => /^world_-?\d+\.geojson$/.test(f))) {
+  test(`${file}: drawable, coloured and labelled`, () => {
+    const { features } = JSON.parse(readFileSync(join(SNAPSHOTS, file), 'utf8'));
+    for (const { properties: p, geometry } of features) {
+      assert.ok(geometry, `${p.name ?? 'An unnamed feature'} has no geometry`);
+      if (p.kind === 'label') {
+        const missing = [...p.name].filter((ch) => !drawable(ch));
+        assert.deepEqual(missing, [], `Label "${p.name}" uses characters the map font lacks`);
+      } else if (p.name && !p.disputed) {
+        // Disputed areas without a single administrator are deliberately unattributed.
+        assert.ok(p.power, `${p.name} has no power to colour it by`);
+      }
+    }
   });
 }
