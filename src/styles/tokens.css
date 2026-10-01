@@ -55,11 +55,6 @@
   --night-2: #131d31;
   --night-ink: #e9e4d8;
 
-  /* Off-white backdrop behind the globe (home and /globe), both themes */
-  --globe-bg: #fbf8f1;
-  --globe-bg-2: #ebe4d6;
-  --globe-ink: #1d1b18;
-
   /* Type */
   --font-serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;

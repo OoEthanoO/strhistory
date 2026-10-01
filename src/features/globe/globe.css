@@ -1,4 +1,4 @@
-/* The atlas keeps dark panels over an off-white backdrop in both site themes. */
+/* The atlas keeps a dark planetarium palette in both site themes. */
 .gx {
   --gx-ink: #ebe6da; --gx-ink-2: #b5bdcc; --gx-ink-3: #9aa6ba;
   --gx-panel: rgb(12 18 30 / 0.94); --gx-panel-solid: #0f1726;
@@ -6,13 +6,13 @@
   --gx-pin: #f2b35b; --gx-pin-glow: rgb(242 179 91 / 0.4);
   --gx-p1: #6cc3c9; --gx-p2: #f2b35b; --gx-p3: #b99be0;
   --gx-sidebar: 330px; --gx-timeline-h: 156px; --gx-top: calc(var(--header-h) + 12px);
-  position: fixed; inset: 0; overflow: hidden; background: radial-gradient(ellipse at 60% 45%, var(--globe-bg) 0, var(--globe-bg-2) 80%); color: var(--gx-ink);
+  position: fixed; inset: 0; overflow: hidden; background: #060a12; color: var(--gx-ink);
   font-family: var(--font-sans); font-size: 14px; line-height: 1.5;
 }
 .gx a { color: inherit; }
 .gx button, .gx input, .gx select { font: inherit; }
 .gx :is(button, input, select, a):focus-visible { outline: 2px solid var(--gx-pin); outline-offset: 3px; }
-.gx-stars { position: absolute; inset: 0; background: radial-gradient(ellipse at 65% 42%, var(--globe-bg) 0, var(--globe-bg-2) 80%); }
+.gx-stars { position: absolute; inset: 0; background: radial-gradient(ellipse at 65% 42%, #17223a 0, #060a12 65%); }
 .gx-world { position: absolute; top: var(--gx-top); bottom: var(--gx-timeline-h); left: calc(var(--gx-sidebar) + 20px); right: 0; }
 .gx-world > .gx-map, .gx-world > .gx-baked { position: absolute; inset: 0; width: 100%; height: 100%; }
 .gx-world > .gx-map { opacity: 0; pointer-events: none; }
