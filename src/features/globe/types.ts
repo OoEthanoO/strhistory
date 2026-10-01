@@ -38,8 +38,6 @@ export interface GlobeData {
 export interface PolityHover {
   name: string;
   subjecto: string | null;
-  /** When this version of the polity existed, e.g. "1871–1918". */
-  dates?: string | null;
   x: number;
   y: number;
 }

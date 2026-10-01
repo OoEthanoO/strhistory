@@ -2,8 +2,9 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { geoDistance, geoGraticule10, geoOrthographic, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import landTopology from 'world-atlas/land-110m.json';
-import { LAND_BASE, OCEAN } from './palette';
-import { pinClusters } from './pin-layout';
+import { colorFor, LAND_BASE, OCEAN } from './palette';
+import initialBorders from './baked/prebaked_1783.json';
+import { pinOffsets } from './pin-layout';
 import type { GlobeTopic } from './types';
 import './prebaked.css';
 
@@ -16,6 +17,7 @@ interface Props {
   onViewChange?: (view: GlobeView) => void;
   onInteractionEnd?: (view: GlobeView) => void;
   pinHref?: (topic: GlobeTopic) => string;
+  borderYear?: number | null;
 }
 const DEFAULT_CENTER: [number, number] = [15, 30];
 const topology = landTopology as unknown as Parameters<typeof feature>[0];
@@ -26,9 +28,9 @@ const normalise = ({ center, scale }: GlobeView): GlobeView => ({
   scale: Math.max(0.65, Math.min(6, scale)),
 });
 
-/** The first frame is baked into HTML: land and pins only, draggable while
- * WebGL and the OpenHistoricalMap land and borders arrive. */
-export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale = 1, className = '', onViewChange, onInteractionEnd, pinHref }: Props) {
+/** The first frame is baked into HTML; this same geometry remains draggable
+ * while WebGL, detailed coastlines, historical borders and labels arrive. */
+export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale = 1, className = '', onViewChange, onInteractionEnd, pinHref, borderYear = null }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<[number, number]>([800, 600]);
   const [view, setView] = useState<GlobeView>({ center, scale });
@@ -65,8 +67,7 @@ export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale =
   const projection = useMemo(() => geoOrthographic().translate([width / 2, height / 2]).scale(radius).rotate([-view.center[0], -view.center[1]]).precision(0.6), [width, height, radius, view.center]);
   const path = geoPath(projection).digits(1);
   const pins = topics.filter(t => geoDistance([t.lng, t.lat], view.center) < Math.PI / 2 - 0.03);
-  // Pins stay on their places; overlapping ones show as one pin with a count.
-  const clusters = pinClusters(pins.map(t => { const [x, y] = projection([t.lng, t.lat]) ?? [0, 0]; return { id: t.slug, x, y }; }));
+  const offsets = pinOffsets(pins.map(t => { const [x, y] = projection([t.lng, t.lat]) ?? [0, 0]; return { id: t.slug, x, y }; }));
   return <div ref={root} className={`prebaked-globe ${className}`}>
     <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Interactive history globe. Drag to rotate; use arrow keys to rotate and plus or minus to zoom." tabIndex={0}
       onPointerDown={e => {
@@ -115,18 +116,17 @@ export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale =
       <circle cx={width / 2} cy={height / 2} r={radius} fill={OCEAN} />
       <path d={path(graticule) ?? ''} fill="none" stroke="#a9c1e0" strokeOpacity="0.1" strokeWidth="0.6" />
       <path d={path(land as never) ?? ''} fill={LAND_BASE} />
+      {borderYear === 1783 && initialBorders.features.map((f, i) => <path key={i} d={path(f as never) ?? ''} fill={colorFor(f.properties?.subjecto ?? f.properties?.name, borderYear)} fillOpacity="0.88" stroke={OCEAN} strokeWidth="0.5" />)}
       <circle cx={width / 2} cy={height / 2} r={radius} fill="none" stroke="#a9c1e0" strokeOpacity="0.2" />
       {pins.map(t => {
         const point = projection([t.lng, t.lat]);
         if (!point) return null;
-        const cluster = clusters.get(t.slug);
-        if (cluster && cluster.leader !== t.slug) return null;
-        const count = cluster?.count ?? 1;
+        const [dx, dy] = offsets.get(t.slug) ?? [0, 0];
         return <a key={t.slug} href={pinHref?.(t) ?? t.href} aria-label={`${t.title}, ${t.place} — ${pinHref ? 'explore the globe' : 'open notes'}`}>
-          <g transform={`translate(${point[0]} ${point[1]})`} className="prebaked-pin">
+          <g transform={`translate(${point[0] + dx} ${point[1] + dy})`} className="prebaked-pin">
+            {(dx !== 0 || dy !== 0) && <line x1="0" y1="0" x2={-dx} y2={-dy} stroke="#f2b35b" strokeOpacity="0.7" />}
             <circle r="13" fill="transparent" /><circle r="7" fill="#f2b35b" fillOpacity="0.2" /><circle r="4" fill="#f2b35b" stroke={OCEAN} strokeWidth="1.5" />
-            {count > 1 && <g transform="translate(10 -10)" aria-hidden="true"><circle r="8" fill="#fff3de" stroke={OCEAN} strokeWidth="1.5" /><text textAnchor="middle" dy="3.5" fontSize="10" fontWeight="700" fill="#1a1206">{count}</text></g>}
-            <title>{count > 1 ? `${t.title} and ${count - 1} more` : t.title}</title>
+            <title>{t.title}</title>
           </g>
         </a>;
       })}

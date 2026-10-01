@@ -24,7 +24,7 @@ for (const path of [...protectedPages, '/', '/topics', '/topics/', '/glossary', 
   assert.equal(await r.text(), '', `no protected body: ${path}`);
 }
 console.log(`Protected ${protectedPages.length} built HTML pages plus route aliases.`);
-for (const path of ['/globe/', '/access/', '/version.json', '/data/land.geojson', '/data/sea.geojson', '/data/snapshots/world_1783.geojson', '/glyphs/noto-sans/0-255.pbf']) {
+for (const path of ['/globe/', '/access/', '/version.json', '/data/land.geojson', '/data/snapshots/world_1783.geojson', '/glyphs/noto-sans/0-255.pbf']) {
   const r = await request(path);
   assert.equal(r.status, 200, `public: ${path}`);
   await r.arrayBuffer();

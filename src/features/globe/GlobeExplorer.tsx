@@ -1,11 +1,10 @@
-/** SSR supplies the interactive baked globe; WebGL adds OpenHistoricalMap borders. */
+/** SSR supplies the interactive baked globe; WebGL progressively adds detail. */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import EraPanel from './EraPanel';
-import { BORDERS_FROM, clampYear, DEFAULT_YEAR, FIRST_YEAR, formatYear, indexOfYear, topicInYear } from './era';
+import { clampYear, DEFAULT_YEAR, FIRST_YEAR, indexOfYear, topicInYear } from './era';
 import './globe.css';
 import type { GlobeController } from './map';
 import PrebakedGlobe, { type GlobeView } from './PrebakedGlobe';
-import { prefetchWorld } from './tile-cache';
 import Timeline from './Timeline';
 import TopicList from './TopicList';
 import TopicPreview from './TopicPreview';
@@ -30,7 +29,7 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
   const [landReady, setLandReady] = useState(false);
   const [mapFailed, setMapFailed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const [bordersLoading, setBordersLoading] = useState(true);
+  const [borderYear, setBorderYear] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
   const [listExpanded, setListExpanded] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -38,15 +37,18 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
 
   const index = indexOfYear(snapshots, year);
   const snapshot = snapshots[index];
-  const ready = landReady && !mapFailed;
+  const requestedBorderYear = snapshot?.borderYear ?? null;
+  // The initial baked view includes 1783 territories, so do not replace those
+  // with bare land while the detailed reconstruction is still arriving.
+  const ready = landReady && !mapFailed && (requestedBorderYear !== 1783 || borderYear === 1783);
   const filtered = useMemo(() => {
     const search = query.trim().toLocaleLowerCase();
     return topics.filter((topic) => topic.curriculum === curriculum && (level === 'HL' || topic.level !== 'HL') && (!search || `${topic.title} ${topic.summary} ${topic.place} ${topic.unitTitle}`.toLocaleLowerCase().includes(search)));
   }, [topics, level, curriculum, query]);
   const visible = useMemo(() => filtered.filter((topic) => showAll || topicInYear(topic, year)), [filtered, showAll, year]);
   const activeSet = useMemo(() => new Set(visible.map((topic) => topic.slug)), [visible]);
-  const latest = useRef({ visible, year });
-  latest.current = { visible, year };
+  const latest = useRef({ visible, requestedBorderYear });
+  latest.current = { visible, requestedBorderYear };
 
   // Read URL state after hydration so SSR and the first client render agree.
   useEffect(() => {
@@ -88,7 +90,6 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
   useEffect(() => {
     let cancelled = false;
     let controller: GlobeController | undefined;
-    if (mapEl.current && latest.current.year >= BORDERS_FROM) prefetchWorld(mapEl.current, camera.current.scale);
     import('./map').then(({ GlobeController: Controller }) => {
       if (cancelled || !mapEl.current) return;
       controller = new Controller(mapEl.current, {
@@ -96,13 +97,15 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
         onPinLeave: (topic) => setHovered((previous) => previous?.slug === topic.slug ? null : previous),
         onPinClick: () => { /* Every pin remains a direct, native note link. */ },
         onPolityHover: setPolity,
-        onLoadingChange: setBordersLoading,
+        onLoadingChange: () => {},
+        onSnapshotChange: setBorderYear,
         onViewChange: (next) => { camera.current = next; },
-        onFailure: () => { setView(camera.current); setMapFailed(true); },
-      }, camera.current.center, { year: latest.current.year });
+        onFailure: () => { setView(camera.current); setMapFailed(true); setBorderYear(null); },
+      }, camera.current.center);
       ctrl.current = controller;
       controller.setView(camera.current.center, camera.current.scale);
       controller.setTopics(latest.current.visible);
+      controller.setSnapshot(latest.current.requestedBorderYear);
       controller.whenReady().then(() => {
         if (cancelled) return;
         controller!.setView(camera.current.center, camera.current.scale);
@@ -113,8 +116,12 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
     return () => { cancelled = true; ctrl.current = null; controller?.destroy(); };
   }, []);
 
-  // Every year is already in the loaded tiles: changing it only changes a filter.
-  useEffect(() => { ctrl.current?.setYear(year); }, [year, ready]);
+  useEffect(() => {
+    const controller = ctrl.current;
+    if (!controller) return;
+    controller.setSnapshot(requestedBorderYear);
+    controller.prefetch([snapshots[index + 1]?.borderYear, snapshots[index - 1]?.borderYear].filter((value): value is number => typeof value === 'number'));
+  }, [requestedBorderYear]);
 
   useEffect(() => { ctrl.current?.setTopics(visible); }, [visible, ready]);
   useEffect(() => { ctrl.current?.updatePins({ active: activeSet, selected: selected?.slug ?? null, hovered: hovered?.slug ?? null }, visible); }, [activeSet, selected, hovered, visible, ready]);
@@ -164,19 +171,19 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
       <h1 className="visually-hidden">Explore history on the globe</h1>
       <div className="gx-stars" aria-hidden="true" />
       <div className="gx-world">
-        {!ready && <PrebakedGlobe topics={visible} center={view.center} scale={view.scale} onViewChange={changeView} className="gx-baked" />}
+        {!ready && <PrebakedGlobe topics={visible} center={view.center} scale={view.scale} borderYear={requestedBorderYear} onViewChange={changeView} className="gx-baked" />}
         <div className="gx-map" ref={mapEl} aria-hidden={!ready} inert={!ready} />
-        {polity && !hovered && ready && <div className="gx-polity" style={{ transform: `translate(${polity.x + 14}px, ${polity.y + 14}px)` }} aria-hidden="true"><strong>{polity.name}</strong>{polity.dates && <span>{polity.dates}</span>}{polity.subjecto && polity.subjecto !== polity.name && <span>Part of {polity.subjecto}</span>}</div>}
+        {polity && !hovered && ready && <div className="gx-polity" style={{ transform: `translate(${polity.x + 14}px, ${polity.y + 14}px)` }} aria-hidden="true"><strong>{polity.name}</strong>{polity.subjecto && polity.subjecto !== polity.name && <span>Controlled by {polity.subjecto}</span>}</div>}
       </div>
       <TopicList year={year} topics={filtered} visible={activeSet} selected={selected?.slug ?? null} query={query} onQuery={setQuery} level={level} onLevel={setLevel} curriculum={curriculum} onCurriculum={setCurriculum} showAll={showAll} onShowAll={setShowAll} expanded={listExpanded} onToggle={() => setListExpanded((open) => !open)} onSelect={locate} onHover={setHovered} />
-      <EraPanel year={year} snapshot={snapshot} loading={!ready || bordersLoading} open={eraOpen} onToggle={() => setEraOpen((open) => !open)} />
+      <EraPanel year={year} snapshot={snapshot} borderYear={ready ? borderYear : requestedBorderYear === 1783 ? 1783 : null} open={eraOpen} onToggle={() => setEraOpen((open) => !open)} />
       <div className="gx-tools" role="toolbar" aria-label="Globe controls">
         <button type="button" className="gx-tool" onClick={() => ready ? ctrl.current?.zoomBy(0.5) : changeView({ ...view, scale: Math.min(8, view.scale * 1.3) })} aria-label="Zoom in">+</button>
         <button type="button" className="gx-tool" onClick={() => ready ? ctrl.current?.zoomBy(-0.5) : changeView({ ...view, scale: Math.max(0.6, view.scale / 1.3) })} aria-label="Zoom out">−</button>
         <button type="button" className="gx-tool" onClick={() => ready ? ctrl.current?.resetView() : changeView(DEFAULT_VIEW)} aria-label="Reset globe view">◎</button>
         <button type="button" className="gx-tool" onClick={() => setInfoOpen((open) => !open)} aria-expanded={infoOpen} aria-label="About this map">i</button>
       </div>
-      {infoOpen && <aside className="gx-panel gx-info" aria-label="About this map"><h2>Reading the globe</h2><p>Each pin opens one note. Pins appear only within that note’s date range; use “Show pins from all years” to explore the whole collection.</p><p>The timeline and world summaries are independent of the syllabus. SL shows shared course content; HL also includes the regional study.</p><p>Borders change with the year you choose, from {formatYear(BORDERS_FROM)} on. They come from OpenHistoricalMap, a detailed volunteer-built map of the past. Before {formatYear(BORDERS_FROM)} it covers too little of the world, so the globe shows no borders; later, places it has not yet mapped are left blank. Hover a territory to see its dates.</p><p className="gx-info__credit">Borders: <a href="https://www.openhistoricalmap.org/">OpenHistoricalMap</a> contributors (CC0). Coastlines: <a href="https://www.naturalearthdata.com/">Natural Earth</a>.</p><button type="button" className="gx-btn" onClick={() => setInfoOpen(false)}>Close</button></aside>}
+      {infoOpen && <aside className="gx-panel gx-info" aria-label="About this map"><h2>Reading the globe</h2><p>Each pin opens one note. Pins appear only within that note’s date range; use “Show pins from all years” to explore the whole collection.</p><p>The timeline and world summaries are independent of the syllabus. SL shows shared course content; HL also includes the regional study.</p><p>Border reconstructions have their own date, shown above the timeline. Where no reconstruction is available, the globe shows physical geography.</p><p className="gx-info__credit">Borders: <a href="https://github.com/aourednik/historical-basemaps">historical-basemaps</a> (GPL-3.0). Modern land: <a href="https://www.naturalearthdata.com/">Natural Earth</a>. Dashed borders are approximate.</p><button type="button" className="gx-btn" onClick={() => setInfoOpen(false)}>Close</button></aside>}
       {preview && <TopicPreview topic={preview} inEra={activeSet.has(preview.slug)} onClose={selected ? () => setSelected(null) : undefined} onJump={locate} />}
       <Timeline snapshots={snapshots} year={year} currentYear={currentYear} onYear={changeYear} playing={playing} onTogglePlay={() => { if (!playing && year >= currentYear) setYear(FIRST_YEAR); setPlaying((value) => !value); }} />
     </div>

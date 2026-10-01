@@ -1,24 +1,29 @@
 export interface PinPoint { id: string; x: number; y: number }
-export interface PinCluster { leader: string; count: number }
 
-/**
- * Pins never move from their places. Where dots would overlap on screen, one
- * pin (listed in `first`, e.g. the selected note, otherwise the earliest id)
- * stays and carries the count; the others are hidden until zooming in
- * separates them. Leaders are chosen greedily, so a group never spans more
- * than `radius` from its leader.
- */
-export function pinClusters(points: PinPoint[], radius = 18, first: string[] = []): Map<string, PinCluster> {
-  const rank = (id: string) => (first.includes(id) ? first.indexOf(id) : first.length);
-  const ordered = [...points].sort((a, b) => rank(a.id) - rank(b.id) || a.id.localeCompare(b.id));
-  const leaders: PinPoint[] = [];
-  const leaderOf = new Map<string, string>();
-  for (const point of ordered) {
-    const leader = leaders.find((other) => Math.hypot(point.x - other.x, point.y - other.y) < radius);
-    if (leader) leaderOf.set(point.id, leader.id);
-    else { leaders.push(point); leaderOf.set(point.id, point.id); }
+/** Fan out nearby notes without changing their geographical coordinates.
+ * Renderers draw a fine stem back to the actual position. */
+export function pinOffsets(points: PinPoint[]): Map<string, [number, number]> {
+  const groups: PinPoint[][] = [];
+  for (const point of points) {
+    const nearby = groups.filter((group) => group.some((other) => Math.hypot(point.x - other.x, point.y - other.y) < 28));
+    if (!nearby.length) groups.push([point]);
+    else {
+      const merged = [point, ...nearby.flat()];
+      for (const group of nearby) groups.splice(groups.indexOf(group), 1);
+      groups.push(merged);
+    }
   }
-  const counts = new Map<string, number>();
-  for (const leader of leaderOf.values()) counts.set(leader, (counts.get(leader) ?? 0) + 1);
-  return new Map([...leaderOf].map(([id, leader]) => [id, { leader, count: counts.get(leader)! }]));
+  const result = new Map<string, [number, number]>();
+  for (const group of groups) {
+    group.sort((a, b) => a.id.localeCompare(b.id));
+    if (group.length === 1) { result.set(group[0].id, [0, 0]); continue; }
+    const radius = Math.max(22, group.length * 5);
+    const cx = group.reduce((sum, point) => sum + point.x, 0) / group.length;
+    const cy = group.reduce((sum, point) => sum + point.y, 0) / group.length;
+    group.forEach((point, index) => {
+      const angle = -Math.PI / 2 + index * 2 * Math.PI / group.length;
+      result.set(point.id, [cx + Math.cos(angle) * radius - point.x, cy + Math.sin(angle) * radius - point.y]);
+    });
+  }
+  return result;
 }
