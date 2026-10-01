@@ -4,6 +4,11 @@ export { formatYear, formatYearRange as formatRange } from '../../lib/format.ts'
 
 export const FIRST_YEAR = -300000;
 export const DEFAULT_YEAR = 1789;
+/**
+ * First year with borders (OpenHistoricalMap). Before 1600 OHM covers under
+ * half of the world's land, so earlier years show land and pins only.
+ */
+export const BORDERS_FROM = 1700;
 
 /** Note dates are inclusive. A nearby snapshot never makes a pin visible. */
 export function topicInYear(topic: Pick<GlobeTopic, 'start' | 'end'>, year: number): boolean {

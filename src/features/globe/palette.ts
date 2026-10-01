@@ -1,8 +1,30 @@
 /**
- * Polity colours. A polity's colour comes from hashing its controlling power
- * (SUBJECTO in the data), so an empire and its colonies share a colour within
- * a scheme. Schemes are selected by the source year of the border geometry.
+ * Polity colours. A polity's colour comes from hashing its controlling power,
+ * so an empire and its colonies share a colour within a scheme. Schemes are
+ * selected by year. Names differ between sources and periods, so powerOf maps
+ * them to one power (scripts/data/powers.json) and colorForPolity prefers a
+ * scheme's named colour for the exact name before falling back to the power.
  */
+import POWERS from '../../../scripts/data/powers.json';
+
+const CANONICAL = new Map(Object.entries(POWERS.aliases).flatMap(([power, names]) => names.map((n) => [n, power] as const)));
+const ADJECTIVES: Record<string, string> = POWERS.adjectives;
+
+/**
+ * The power whose colour a polity takes, from its name alone: an alias
+ * ("French Republic" → France), a ruler in brackets ("Tanganyika (UK)"), or a
+ * leading adjective ("Belgian Congo" → Belgium). Otherwise the name itself.
+ * Keep in step with powerOf in scripts/data/build-cliopatria.mjs.
+ */
+export function powerOf(name: string | null | undefined): string | null {
+  if (!name) return null;
+  const alias = CANONICAL.get(name);
+  if (alias) return alias;
+  const suffix = name.match(/\(([^()]+)\)\s*$/)?.[1];
+  if (suffix && CANONICAL.has(suffix)) return CANONICAL.get(suffix)!;
+  const adjective = ADJECTIVES[name.split(' ')[0]];
+  return adjective ? CANONICAL.get(adjective) ?? adjective : name;
+}
 
 export interface PolityColorScheme {
   name: string;
@@ -401,4 +423,26 @@ export function colorFor(key: string | null | undefined, borderYear?: number | n
   let color = scheme.colors[(h >>> 0) % scheme.colors.length];
   color = adjustHexColor(color, -60, -10);
   return color
+}
+
+/**
+ * The colour for a polity known by several names, most specific first (its own
+ * name, its empire, its canonical power): the first with a named colour in this
+ * year's scheme wins, so a scheme can tell the Russian Empire from Russia;
+ * otherwise the last (the power) is hashed, so colonies share their empire's.
+ */
+export function colorForPolity(names: (string | null | undefined)[], year: number): string {
+  const scheme = colorSchemeFor(year);
+  const known = names.filter((n): n is string => !!n);
+  return colorFor(known.find((n) => scheme.fixed[n]) ?? known.at(-1), year);
+}
+
+/**
+ * `color` as it looks at 88% opacity over the land, as a solid colour. Fills are
+ * opaque so that overlapping polities never blend into a third colour.
+ */
+export function onLand(color: string, opacity = 0.88): string {
+  const channel = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+  const mixed = [0, 1, 2].map((i) => Math.round(channel(color, i) * opacity + channel(LAND_BASE, i) * (1 - opacity)));
+  return `#${mixed.map((c) => c.toString(16).padStart(2, '0')).join('')}`;
 }
