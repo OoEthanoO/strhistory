@@ -218,6 +218,7 @@ const PRE_1900_FIXED: Readonly<Record<string, string>> = {
   Delhi: '#9dc82a',
   'Sultanate of Delhi': '#9dc82a',
   'Mysore (Indian princely state)': '#ecf2f3',
+  'Byzantine Empire': '#952d66',
   Ukraine: '#7cb797',
   Yemen: '#6a262c',
   Oman: '#628699',
