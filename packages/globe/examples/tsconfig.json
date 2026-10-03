@@ -1,0 +1,16 @@
+{
+  // Examples are served by Vite (`npm run dev -w @alexs-atlas/globe`), not built.
+  // This file makes them type-checkable (npx tsc -p packages/globe/examples) and is
+  // the tsconfig Vite uses when transforming them.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "types": ["vite/client"]
+  },
+  "include": ["./**/*.ts", "../src/**/*.ts"],
+  "exclude": ["../src/**/*.test.ts"]
+}

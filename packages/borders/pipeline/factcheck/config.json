@@ -1,0 +1,103 @@
+{
+  "$comment": "Defaults for the fact-check tools (packages/borders/pipeline/factcheck). An optional \"factcheck\" object in pipeline/config.json overrides any of these keys (deep merge). Every class QID below is verified against its English label at run time; a mismatch stops the tool.",
+  "classes": {
+    "political": {
+      "Q1048835": "political territorial entity",
+      "Q7275": "state",
+      "Q3024240": "historical country",
+      "Q6256": "country",
+      "Q133156": "colony",
+      "Q164142": "protectorate",
+      "Q417175": "kingdom",
+      "Q48349": "empire",
+      "Q170156": "confederation",
+      "Q133442": "city-state",
+      "Q208500": "principality",
+      "Q56061": "administrative territorial entity"
+    },
+    "nonPolitical": {
+      "Q5": "human",
+      "Q164950": "dynasty",
+      "Q41710": "ethnic group",
+      "Q198": "war",
+      "Q465299": "archaeological culture",
+      "Q133311": "tribe"
+    },
+    "searchTerms": {
+      "$comment": "Extra classes found by exact English label via wbsearchentities; accepted only when the description contains one of the keywords and the class reaches one of the roots below. The resolved table is printed in coverage-gaps.md.",
+      "terms": ["sultanate", "khanate", "emirate", "caliphate", "khaganate", "chiefdom", "duchy", "grand duchy", "tribal confederation", "Native American tribe", "indigenous peoples", "First Nations", "trust territory", "League of Nations mandate", "crown colony", "vassal state", "tributary state", "client state", "imamate", "beylik", "nomadic empire", "former country", "sovereign state"],
+      "descriptionKeywords": ["state", "monarch", "territor", "polity", "govern", "ruled", "rule", "country", "politic", "tribe", "people", "group", "nation", "sovereign", "jurisdiction", "dependen", "realm", "region", "chief", "khan", "emir", "sultan", "caliph", "duke", "imam", "bey"]
+    }
+  },
+  "cliopatria": {
+    "dateToleranceYears": 25,
+    "dateToleranceShare": 0.1,
+    "nameMinSimilarity": 0.5,
+    "replacementMinSimilarity": 0.85,
+    "replacementSearchLimit": 10
+  },
+  "gaps": {
+    "$comment": "Candidates come from SPARQL over the classes in gaps.roots (closure via P279*). score = sitelinks x min(log2(2 + years/10), 6) x 1.5 on unclaimed land / x 0.6 inside another polity / x 0.25 for city or aggregate descriptions; minScore/minYears decide which gaps become known-gap entries; the rest are counted in the report (no silent caps).",
+    "roots": {
+      "Q3024240": "historical country",
+      "Q417175": "kingdom",
+      "Q48349": "empire",
+      "Q133156": "colony",
+      "Q164142": "protectorate",
+      "Q170156": "confederation",
+      "Q133442": "city-state",
+      "Q208500": "principality"
+    },
+    "indigenousRoots": {
+      "Q133311": "tribe"
+    },
+    "lastYear": 1945,
+    "samples": 5,
+    "probeDeg": 0.1,
+    "minScore": 25,
+    "minYears": 10,
+    "nameMatch": 0.75,
+    "maxPerClassQuery": 60000
+  },
+  "modern": {
+    "subunitGroups": {
+      "$comment": "Units whose 1946+ history needs subunits that the generator cannot derive; they get low confidence and a curation note.",
+      "pids": ["ovr:north-yemen", "ovr:south-yemen", "ovr:west-germany", "ovr:east-germany", "ovr:allied-occupied-germany"]
+    },
+    "$dependencyComment": "Do not add \"dependent territory\" (Q161243): client states, puppet states and Soviet union republics are its subclasses.",
+    "dependencyClasses": {
+      "Q133156": "colony",
+      "Q164142": "protectorate"
+    },
+    "dependencySearchTerms": ["United Nations trust territory", "trust territory", "League of Nations mandate", "crown colony", "overseas territory", "condominium", "occupied territory", "British Overseas Territory", "military occupation", "unincorporated territory", "colonial territory"]
+  },
+  "tileQa": {
+    "years": [1700, 1800, 1900, 1950, 2000, 2026],
+    "tileSize": 256,
+    "zoomByLod": { "l0": 2, "l1": 4, "l2": 6 },
+    "maxTilesPerHotspot": { "l1": 12, "l2": 16 },
+    "hotspots": {
+      "british-isles": [-11, 49.5, 2.5, 61],
+      "aegean": [21.5, 34.5, 29.5, 41.5],
+      "japan": [128, 30, 146.5, 46],
+      "philippines": [116, 4.5, 127, 21],
+      "indonesia": [94, -11, 141.5, 6],
+      "caribbean": [-86, 10, -59, 27],
+      "chile": [-76.5, -56, -66, -17],
+      "norway": [4, 57.5, 31.5, 71.5],
+      "canadian-arctic": [-125, 60, -60, 83],
+      "pacific-islands-west": [160, -23, 179.9, -8],
+      "pacific-islands-east": [-179.9, -23, -168, -8]
+    },
+    "thresholds": {
+      "$comment": "Exceeding any of these makes tile_qa.py exit 1. Shares are pixel ratios; 'tile' limits apply to every tile, 'global' to the sum over all tiles.",
+      "tileUncoveredLandShare": 0.05,
+      "tileSeaPaintShare": 0.05,
+      "globalUncoveredLandShare": 0.01,
+      "globalSeaPaintShare": 0.01,
+      "globalOverlapPx": 0,
+      "sliverIslandMinorityShare": 0.05,
+      "maxSliverIslands": 25
+    }
+  }
+}

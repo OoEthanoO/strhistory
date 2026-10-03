@@ -1,0 +1,40 @@
+{
+  "kind": "modern",
+  "region": "test-group",
+  "scope": "Fixture for the catalog tests (abbreviated DEU example from packages/borders/AGENTS.md; not complete data).",
+  "units": [
+    {
+      "unit": "DEU",
+      "timeline": [
+        { "years": [1990, "present"], "state": { "pid": "ne:deu", "name": "Germany", "kind": "state", "wikidata": "Q183" } }
+      ],
+      "subunits": [
+        { "id": "west-germany", "label": "West German Länder",
+          "geometry": { "type": "admin1", "codes": ["DE-BW", "DE-BY", "DE-HB", "DE-HH", "DE-HE", "DE-NI", "DE-NW", "DE-RP", "DE-SH"] },
+          "timeline": [
+            { "years": [1946, 1948], "state": { "pid": "ovr:allied-occupied-germany", "name": "Allied-occupied Germany", "kind": "dependency", "wikidata": "Q2415901" } },
+            { "years": [1949, 1989], "state": { "pid": "ovr:west-germany", "name": "West Germany", "kind": "state", "wikidata": "Q713750" } } ] }
+      ],
+      "sources": [{ "title": "German reunification", "url": "https://en.wikipedia.org/wiki/German_reunification" }],
+      "confidence": "high"
+    },
+    {
+      "unit": "ATA",
+      "timeline": [ { "years": [1946, "present"], "state": { "pid": "ovr:unclaimed", "name": "", "kind": "unclaimed" } } ],
+      "sources": [{ "title": "Antarctic Treaty System", "url": "https://en.wikipedia.org/wiki/Antarctic_Treaty_System" }]
+    }
+  ],
+  "overlays": [
+    {
+      "id": "m-test-group-crimea",
+      "label": "Crimea",
+      "geometry": { "type": "ne-disputed", "codes": ["B20"] },
+      "timeline": [ { "years": [2014, "present"], "set": { "kind": "disputed", "name": "Crimea", "controller": "ne:rus", "claimants": ["ne:ukr"] } } ],
+      "sources": [{ "title": "Annexation of Crimea by the Russian Federation", "url": "https://en.wikipedia.org/wiki/Annexation_of_Crimea_by_the_Russian_Federation" }],
+      "confidence": "high"
+    }
+  ],
+  "entries": [
+    { "id": "m-test-group-0001", "op": "note", "years": [1946, "present"], "reason": "Fixture: an editorial note in a modern file.", "confidence": "high", "status": "active", "author": "test", "date": "2026-10-01" }
+  ]
+}

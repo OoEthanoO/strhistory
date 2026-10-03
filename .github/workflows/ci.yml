@@ -41,6 +41,12 @@ jobs:
       - name: Small-country border fidelity
         run: node --test scripts/data/geometry.test.mjs
 
+      - name: Alex's Atlas modules (borders dataset, pipeline, globe) - type check
+        run: npm run check:packages
+
+      - name: Alex's Atlas modules - tests
+        run: npm test
+
       - name: Build
         run: npm run build
         env:

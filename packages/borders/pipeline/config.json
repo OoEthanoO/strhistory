@@ -1,0 +1,90 @@
+{
+  "$comment": "Shared by the Node and Python pipeline steps. Change thresholds here, never inline. Document every change in packages/borders/AGENTS.md.",
+  "years": {
+    "first": -3400,
+    "historicalFrom": 1700,
+    "cutover": 1946,
+    "present": 2026,
+    "convention": "historical-no-zero"
+  },
+  "sources": {
+    "cliopatria": {
+      "name": "Cliopatria (Seshat Global History Databank)",
+      "version": "v0.2.0",
+      "commit": "ad28a691",
+      "url": "https://raw.githubusercontent.com/Seshat-Global-History-Databank/cliopatria/v0.2.0/cliopatria.geojson.zip",
+      "sha256": "d01ae3a20d358cc5d54f69d9d725d390767d9c8759ac89ad6f90c58d106f3370",
+      "file": ".cache/sources/cliopatria/cliopatria-v0.2.0.geojson.zip",
+      "license": "CC BY 4.0",
+      "spdx": "CC-BY-4.0",
+      "doi": "10.5281/zenodo.20274630",
+      "paper": "https://doi.org/10.1038/s41597-025-04516-9",
+      "homepage": "https://github.com/Seshat-Global-History-Databank/cliopatria"
+    },
+    "naturalearth": {
+      "name": "Natural Earth",
+      "version": "v5.1.2",
+      "baseUrl": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/",
+      "dir": ".cache/sources/natural-earth",
+      "layers": {
+        "ne_10m_land": "1ac90796408bc6ad6911d69448485d3c4dbf2190370080368a09976e1c9f7416",
+        "ne_10m_minor_islands": "8c933ca7a4760256bdc46408355706e39764b0fa01c160c28888b90b4faec29f",
+        "ne_10m_lakes": "2d036f53dedec578001c5c30c2959ee7d4eebc1306900fa4367c49929ec8f2d9",
+        "ne_10m_admin_0_countries": "239eec57ac17f100a11e2536cffc56752c318b50ae765b0918ff7aab4ce8f255",
+        "ne_10m_admin_0_map_units": "57da82be755f4afccd8f3b14251bb2752f5df1395f47d2d86f817470c4a48862",
+        "ne_10m_admin_0_disputed_areas": "9cafef8b7dfb6b164dc58f218f981f4ace9f716f6c03795d4c62d1ac9f3d50f5",
+        "ne_10m_admin_1_states_provinces": "22d0e3ad85eb3e27f17cabf8ba2d50e554fbc27a87796ff891d958185da62fb5",
+        "ne_10m_rivers_lake_centerlines": "bb854a900ecbd3b408df46d5e16e3e0f974ba55993f9d8b5c26e855273c0905a",
+        "ne_10m_geography_regions_polys": "b7b26e50ea917d3696aec87f932def2bf5f890f5770e441d59c162c6f4c92a77"
+      },
+      "license": "Public domain",
+      "spdx": "CC0-1.0",
+      "homepage": "https://www.naturalearthdata.com/"
+    }
+  },
+  "coast": {
+    "$comment": "Island and coastal-gap assignment (historical and modern frames). Distances in km, areas in km2. Tuned against qa-report.json.",
+    "majorityIslandMaxAreaKm2": 25000,
+    "majorityShare": 0.5,
+    "majorityOtherMaxShare": 0.1,
+    "uncoveredIslandMaxAreaKm2": 2500,
+    "uncoveredNearKm": 10,
+    "uncoveredFarKm": 50,
+    "uncoveredFarRatio": 3,
+    "coastalGapBandKm": 30,
+    "landClipSliverKm2": 0.5
+  },
+  "lods": [
+    { "id": "l0", "toleranceM": 5000, "quantization": 100000, "minZoom": -2 },
+    { "id": "l1", "toleranceM": 1000, "quantization": 1000000, "minZoom": 3 },
+    { "id": "l2", "toleranceM": 250, "quantization": 1000000, "minZoom": 5 }
+  ],
+  "topology": {
+    "$comment": "Packaging (steps/lib/topo.mjs, noding.mjs), before mapshaper builds the topology: vertices closer than snapDegrees (3.3 m) merge, and a vertex within nodeDegrees (11 m) of another ring's segment is inserted into it, so borders that overlay operations left a few metres apart (or zigzagging around each other) share one arc. Measured on the problem frames (-212, 459, 555, 617, 741, 1919): 3.3 m noding left up to 165 km of unshared border per frame, 22 m created a 216 km2 lens overlap, 11 m neither.",
+    "snapDegrees": 0.00003,
+    "nodeDegrees": 0.0001
+  },
+  "chunks": {
+    "$comment": "Greedy time chunks at frame boundaries, target gzip size of the l0 file.",
+    "targetGzipBytesL0": 350000,
+    "maxYears": 1000
+  },
+  "palette": { "size": 12, "nearDeg": 1.0, "nearWeightKm": 25,
+    "$comment": "nearDeg/nearWeightKm: polities closer than nearDeg (degrees) without touching get a light colour-graph edge worth nearWeightKm km of border (geometry step, py/frames.py)." },
+  "qa": {
+    "$comment": "Geometry QA gates (py/qa.py). lostAllowlist: {rid: reason} for records that may end without land.",
+    "partitionMaxRelDiff": 0.0001,
+    "overlapMaxKm2": 0.5,
+    "overlapLogKm2": 10,
+    "microstateMaxRelDiff": 0.01,
+    "lostAllowlist": {}
+  },
+  "microstates": ["MCO", "VAT", "SMR", "LIE", "AND", "MLT", "SGP", "BHR", "NRU", "TUV", "MHL", "PLW", "KNA", "MDV", "SYC", "LCA", "VCT", "GRD", "ATG", "BRB", "DMA", "TON", "KIR", "FSM", "COM", "STP", "LUX", "CPV", "BRN", "WSM"],
+  "paths": {
+    "cache": ".cache",
+    "build": ".cache/build",
+    "reference": ".cache/reference",
+    "overrides": "packages/borders/overrides",
+    "data": "packages/borders/data"
+  }
+}

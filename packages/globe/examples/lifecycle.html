@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChronoGlobe lifecycle checks</title>
+    <link rel="icon" href="data:," />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #070b14;
+      }
+      body {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 4px;
+      }
+      #main {
+        position: relative;
+        grid-row: 1 / 3;
+      }
+      #mid,
+      #late {
+        position: relative;
+        outline: 1px dashed #334;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main"></div>
+    <div id="mid"></div>
+    <div id="late"></div>
+    <script type="module" src="./lifecycle.ts"></script>
+  </body>
+</html>

@@ -85,10 +85,18 @@ npm run check            # content lint + TypeScript/Astro type check
 npm run build            # static site → dist/
 npm run preview          # serve dist/ locally
 npm run check:content    # fast lint of all content, reports every problem at once
-npm run data:snapshots   # rebuild globe border files (only when snapshots change)
+npm run data:snapshots   # rebuild the legacy snapshot border files (see §6)
+npm test                 # Alex's Atlas module tests (vitest over packages/)
+npm run check:packages   # type-check packages/borders and packages/globe
+npm run data:sync        # copy the borders dataset to public/data/alexs-atlas (runs before dev/build)
+npm run data:build       # rebuild the borders dataset from pinned sources (~20 min; packages/borders/AGENTS.md)
 ```
 
-Before every push: `npm run check && npm run build` must pass. CI runs the same.
+Before every push: `npm run check && npm run build` must pass, and `npm test`
+plus `npm run check:packages` when `packages/` changed. CI runs all of them.
+The `data:*` pipeline commands (`data:build`, `data:validate`, `data:reference`,
+`data:catalog`, `data:factcheck`, `data:tileqa`) need Python 3 and download the
+pinned sources into `.cache/` on first use; see `packages/borders/AGENTS.md`.
 
 If the dev server shows "Outdated Optimize Dep" errors after installing a
 package, restart it (Vite's dependency cache is stale).
@@ -102,6 +110,7 @@ package, restart it (Vite's dependency cache is stale).
 | Framework | **Astro 7** (static output) | Content-first site; pages are HTML with zero JS unless a component needs it. Caddy serves the build after checking access. |
 | Access control | **Caddy forward_auth + Node built-in HTTP/crypto** | A small loopback service checks the shared code and signed HttpOnly cookies; no extra npm dependencies. |
 | Interactive globe | **React 19** island + **MapLibre GL 6** (globe projection) | MapLibre renders GeoJSON borders on a WebGL globe with smooth interaction and no API keys. React only for the globe UI state. |
+| Historical borders | **Alex's Atlas** modules in `packages/` (from alcaholex/chronoatlas): `@alexs-atlas/borders` dataset + pipeline + `bordersAt(year)`, `@alexs-atlas/globe` | Borders for any year from 3400 BCE to the present, clipped to real coastlines, as static same-origin JSON (CC BY 4.0). Used from TypeScript source through Vite aliases, so no package build step. |
 | Content | **Astro content collections** (Markdown / MDX + Zod schemas) | One file per topic/term/teacher; schemas catch mistakes at build time. |
 | Immediate globe | **d3-geo** SVG + React | A baked initial frame is in the HTML; drag, pinch, wheel, keyboard and note links work while MapLibre details arrive. The initial 1783 border geometry uses the same palette as the detailed map. |
 | Styling | Plain CSS with design tokens + Astro scoped styles | No framework to learn; tokens keep both themes consistent. |
@@ -171,8 +180,14 @@ public/
   glyphs/noto-sans/                     map label glyphs
 scripts/
   check-content.mjs        content lint (npm run check:content)
-  data/build-snapshots.mjs border data pipeline (npm run data:snapshots)
-  data/name-overrides.json per-year fixes for anachronistic names in the border data
+  data/sync-atlas-data.mjs copies packages/borders/data → public/data/alexs-atlas (git-ignored)
+  data/build-snapshots.mjs legacy snapshot border files (npm run data:snapshots)
+  data/name-overrides.json per-year fixes for anachronistic names in the legacy border data
+packages/                  ← Alex's Atlas modules; packages/AGENTS.md and TODO.md are their guide
+  borders/                 @alexs-atlas/borders: query API (src/), built dataset (data/, CC BY 4.0),
+                           pipeline/ (Node + Python: coast clipping, island assignment, overrides
+                           engine, LODs, QA, fact-check), overrides/ (sourced manual fixes), research/
+  globe/                   @alexs-atlas/globe: ChronoGlobe, addBorderLayers, Timeline, style.css
 deploy/
   Caddyfile                the site's Caddy config (source of truth)
   access/                  code/session service, provisioning helper, tests
@@ -188,8 +203,10 @@ small PR, and never reformat them wholesale:
 `src/content.config.ts`, `src/schemas/*`, `src/lib/content.ts`,
 `src/config/site.ts`, `src/styles/tokens.css`, `src/styles/base.css`,
 `src/layouts/BaseLayout.astro`, `src/components/Header.astro`,
-`astro.config.mjs`, `package.json` / `package-lock.json`,
-`deploy/server/tick.ps1`, `deploy/server/common.ps1`.
+`astro.config.mjs`, `package.json` / `package-lock.json`, `tsconfig.base.json`,
+`vitest.config.ts`, `deploy/server/tick.ps1`, `deploy/server/common.ps1`.
+`packages/` follows its own guide: `packages/AGENTS.md` and the per-package
+`AGENTS.md` files (dataset contract, override editing guide, globe API).
 
 - Adding a schema field: make it `.optional()` or give it a `.default()` so
   existing files stay valid.
@@ -312,15 +329,23 @@ ready. MapLibre is dynamically imported; the initial coloured globe is retained
 until land and historical polygons have reached a rendered frame. No loading
 screen replaces the globe. WebGL failures leave the SVG usable.
 
-- **Snapshots** are independent exploration stops. Normally each has a border file
-  `public/data/snapshots/world_<year>.geojson`, fetched when selected and
-  cached; neighbours are prefetched. Polygon features carry `name`,
-  `subjecto` (controlling power — drives colour), `partof`, `precision`
-  (1 = approximate border → drawn dashed). Point features with `kind: "label"`
-  are pre-computed label anchors (one per polity). `borderYear` can reuse a
-  dated file or be null for physical geography only. The year panel states the
-  actual reconstruction and summary dates. Modern coastlines are a reference,
-  not a claim about ancient shorelines.
+- **Borders** come from the Alex's Atlas dataset (`packages/borders/data`,
+  copied to `public/data/alexs-atlas/` before dev and build and served from
+  there): `map.ts` calls `createBorders({ manifestUrl }).bordersAt(year, { lod })`
+  for the exact year selected, −3400 … present (no year 0). Before 3400 BCE the
+  globe shows physical geography only. Polygons are clipped to Natural Earth
+  land. Tier 0 partitions the land between polities and `unclaimed` land;
+  tier 1 (indigenous nations, disputed areas) overlays it, drawn translucent
+  with a dashed outline; `precision: 'approximate'` is dashed too. Multi-part
+  features are split into one feature per part (`splitParts`) before
+  `setData`. Labels come from `labelsAt(year)`; lakes are drawn above the fills.
+  The level of detail follows the zoom (`lodForZoom`: l0 ≈ 5 km, l1 ≈ 1 km
+  from zoom 3, l2 ≈ 250 m from zoom 5). Contract and API: `packages/AGENTS.md`
+  §5. Modern coastlines are a reference, not a claim about ancient shorelines.
+- **Snapshots** are the timeline's exploration stops and "world in" texts.
+  Their `borderYear` and the GPL files `public/data/snapshots/world_<year>.geojson`
+  are legacy: only the baked initial 1783 frame, `check:content` and the
+  geometry test still use them.
 - **Pins** appear only when `start <= selectedYear <= end`, unless show-all is
   enabled. Course level, archive/current selection and search also filter them.
   Every visible pin links directly to its note. Locate buttons in the catalogue
@@ -329,8 +354,9 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   …" button on every topic page. `level`, `curriculum`, `all` and `q` also persist
   in the URL. Home handoffs carry `lng`, `lat` and `scale`. The shared saved level
   uses localStorage key `history-level`; storage failure must not break controls.
-- **Colours**: `palette.ts` selects a colour scheme from the source year of the
-  border geometry, then hashes the controlling power's name within that scheme. Schemes
+- **Colours**: `palette.ts` selects a colour scheme from the year shown, then
+  hashes the controlling power's name (`subjecto`, else `partof`, else `name`)
+  within that scheme. Schemes
   are listed in ascending `fromYear` order; the last matching scheme wins.
   Fixed colours keep major empires recognisable across nearby snapshots. When
   timeline snapshots reuse one reconstruction, they also reuse its scheme.
@@ -338,14 +364,12 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   self-hosted glyphs (`public/glyphs/noto-sans`); MapLibre's worker is bundled via
   `?worker&url` + `setWorkerUrl` (MapLibre 6 cannot find it on its own when
   bundled).
-- **Border detail**: the data pipeline uses topology-aware Douglas–Peucker
-  simplification at 100 m, or 5 m for features smaller than 100 km², with five
-  decimal places. These are processing tolerances, not historical accuracy
-  claims. Never replace them with a fixed vertex percentage: that can turn
-  small countries into triangles. MapLibre's 0.1-pixel tolerance reveals finer
-  geometry at higher zoom. The immediate SVG uses 2 km for larger features.
-  Rebuild all snapshots and the baked geometry together; bump `GEOMETRY_VERSION`
-  in `map.ts` to refresh cached downloads. Run `node --test scripts/data/geometry.test.mjs`.
+- **Border detail**: the Alex's Atlas pipeline simplifies each level of detail
+  with spherical Douglas–Peucker on shared topology, protecting microstates
+  (`packages/borders/AGENTS.md`). Rebuild it with `npm run data:build`; files
+  are content-hashed, so no cache-busting is needed. The legacy snapshot
+  pipeline (`scripts/data/build-snapshots.mjs`, 100 m Douglas–Peucker, tested by
+  `node --test scripts/data/geometry.test.mjs`) only feeds the baked 1783 frame.
 - Keyboard: timeline is a native slider (arrows, Home/End, PageUp/Down); pins
   are real links; Escape closes panels.
 - In development `window.__globe` exposes the controller for debugging.
@@ -452,7 +476,7 @@ shell, Node 24, Git, Caddy 2.11 (also serving finprint and ai subdomains).
 | Path | What |
 | --- | --- |
 | `repo\` | deploy-only clone of this repo (reset to each commit — don't edit it) |
-| `releases\<sha>\` | built sites, newest 5 kept |
+| `releases\<sha>\` | built sites, newest 5 kept (≈ 350 MB each, mostly the borders dataset in `data\alexs-atlas\`) |
 | `current` | junction to the live release; Caddy's `root` |
 | `Caddyfile` | live copy of `deploy/Caddyfile`, imported by the main Caddyfile |
 | `bin\tick.ps1` | the poller (copied by install.ps1; not updated by deploys) |
@@ -467,7 +491,9 @@ Node directly on `127.0.0.1:4310`, and restarts on failure. Every deploy runs
 `deploy/server/access.ps1` and checks health before installing the Caddy gate.
 The default Caddy route requires `forward_auth` before `file_server`; only the
 explicit globe/access endpoints, operational version/robots/sitemap files and
-map/JS/CSS/font assets are public. Keep that allowlist narrow, never use an
+map/JS/CSS/font assets, including the borders dataset under
+`/data/alexs-atlas/` (its `manifest.json` revalidated, its content-hashed files
+immutable), are public. Keep that allowlist narrow, never use an
 extension-only exception across the site. An unavailable service fails closed
 for protected content while the public globe still works. Direct `index.html`
 URLs, mixed case and encoded paths must also remain protected.
@@ -555,10 +581,11 @@ the same checks before switching releases, so a failing commit never goes live).
   (current ones are labelled samples).
 - Expand the seven initial event modules across the selected 2028 studies.
   This is a growing collection, not complete curriculum coverage.
-- Some upstream border data is approximate or anachronistic (for example,
-  Vietnam is not shown divided in 1960). Fix names via
-  `name-overrides.json`; geometry fixes belong upstream in
-  aourednik/historical-basemaps.
+- Border corrections are sourced override entries in
+  `packages/borders/overrides/` (guide: `packages/borders/AGENTS.md`); open
+  dataset and globe tasks are in `packages/TODO.md`.
+- Retire the legacy historical-basemaps snapshot files, glyphs and baked 1783
+  frame once nothing on the site needs them.
 - Site search (e.g. Pagefind over `dist/`).
 - Verify detailed prescribed Paper 1 pairings and Europe study boundaries
   against the school's full 2028 History guide; only the public brief is verified.
@@ -568,8 +595,17 @@ the same checks before switching releases, so a failing commit never goes live).
 ## 12. Licences and credits
 
 - Code: all rights reserved by the repository owner unless a licence is added.
-- Historical borders: aourednik/historical-basemaps, **GPL-3.0** — the derived
-  files in `public/data/snapshots/` stay under GPL-3.0 (see the LICENSE.md there).
+- Historical borders on the globe: the Alex's Atlas dataset
+  (`packages/borders/data`), **CC BY 4.0** — Cliopatria (Seshat Global History
+  Databank, Bennett et al. 2025, CC BY 4.0, modified), Natural Earth (public
+  domain) and sourced Alex's Atlas overrides, including Native American nations
+  adapted from USDA Forest Service *Tribal Lands Ceded to the United States*
+  (CC BY 4.0). The globe's info panel credits it, one click from every view;
+  full text in `packages/borders/data/ATTRIBUTION.md`.
+- Alex's Atlas code (`packages/borders`, `packages/globe`): MIT (per package.json).
+- Legacy borders: aourednik/historical-basemaps, **GPL-3.0** — the derived
+  files in `public/data/snapshots/` and `src/features/globe/baked/` stay under
+  GPL-3.0 (see the LICENSE.md files there).
 - Natural Earth (land, present-day borders in `world_2026.geojson`, and the
   home-page globe via world-atlas): public domain.
 - Map label glyphs: Noto Sans, SIL Open Font License 1.1.

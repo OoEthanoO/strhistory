@@ -15,7 +15,7 @@ export default function HomeGlobe({ topics }: GlobeData) {
   const levelRef = useRef(level);
   levelRef.current = level;
   const [handoffHref, setHandoffHref] = useState('/globe?year=1789&level=HL');
-  const ready = mapReady && borderYear === 1783;
+  const ready = mapReady && borderYear === 1789;
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pointers = useRef(new Set<number>());
   const navigating = useRef(false);
@@ -41,11 +41,11 @@ export default function HomeGlobe({ topics }: GlobeData) {
         onPolityHover: () => {}, onLoadingChange: () => {},
         onViewChange: next => { view.current = next; setHandoffHref(href()); },
         onInteractionEnd: next => { view.current = next; enter(); },
-        onSnapshotChange: setBorderYear,
+        onBordersChange: setBorderYear,
         onFailure: () => { mapFailed.current = true; setMapReady(false); },
       }, view.current.center, { compact: true });
       controller.current = c;
-      c.setSnapshot(1783);
+      void c.setYear(1789);
       c.whenReady().then(() => { if (!disposed && !mapFailed.current) { c.setView(view.current.center, view.current.scale); setMapReady(true); } });
     }).catch(() => {});
     // MapLibre listens for document mouseup: a drag can finish outside the card.
@@ -68,7 +68,7 @@ export default function HomeGlobe({ topics }: GlobeData) {
   }, [ready, level]);
   const finishSoon = () => { clearTimeout(timer.current); timer.current = setTimeout(enter, 60); };
   return <div className="home-globe" data-ready={ready || undefined}>
-    <div className="home-globe__caption"><span>THE WORLD IN</span><strong>1789</strong><span>Borders: 1783</span></div>
+    <div className="home-globe__caption"><span>THE WORLD IN</span><strong>1789</strong></div>
     <div className="home-globe__surface">
       {!ready && <PrebakedGlobe topics={current} borderYear={1783} onViewChange={next => { view.current = next; setHandoffHref(href()); controller.current?.setView(next.center, next.scale); }} onInteractionEnd={enter} pinHref={() => handoffHref} />}
       <div ref={container} className="home-globe__map" aria-hidden={!ready} inert={!ready}
