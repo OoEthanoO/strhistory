@@ -109,10 +109,10 @@ package, restart it (Vite's dependency cache is stale).
 | --- | --- | --- |
 | Framework | **Astro 7** (static output) | Content-first site; pages are HTML with zero JS unless a component needs it. Caddy serves the build after checking access. |
 | Access control | **Caddy forward_auth + Node built-in HTTP/crypto** | A small loopback service checks the shared code and signed HttpOnly cookies; no extra npm dependencies. |
-| Interactive globe | **React 19** island + **MapLibre GL 6** (globe projection) | MapLibre renders GeoJSON borders on a WebGL globe with smooth interaction and no API keys. React only for the globe UI state. |
+| Interactive globe | **React 19** island + Alex's Atlas **ChronoGlobe** on **MapLibre GL 6** (globe projection) | A WebGL globe with smooth interaction, no API keys and no glyph server (labels are drawn from the page's own font). React only for the globe UI state. |
 | Historical borders | **Alex's Atlas** modules in `packages/` (from alcaholex/chronoatlas): `@alexs-atlas/borders` dataset + pipeline + `bordersAt(year)`, `@alexs-atlas/globe` | Borders for any year from 3400 BCE to the present, clipped to real coastlines, as static same-origin JSON (CC BY 4.0). Used from TypeScript source through Vite aliases, so no package build step. |
 | Content | **Astro content collections** (Markdown / MDX + Zod schemas) | One file per topic/term/teacher; schemas catch mistakes at build time. |
-| Immediate globe | **d3-geo** SVG + React | A baked initial frame is in the HTML; drag, pinch, wheel, keyboard and note links work while MapLibre details arrive. The initial 1783 border geometry uses the same palette as the detailed map. |
+| Immediate globe | **d3-geo** SVG + React | A baked initial frame is in the HTML; drag, pinch, wheel, keyboard and note links work while MapLibre details arrive. The initial 1789 borders come from the same dataset and colours as the detailed map. |
 | Styling | Plain CSS with design tokens + Astro scoped styles | No framework to learn; tokens keep both themes consistent. |
 | Fonts | Newsreader (serif, variable, optical sizes) + Inter (sans), self-hosted via Fontsource | No third-party font requests (student privacy). |
 | Hosting | Home server (Windows 11) behind **Caddy** (automatic HTTPS) | See §10. |
@@ -152,12 +152,13 @@ src/
       GlobeExplorer.tsx      state, URL sync, playback; composes the pieces below
       HomeGlobe.tsx          home-page gesture handoff to the full explorer
       PrebakedGlobe.tsx      immediate interactive SVG and WebGL fallback
-      baked/                generated initial border geometry (GPL-3.0)
+      baked/                generated initial 1789 border geometry with map colours (CC BY 4.0)
       pin-layout.ts         separates nearby note pins, with stems to their places
-      map.ts                 GlobeController — the only file that touches MapLibre
+      map.ts                 GlobeController — wraps ChronoGlobe; pins as markers on its map
       Timeline.tsx EraPanel.tsx TopicList.tsx TopicPreview.tsx
       era.ts                 pure timeline maths (eras, lanes, positions)
-      palette.ts             period-aware polity colour schemes
+      map-colors.ts          the map's theme and polity colours (from Alex's Atlas)
+      country-colors.ts      generated flag colours (scripts/data/country-colors.mjs)
       data.ts                build-time loader → JSON props for the island
       globe.css              the explorer's own dark theme
     notes/                 ← FEATURE: components usable inside MDX notes
@@ -176,13 +177,15 @@ src/
   styles/base.css          ← element defaults and a few utilities (.container, .btn…)
 public/
   data/snapshots/world_<year>.geojson   generated border files (GPL-3.0, see LICENSE.md there)
-  data/land.geojson                     generated base land layer
-  glyphs/noto-sans/                     map label glyphs
+  data/land.geojson                     legacy base land layer (unused, see §11)
+  glyphs/noto-sans/                     legacy Noto Sans label glyphs (unused, see §11)
 scripts/
   check-content.mjs        content lint (npm run check:content)
   data/sync-atlas-data.mjs copies packages/borders/data → public/data/alexs-atlas (git-ignored)
+  data/build-prebaked.mjs  bakes the SVG globe's first frame from the dataset and map colours
+  data/country-colors.mjs  regenerates country-colors.ts from the dataset's borders
   data/build-snapshots.mjs legacy snapshot border files (npm run data:snapshots)
-  data/name-overrides.json per-year fixes for anachronistic names in the legacy border data
+  data/name-overrides.json per-year name fixes for the legacy snapshot files (not used by the site)
 packages/                  ← Alex's Atlas modules; packages/AGENTS.md and TODO.md are their guide
   borders/                 @alexs-atlas/borders: query API (src/), built dataset (data/, CC BY 4.0),
                            pipeline/ (Node + Python: coast clipping, island assignment, overrides
@@ -265,25 +268,22 @@ Rules:
 **Add a key term** — copy `glossary/_template.md` to `glossary/<id>.md`, then use
 `<Term id="<id>">words in the text</Term>`. Unknown ids fail the build.
 
-**Add a timeline snapshot year** — add `src/content/snapshots/<year>.md`, run
-`npm run data:snapshots -- <year>` (downloads and simplifies that year from
-aourednik/historical-basemaps — available years are listed in that repo's
-`geojson/` folder), check the names on the globe, add fixes to
-`scripts/data/name-overrides.json` and re-run if needed, then commit the
-markdown file and `public/data/snapshots/world_<year>.geojson` together.
-Negative filenames are BCE; the pipeline maps them to upstream `world_bc...`
-files. `borderYear: null` creates a land-only exploration stop, and a numeric
-`borderYear` reuses an available reconstruction with its actual date visible.
-Never relabel an old reconstruction as current borders. The present-day stop
-(`PRESENT_YEAR` in the script) is built from Natural Earth instead: ISO 3166
-countries, with contested territories dashed and named "(disputed)". After changing the
-1783 map, regenerate the initial SVG geometry with
-`node scripts/data/build-prebaked.mjs` and commit `src/features/globe/baked/`.
+**Add a timeline snapshot year** — add `src/content/snapshots/<year>.md`
+(`title`, `summary`, `highlights`). The globe draws the borders of that exact
+year from the Alex's Atlas dataset by itself (before 3400 BCE, land only), so
+the summary should not name a border source or date. `borderYear` is legacy:
+`check:content` still requires it to be `null` or the year of an existing
+`public/data/snapshots/world_<year>.geojson` (built by the legacy
+`npm run data:snapshots -- <year>`), so give new stops `borderYear: null`.
 
-**Fix a wrong country name on the globe** — add an entry for that year in
-`scripts/data/name-overrides.json` (string = new display name; object =
-`{ "name": …, "subjecto": … }` to also change the controlling power used for
-colour), then `npm run data:snapshots -- <year>`.
+**Fix a wrong country name or border on the globe** — the globe draws only the
+Alex's Atlas dataset: add a sourced override entry in
+`packages/borders/overrides/` (guide: `packages/borders/AGENTS.md`), rebuild
+with `npm run data:build`, then re-run `node scripts/data/build-prebaked.mjs`
+(and `node scripts/data/country-colors.mjs` when the colours of neighbours
+need it) and commit the results. After any change to the borders dataset or
+the map colours, regenerate the baked SVG frame the same way and commit
+`src/features/globe/baked/`.
 
 **Add a teacher / course / news post / guide** — copy an existing file in the
 folder, edit, remove `placeholder: true` when it is real. Teacher photos go
@@ -331,21 +331,31 @@ screen replaces the globe. WebGL failures leave the SVG usable.
 
 - **Borders** come from the Alex's Atlas dataset (`packages/borders/data`,
   copied to `public/data/alexs-atlas/` before dev and build and served from
-  there): `map.ts` calls `createBorders({ manifestUrl }).bordersAt(year, { lod })`
-  for the exact year selected, −3400 … present (no year 0). Before 3400 BCE the
+  there) for the exact year selected, −3400 … present (no year 0), through
+  `createBorders({ manifestUrl }).bordersAt(year, { lod })`. Before 3400 BCE the
   globe shows physical geography only. Polygons are clipped to Natural Earth
   land. Tier 0 partitions the land between polities and `unclaimed` land;
-  tier 1 (indigenous nations, disputed areas) overlays it, drawn translucent
-  with a dashed outline; `precision: 'approximate'` is dashed too. Multi-part
-  features are split into one feature per part (`splitParts`) before
-  `setData`. Labels come from `labelsAt(year)`; lakes are drawn above the fills.
-  The level of detail follows the zoom (`lodForZoom`: l0 ≈ 5 km, l1 ≈ 1 km
-  from zoom 3, l2 ≈ 250 m from zoom 5). Contract and API: `packages/AGENTS.md`
-  §5. Modern coastlines are a reference, not a claim about ancient shorelines.
+  tier 1 (indigenous nations, disputed areas) overlays it, hatched;
+  `precision: 'approximate'` is dashed. Multi-part features are split into one
+  feature per part before they reach MapLibre. The level of detail follows the
+  zoom (l0 ≈ 5 km, l1 ≈ 1 km from zoom 3, l2 ≈ 250 m from zoom 5). Contract and API:
+  `packages/AGENTS.md` §5. Modern coastlines are a reference, not a claim about
+  ancient shorelines.
+- **The globe** is ChronoGlobe from `packages/globe` (migration path C in
+  `packages/globe/AGENTS.md` §8.7), created by `map.ts`'s `GlobeController`,
+  which keeps the interface the explorer and the home page use and adds the note
+  pins as MapLibre markers on `globe.map`. It draws the polities with their own
+  outlines (no shared border or coast lines), tier 1 hatched, curved labels in
+  Newsreader (`labelMode: 'curved'`), a star field behind the globe, a hover
+  tooltip ("name · years") and click selection (white outline; Escape clears).
+  The explorer, the home handoff URL and the baked SVG share one view,
+  `{ center, scale }` with `scale = 2^(zoom − fitZoom)` and
+  `fitZoom = log2(min(width, height)·π/512)`. The SVG is an orthographic
+  approximation of MapLibre's perspective globe, so the globe shifts slightly
+  in size and position when WebGL takes over.
 - **Snapshots** are the timeline's exploration stops and "world in" texts.
   Their `borderYear` and the GPL files `public/data/snapshots/world_<year>.geojson`
-  are legacy: only the baked initial 1783 frame, `check:content` and the
-  geometry test still use them.
+  are legacy: only `check:content` and the geometry test still use them.
 - **Pins** appear only when `start <= selectedYear <= end`, unless show-all is
   enabled. Course level, archive/current selection and search also filter them.
   Every visible pin links directly to its note. Locate buttons in the catalogue
@@ -354,25 +364,29 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   …" button on every topic page. `level`, `curriculum`, `all` and `q` also persist
   in the URL. Home handoffs carry `lng`, `lat` and `scale`. The shared saved level
   uses localStorage key `history-level`; storage failure must not break controls.
-- **Colours**: `palette.ts` selects a colour scheme from the year shown, then
-  hashes the controlling power's name (`subjecto`, else `partof`, else `name`)
-  within that scheme. Schemes
-  are listed in ascending `fromYear` order; the last matching scheme wins.
-  Fixed colours keep major empires recognisable across nearby snapshots. When
-  timeline snapshots reuse one reconstruction, they also reuse its scheme.
-- **Rendering**: MapLibre globe projection with a light atmosphere; labels use
-  self-hosted glyphs (`public/glyphs/noto-sans`); MapLibre's worker is bundled via
-  `?worker&url` + `setWorkerUrl` (MapLibre 6 cannot find it on its own when
-  bundled).
+- **Colours** (`map-colors.ts`, from the Alex's Atlas site): a grand-strategy
+  political map in pastel tones. 21 major powers keep classic colours in every
+  era by explicit colour keys (`power`, so colonies share their empire's);
+  other countries take a flag colour from `country-colors.ts`, which
+  `node scripts/data/country-colors.mjs` generates so that neighbours stay
+  distinct (re-run after a dataset rebuild; the committed table is the one the
+  Alex's Atlas site ships, which a re-run currently changes for about 120
+  countries); the rest take one of 12 slot colours by `c`. Charcoal sea
+  `#353535`, stone land `#e3e0d9` for unclaimed land, no atmosphere.
+- **Rendering**: labels are drawn by MapLibre from the self-hosted Newsreader
+  font (no glyph server); MapLibre's worker is bundled via `?worker&url` and
+  passed as `workerUrl` (MapLibre 6 cannot find it on its own when bundled).
+  `--ca-*` custom properties in `globe.css` theme the globe component.
 - **Border detail**: the Alex's Atlas pipeline simplifies each level of detail
   with spherical Douglas–Peucker on shared topology, protecting microstates
   (`packages/borders/AGENTS.md`). Rebuild it with `npm run data:build`; files
   are content-hashed, so no cache-busting is needed. The legacy snapshot
   pipeline (`scripts/data/build-snapshots.mjs`, 100 m Douglas–Peucker, tested by
-  `node --test scripts/data/geometry.test.mjs`) only feeds the baked 1783 frame.
+  `node --test scripts/data/geometry.test.mjs`) no longer feeds the site.
 - Keyboard: timeline is a native slider (arrows, Home/End, PageUp/Down); pins
   are real links; Escape closes panels.
-- In development `window.__globe` exposes the controller for debugging.
+- In development `window.__globe` exposes the controller (`.globe` is the
+  ChronoGlobe) for debugging.
 
 ---
 
@@ -386,7 +400,7 @@ about sources, never gamified beyond the key-term progress bar.
   `src/styles/tokens.css` (`--paper`, `--ink`, `--accent`, `--brass`,
   `--term`, callout families…). Both themes are defined there; components
   never hard-code colours. The globe has its own palette in `globe.css`
-  (always dark).
+  (always dark) and its map colours in `src/features/globe/map-colors.ts`.
 - **Themes:** light by default, dark via `prefers-color-scheme` or the header
   toggle (`html[data-theme]`, stored in `localStorage`). Check both.
 - **Type:** Newsreader for headings and reading text (optical sizing on),
@@ -584,8 +598,9 @@ the same checks before switching releases, so a failing commit never goes live).
 - Border corrections are sourced override entries in
   `packages/borders/overrides/` (guide: `packages/borders/AGENTS.md`); open
   dataset and globe tasks are in `packages/TODO.md`.
-- Retire the legacy historical-basemaps snapshot files, glyphs and baked 1783
-  frame once nothing on the site needs them.
+- Retire the legacy globe data nothing on the site draws any more: the
+  historical-basemaps snapshot files (only the content lint and the geometry
+  test read them), `public/data/land.geojson` and the Noto Sans label glyphs.
 - Site search (e.g. Pagefind over `dist/`).
 - Verify detailed prescribed Paper 1 pairings and Europe study boundaries
   against the school's full 2028 History guide; only the public brief is verified.
@@ -600,13 +615,14 @@ the same checks before switching releases, so a failing commit never goes live).
   Databank, Bennett et al. 2025, CC BY 4.0, modified), Natural Earth (public
   domain) and sourced Alex's Atlas overrides, including Native American nations
   adapted from USDA Forest Service *Tribal Lands Ceded to the United States*
-  (CC BY 4.0). The globe's info panel credits it, one click from every view;
-  full text in `packages/borders/data/ATTRIBUTION.md`.
+  (CC BY 4.0). The globe's info panel and the home globe's credit link credit
+  it, one click from every view; full text in
+  `packages/borders/data/ATTRIBUTION.md`. The baked first frame in
+  `src/features/globe/baked/` is derived from it (CC BY 4.0).
 - Alex's Atlas code (`packages/borders`, `packages/globe`): MIT (per package.json).
 - Legacy borders: aourednik/historical-basemaps, **GPL-3.0** — the derived
-  files in `public/data/snapshots/` and `src/features/globe/baked/` stay under
-  GPL-3.0 (see the LICENSE.md files there).
+  files in `public/data/snapshots/` stay under GPL-3.0 (see the LICENSE.md there).
 - Natural Earth (land, present-day borders in `world_2026.geojson`, and the
   home-page globe via world-atlas): public domain.
-- Map label glyphs: Noto Sans, SIL Open Font License 1.1.
+- Legacy map label glyphs (unused): Noto Sans, SIL Open Font License 1.1.
 - MapLibre GL JS: BSD-3-Clause. Fonts via Fontsource: OFL.

@@ -6,13 +6,18 @@
   --gx-pin: #f2b35b; --gx-pin-glow: rgb(242 179 91 / 0.4);
   --gx-p1: #6cc3c9; --gx-p2: #f2b35b; --gx-p3: #b99be0;
   --gx-sidebar: 330px; --gx-timeline-h: 156px; --gx-top: calc(var(--header-h) + 12px);
-  position: fixed; inset: 0; overflow: hidden; background: #060a12; color: var(--gx-ink);
+  /* The globe component's theme (packages/globe, --ca-*), in Alex's Atlas's charcoal
+     greys: deep space behind the globe (it paints its own star field) and the tooltip. */
+  --ca-space: #1f1f1f; --ca-surface: rgb(36 36 36 / 0.86); --ca-surface-2: #2e2e2e;
+  --ca-stroke: rgb(255 255 255 / 0.09); --ca-text: #f2f2f2; --ca-text-muted: #b8b8b8;
+  --ca-text-faint: #8a8a8a; --ca-accent: #f2f2f2; --ca-accent-ink: #1a1a1a; --ca-focus: #7cc4ff;
+  --ca-font: var(--font-serif); --ca-font-display: var(--font-serif);
+  position: fixed; inset: 0; overflow: hidden; background: var(--ca-space); color: var(--gx-ink);
   font-family: var(--font-sans); font-size: 14px; line-height: 1.5;
 }
 .gx a { color: inherit; }
 .gx button, .gx input, .gx select { font: inherit; }
 .gx :is(button, input, select, a):focus-visible { outline: 2px solid var(--gx-pin); outline-offset: 3px; }
-.gx-stars { position: absolute; inset: 0; background: radial-gradient(ellipse at 65% 42%, #17223a 0, #060a12 65%); }
 .gx-world { position: absolute; top: var(--gx-top); bottom: var(--gx-timeline-h); left: calc(var(--gx-sidebar) + 20px); right: 0; }
 .gx-world > .gx-map, .gx-world > .gx-baked { position: absolute; inset: 0; width: 100%; height: 100%; }
 .gx-world > .gx-map { opacity: 0; pointer-events: none; }
@@ -83,8 +88,8 @@
 .gx-preview__when { font-size: 11px; color: var(--gx-pin); margin: 0 0 8px; }
 .gx-preview__summary { font-size: 12px; color: var(--gx-ink-2); margin: 0 0 14px; }
 .gx-preview__actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.gx-polity { position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; display: flex; flex-direction: column; max-width: 250px; padding: 6px 10px; background: var(--gx-panel); border: 1px solid var(--gx-line); border-radius: 8px; font-size: 12px; }
-.gx-polity span { font-size: 10px; color: var(--gx-ink-2); }
+/* A pin's own preview replaces the map's polity tooltip while it has the pointer. */
+.is-pin-hovered .ca-globe__tooltip { display: none; }
 
 /* Native links keep the detailed globe keyboard accessible. */
 .globe-pin { display: block; width: 14px; height: 14px; cursor: pointer; text-decoration: none; z-index: 1; }

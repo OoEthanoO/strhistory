@@ -10,12 +10,11 @@ export default function HomeGlobe({ topics }: GlobeData) {
   const controller = useRef<GlobeController | null>(null);
   const view = useRef<GlobeView>(START);
   const [mapReady, setMapReady] = useState(false);
-  const [borderYear, setBorderYear] = useState<number | null>(null);
   const [level, setLevel] = useState('HL');
   const levelRef = useRef(level);
   levelRef.current = level;
   const [handoffHref, setHandoffHref] = useState('/globe?year=1789&level=HL');
-  const ready = mapReady && borderYear === 1789;
+  const ready = mapReady;
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pointers = useRef(new Set<number>());
   const navigating = useRef(false);
@@ -38,14 +37,12 @@ export default function HomeGlobe({ topics }: GlobeData) {
       const c = new GlobeController(container.current, {
         onPinEnter: () => {}, onPinLeave: () => {},
         onPinClick: (_topic, event) => { event.preventDefault(); enter(); },
-        onPolityHover: () => {}, onLoadingChange: () => {},
+        onLoadingChange: () => {},
         onViewChange: next => { view.current = next; setHandoffHref(href()); },
         onInteractionEnd: next => { view.current = next; enter(); },
-        onBordersChange: setBorderYear,
         onFailure: () => { mapFailed.current = true; setMapReady(false); },
-      }, view.current.center, { compact: true });
+      }, { year: 1789, view: view.current, compact: true });
       controller.current = c;
-      void c.setYear(1789);
       c.whenReady().then(() => { if (!disposed && !mapFailed.current) { c.setView(view.current.center, view.current.scale); setMapReady(true); } });
     }).catch(() => {});
     // MapLibre listens for document mouseup: a drag can finish outside the card.
@@ -70,12 +67,13 @@ export default function HomeGlobe({ topics }: GlobeData) {
   return <div className="home-globe" data-ready={ready || undefined}>
     <div className="home-globe__caption"><span>THE WORLD IN</span><strong>1789</strong></div>
     <div className="home-globe__surface">
-      {!ready && <PrebakedGlobe topics={current} borderYear={1783} onViewChange={next => { view.current = next; setHandoffHref(href()); controller.current?.setView(next.center, next.scale); }} onInteractionEnd={enter} pinHref={() => handoffHref} />}
+      {!ready && <PrebakedGlobe topics={current} borders onViewChange={next => { view.current = next; setHandoffHref(href()); controller.current?.setView(next.center, next.scale); }} onInteractionEnd={enter} pinHref={() => handoffHref} />}
       <div ref={container} className="home-globe__map" aria-hidden={!ready} inert={!ready}
         onPointerDownCapture={event => { if (event.button === 0) pointers.current.add(event.pointerId); }}
         onWheelCapture={() => { clearTimeout(timer.current); timer.current = setTimeout(enter, 220); }}
         onKeyUpCapture={e => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', 'Enter', ' '].includes(e.key)) finishSoon(); }} />
     </div>
+    <a href="/data/alexs-atlas/ATTRIBUTION.md" className="home-globe__credit">Borders: Cliopatria, Natural Earth · CC BY 4.0</a>
     <a href={handoffHref} className="home-globe__enter">Drag, zoom or click to explore <span aria-hidden="true">↗</span></a>
   </div>;
 }
