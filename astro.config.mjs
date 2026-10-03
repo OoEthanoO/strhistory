@@ -7,7 +7,7 @@ import sitemap from '@astrojs/sitemap';
 // The site is fully static: `astro build` writes plain files to dist/, and the
 // home server's Caddy serves them. See AGENTS.md → "Deployment".
 export default defineConfig({
-  site: process.env.SITE_URL ?? 'https://history.ethanyanxu.com',
+  site: process.env.SITE_URL ?? 'https://strhistory.ca',
   output: 'static',
   trailingSlash: 'ignore',
   // Astro 7 defaults to JSX-style whitespace stripping, which glues together

@@ -6,7 +6,10 @@ it is deployed**. It is written for both people and coding agents (Claude,
 Codex, Copilot, Cursor…). `CLAUDE.md` only points here — keep all guidance in
 this file.
 
-Live site: **https://history.ethanyanxu.com** · Repo: https://github.com/OoEthanoO/strhistory
+Canonical site: **https://strhistory.ca** · Repo: https://github.com/OoEthanoO/strhistory
+
+`history.ethanyanxu.com` and `www.strhistory.ca` redirect to the canonical host,
+preserving paths and query strings. See §10 for DNS and migration requirements.
 
 ---
 
@@ -460,7 +463,7 @@ shell, Node 24, Git, Caddy 2.11 (also serving finprint and ai subdomains).
 | `state.json` | last attempted/deployed commit, status, errors |
 | `logs\deploy.log`, `logs\access.log` | deploy log; Caddy access log |
 | `private\access.json` | salted scrypt code hash + random session signing key; outside repo/releases, restricted ACL |
-| `bin\access\server.mjs` | running access service, copied and restarted only when changed |
+| `bin\access\server.mjs` | running access service, restarted when its code or configured origin changes |
 
 **Access service:** the SYSTEM task `strhistory-access` starts on boot, runs
 Node directly on `127.0.0.1:4310`, and restarts on failure. Every deploy runs
@@ -486,12 +489,22 @@ the private directory to SYSTEM and Administrators. The helper stores only a
 salted hash and generates a new session key. To rotate the code, repeat this and
 restart `strhistory-access`. Never put the code in docs, examples or CI.
 
+`deploy/server/access.ps1` keeps the private configuration's `origin` in sync
+with `https://<Domain>` from `common.ps1`, preserving the code hash, signing key
+and file permissions, and restarting the service when the origin changes.
+Cookies are scoped to the host, so students enter the existing department code
+once at the new domain. Alias hosts redirect before authentication; old POSTed
+access forms return to the new `/access` page with a 303 instead of forwarding
+the submitted code across origins.
+
 Tests: `node --test deploy/access/server.test.mjs` runs in CI and before deploys.
 `deploy/access/smoke.mjs <base-url>` (code on stdin) tests the actual Caddy gate
 against all built HTML pages and assets. `astro dev` and `astro preview` are
 trusted authoring tools and do **not** enforce authentication; production must
 always serve through this Caddyfile. The access page can be previewed locally,
 but its unlock action requires the access service and the configured origin.
+Pass alias origins after the base URL to verify permanent redirects and old
+forms too: `node deploy/access/smoke.mjs https://strhistory.ca https://history.ethanyanxu.com https://www.strhistory.ca`.
 
 The main Caddyfile (`C:\Users\ethan\finprint\scripts\selfhost\Caddyfile`, run by
 the `finprint-caddy` task) contains a managed block:
@@ -537,11 +550,24 @@ then waits for the next commit. The preferred fix for a bad commit is
 - Scripts must run on Windows PowerShell 5.1: no `??`, `?.`, `&&`; keep `.ps1`
   files ASCII-only (5.1 reads BOM-less files as Windows-1252).
 
-**DNS:** `ethanyanxu.com` is hosted on Vercel DNS. `history.ethanyanxu.com` must
-resolve to the home connection's public IP (the same as `ai.ethanyanxu.com` and
-`finprint.ethanyanxu.com`). Caddy obtains the Let's Encrypt certificate
-automatically once it does; until then the deploy log shows the HTTPS check as
-"unreachable".
+**DNS:** `strhistory.ca` must resolve to the home connection's public IPv4
+(the same as `ai.ethanyanxu.com` and `finprint.ethanyanxu.com`). Set its apex
+`@` A record to that address and `www` CNAME to `strhistory.ca`. Do not copy an
+old IP from these docs: resolve the existing home-server hostname when making
+the change. Keep the apex A record updated if the home's public IP changes.
+Only publish an AAAA record if the server is actually reachable over IPv6.
+The legacy `history.ethanyanxu.com` record remains on Vercel DNS and must keep
+pointing at this server so old links can redirect. Caddy obtains and renews
+certificates for the canonical domain and both aliases automatically.
+
+For a domain migration, prepare and verify DNS and the new host's HTTPS before
+deploying the legacy-host redirect. Change `astro.config.mjs`, `common.ps1`,
+`deploy/Caddyfile` and the provisioning default in `deploy/access/configure.mjs`
+together; update the login tests and these docs. Re-run the server installer
+after merging the settings change. Verify public `/version.json`, canonical
+URLs, robots/sitemap, the public globe, protected notes, successful unlock and
+logout, and alias redirects. A local listener or a successful build alone does
+not prove that the domain is available publicly.
 
 **CI:** `.github/workflows/ci.yml` runs `check:content`, `astro check` and the
 build on every push and PR. It does not gate the server deploy (the server runs

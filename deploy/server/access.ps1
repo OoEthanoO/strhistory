@@ -5,6 +5,7 @@
 [CmdletBinding()]
 param([string]$Root = 'C:\Users\ethan\strhistory')
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'common.ps1')
 $privateConfig = Join-Path $Root 'private\access.json'
 if (-not (Test-Path -LiteralPath $privateConfig)) {
     throw 'Missing private\access.json. Provision the access code before deploying.'
@@ -16,8 +17,13 @@ $taskName = 'strhistory-access'
 New-Item -ItemType Directory -Force -Path (Split-Path $destination) | Out-Null
 $changed = -not (Test-Path -LiteralPath $destination)
 if (-not $changed) { $changed = (Get-FileHash $source).Hash -ne (Get-FileHash $destination).Hash }
+# The public origin follows the deployment domain. Preserve the existing code
+# hash and signing key; migrating a domain must not rotate credentials.
+$accessConfig = Get-Content -LiteralPath $privateConfig -Raw | ConvertFrom-Json
+$expectedOrigin = "https://$($script:Domain)"
+$originChanged = $accessConfig.origin -ne $expectedOrigin
 $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
-if ($changed -and $task) {
+if (($changed -or $originChanged) -and $task) {
     Stop-ScheduledTask -TaskName $taskName
     # The task runs Node directly: stopping it closes only this service.
     for ($i = 0; $i -lt 20; $i++) {
@@ -26,6 +32,12 @@ if ($changed -and $task) {
     }
 }
 if ($changed) { Copy-Item -LiteralPath $source -Destination $destination -Force }
+if ($originChanged) {
+    $accessConfig.origin = $expectedOrigin
+    # Write in place so the restricted ACL on the existing file is retained.
+    [IO.File]::WriteAllText($privateConfig, ($accessConfig | ConvertTo-Json), (New-Object Text.UTF8Encoding $false))
+    Write-Host "Access origin updated to $expectedOrigin"
+}
 if (-not $task) {
     $action = New-ScheduledTaskAction -Execute $settings.node -Argument "`"$destination`" `"$privateConfig`"" -WorkingDirectory $Root
     $trigger = New-ScheduledTaskTrigger -AtStartup
