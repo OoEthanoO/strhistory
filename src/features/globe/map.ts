@@ -16,8 +16,8 @@ import '@alexs-atlas/globe/style.css';
 // MapLibre 6 loads its worker from a URL relative to its own module, which a
 // bundler cannot see. Bundle the worker explicitly and hand ChronoGlobe its URL.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-import { createBorders, type Manifest } from '@alexs-atlas/borders';
-import { ChronoGlobe, type GlobeView } from '@alexs-atlas/globe';
+import { createBorders, type BordersClient, type Manifest } from '@alexs-atlas/borders';
+import { ChronoGlobe, type GlobeView, type SelectInfo } from '@alexs-atlas/globe';
 import { formatRange } from './era';
 import { MAP_THEME, mapColor } from './map-colors';
 import type { GlobeTopic } from './types';
@@ -40,14 +40,24 @@ export interface GlobeCallbacks {
   onLoadingChange(loading: boolean): void;
   /** The year whose borders are now on screen (null: before the dataset, physical geography only). */
   onBordersChange?(year: number | null): void;
+  /** The year now shown, whether or not the dataset has borders for it. */
+  onYearApplied?(year: number): void;
   onViewChange?(view: GlobeView): void;
   onInteractionEnd?(view: GlobeView): void;
+  /** A polity was selected on the map (click) or by select(); null when cleared. */
+  onSelect?(info: SelectInfo | null): void;
+  /** The borders of a later year could not be loaded; the previous borders stay. */
+  onDataError?(error: unknown): void;
   onFailure?(): void;
 }
 
 export interface GlobeOptions {
   year: number;
   view?: GlobeView;
+  /** The explorer's own client, shared with its search and timeline (one download cache). */
+  borders?: BordersClient;
+  /** Smallest scale the user can zoom out to (default 0.6). */
+  minScale?: number;
   /** The home page's preview: no hover tooltip. */
   compact?: boolean;
 }
@@ -62,7 +72,7 @@ export class GlobeController {
   readonly globe: ChronoGlobe;
   private readonly cb: GlobeCallbacks;
   private readonly container: HTMLElement;
-  private readonly borders = createBorders({ manifestUrl: MANIFEST_URL });
+  readonly borders: BordersClient;
   private manifest: Manifest | undefined;
   private markers = new Map<string, HTMLAnchorElement>();
   private pinEntries: Array<{ topic: GlobeTopic; marker: Marker; element: HTMLAnchorElement }> = [];
@@ -72,6 +82,7 @@ export class GlobeController {
   constructor(container: HTMLElement, cb: GlobeCallbacks, options: GlobeOptions) {
     this.cb = cb;
     this.container = container;
+    this.borders = options.borders ?? createBorders({ manifestUrl: MANIFEST_URL });
     const compact = options.compact ?? false;
     this.globe = new ChronoGlobe(
       container,
@@ -79,7 +90,7 @@ export class GlobeController {
         data: { client: this.borders },
         year: options.year,
         view: options.view ?? { center: HOME_CENTER, scale: 1 },
-        minScale: 0.6,
+        minScale: options.minScale ?? 0.6,
         fontFamily: LABEL_FONT,
         // Names in capitals along each polity's shape, as on grand-strategy maps.
         labelMode: 'curved',
@@ -93,10 +104,14 @@ export class GlobeController {
         attribution: false,
       },
       {
-        onYearApplied: (year) => this.cb.onBordersChange?.(this.covers(year) ? year : null),
+        onYearApplied: (year) => {
+          this.cb.onYearApplied?.(year);
+          this.cb.onBordersChange?.(this.covers(year) ? year : null);
+        },
         onLoadingChange: (loading) => this.cb.onLoadingChange(loading),
         onViewChange: (view) => this.cb.onViewChange?.(view),
         onInteractionEnd: (view) => this.cb.onInteractionEnd?.(view),
+        onSelect: (info) => this.cb.onSelect?.(info),
         onFailure: (reason, error) => {
           // After the first frame, a year whose borders fail to load leaves ChronoGlobe
           // 'ready' with the previous borders, and the next year change retries: log it
@@ -106,6 +121,7 @@ export class GlobeController {
           // constructor, before this.globe is assigned.
           if (reason === 'data' && container.getAttribute('data-ca-state') === 'ready') {
             console.error('Could not load the borders', error);
+            this.cb.onDataError?.(error);
             return;
           }
           this.cb.onFailure?.();
@@ -154,6 +170,11 @@ export class GlobeController {
     this.globe.setYear(year);
   }
 
+  /** While true (a timeline drag or playback) borders load at the coarsest level of detail. */
+  setInteracting(active: boolean) {
+    this.globe.setInteracting(active);
+  }
+
   /** Warm the cache for years the user is likely to open next. */
   prefetch(years: number[]) {
     if (this.globe.loadState === 'failed') return; // nothing could show them
@@ -193,7 +214,11 @@ export class GlobeController {
       el.addEventListener('mouseleave', leave);
       el.addEventListener('focus', enter);
       el.addEventListener('blur', leave);
-      el.addEventListener('click', (e) => this.cb.onPinClick(topic, e));
+      el.addEventListener('click', (e) => {
+        // The link opens the note; the click must not also select the polity under the pin.
+        e.stopPropagation();
+        this.cb.onPinClick(topic, e);
+      });
       const marker = new Marker({ element: el, anchor: 'center', opacityWhenCovered: '0' })
         .setLngLat([topic.lng, topic.lat])
         .addTo(map);
@@ -208,17 +233,23 @@ export class GlobeController {
   private layoutPins() {
     const map = this.mapOrNull();
     if (!map) return;
-    const offsets = pinOffsets(this.pinEntries.map(({ topic }) => {
+    const { clientWidth: width, clientHeight: height } = map.getContainer();
+    const points = this.pinEntries.map(({ topic }) => {
       const point = map.project([topic.lng, topic.lat]);
       return { id: topic.slug, x: point.x, y: point.y };
-    }));
-    for (const { topic, marker, element } of this.pinEntries) {
+    });
+    const offsets = pinOffsets(points);
+    this.pinEntries.forEach(({ topic, marker, element }, i) => {
       const [x, y] = offsets.get(topic.slug) ?? [0, 0];
       marker.setOffset([x, y]);
       const stem = element.querySelector('line')!;
       stem.setAttribute('x2', String(-x));
       stem.setAttribute('y2', String(-y));
-    }
+      // Pins off the screen leave the Tab order (the notes panel still reaches them).
+      const px = points[i].x + x;
+      const py = points[i].y + y;
+      element.tabIndex = px < 0 || py < 0 || px > width || py > height ? -1 : 0;
+    });
   }
 
   updatePins(state: PinState, topics: GlobeTopic[]) {
@@ -256,7 +287,11 @@ export class GlobeController {
     this.globe.setView({ center, scale });
   }
 
-  flyTo(topic: GlobeTopic) {
+  /**
+   * Flies to a note's place. `offset` (px) moves the place off the centre of the map,
+   * e.g. to keep it clear of panels and cards over the globe.
+   */
+  flyTo(topic: GlobeTopic, o: { offset?: [number, number]; animate?: boolean } = {}) {
     this.globe.stopSpin();
     const map = this.mapOrNull();
     if (!map) return;
@@ -264,7 +299,8 @@ export class GlobeController {
     map.flyTo({
       center: [topic.lng, topic.lat],
       zoom: map.getZoom() + Math.log2(Math.max(scale, PIN_SCALE) / scale),
-      duration: this.reducedMotion ? 0 : 1800,
+      offset: o.offset ?? [0, 0],
+      duration: this.reducedMotion || o.animate === false ? 0 : 1800,
       essential: true,
     });
   }

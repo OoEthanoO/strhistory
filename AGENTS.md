@@ -20,8 +20,11 @@ A website for a high-school history department with four connected jobs:
    enters `/globe`, preserving the camera. The exploration timeline runs from
    approximate human origins (300,000 BCE) to the present, independently of the
    course. Each note has its own place, inclusive date range and direct pin link.
-   The explorer has a searchable catalogue on the left, year context above the
-   bottom timeline, SL/HL filtering and a switch to show pins from all years.
+   The explorer follows Alex's Atlas's minimal design: the year at the top centre
+   with its era's context, search (places, powers and notes), the history notes
+   panel (SL/HL, collection, pins from all years) and the map key at the top left,
+   About at the top right, map buttons at the bottom left and the timeline bar
+   along the bottom.
 2. **Interactive study notes** for each topic: key quotations are highlighted and
    attributed, key terms reveal their *significance* when clicked, and each
    topic ends with self-test questions and a historians' debate.
@@ -144,23 +147,27 @@ src/
     topics/<slug>.mdx        one event/source note = one pin + one study page
     glossary/<id>.md         key terms used by <Term id="…">
     syllabus/<id>.md         IB syllabus units (papers 1–3)
-    snapshots/<year>.md      globe timeline stops + "world in <year>" text
+    snapshots/<year>.md      "world in <year>" context under the globe's year
     teachers/ courses/ news/ guides/   department pages
   schemas/                 ← one Zod schema file per collection family
   features/
     globe/                 ← FEATURE: the /globe explorer (React island)
-      GlobeExplorer.tsx      state, URL sync, playback; composes the pieces below
+      GlobeExplorer.tsx      composition root: state, URL, selection, keyboard, layout
       HomeGlobe.tsx          home-page gesture handoff to the full explorer
       PrebakedGlobe.tsx      immediate interactive SVG and WebGL fallback
       baked/                generated initial 1789 border geometry with map colours (CC BY 4.0)
       pin-layout.ts         separates nearby note pins, with stems to their places
       map.ts                 GlobeController — wraps ChronoGlobe; pins as markers on its map
-      Timeline.tsx EraPanel.tsx TopicList.tsx TopicPreview.tsx
-      era.ts                 pure timeline maths (eras, lanes, positions)
+      ui/                    the explorer's UI: SearchPanel, NotesPanel, Legend, TimelineBar,
+                             YearDisplay, EraCaption, TopicPreview, MapControls, Dialog,
+                             AboutContent, ShortcutsContent, Toasts, Announcer, Icon/icons,
+                             format.ts, polities.ts (mostly ported from the Alex's Atlas site)
+      url.ts                 the explorer's URL state and history writer (url.test.ts)
+      era.ts                 year helpers (limits, note visibility, era of a year)
       map-colors.ts          the map's theme and polity colours (from Alex's Atlas)
       country-colors.ts      generated flag colours (scripts/data/country-colors.mjs)
       data.ts                build-time loader → JSON props for the island
-      globe.css              the explorer's own dark theme
+      atlas.css              the explorer's styles (Alex's Atlas's, scoped under .gx)
     notes/                 ← FEATURE: components usable inside MDX notes
       Term.astro Q.astro KeyQuote.astro Callout.astro Perspective.astro
       Chronology.astro Event.astro Recall.astro
@@ -225,7 +232,7 @@ small PR, and never reformat them wholesale:
 | `topics` | `src/content/topics/*.mdx` | `src/schemas/topics.ts` | `/topics/<slug>`, globe pins, timeline bars, home & index cards |
 | `glossary` | `src/content/glossary/*.md` | `src/schemas/glossary.ts` | `<Term>` popovers, `/glossary`, "Key terms" list on topic pages |
 | `syllabus` | `src/content/syllabus/*.md` | `src/schemas/syllabus.ts` | grouping on `/topics` and `/courses`, paper badges |
-| `snapshots` | `src/content/snapshots/<year>.md` | `src/schemas/snapshots.ts` | globe timeline stops and era panel text |
+| `snapshots` | `src/content/snapshots/<year>.md` | `src/schemas/snapshots.ts` | the /globe era caption ("world in" context under the year) |
 | `teachers` | `src/content/teachers/*.md` | `src/schemas/department.ts` | `/teachers`, `/teachers/<slug>` |
 | `courses` | `src/content/courses/*.md` | `src/schemas/department.ts` | `/courses`, `/courses/<slug>` |
 | `news` | `src/content/news/YYYY-MM-DD-slug.md` | `src/schemas/department.ts` | `/news`, home page |
@@ -268,13 +275,16 @@ Rules:
 **Add a key term** — copy `glossary/_template.md` to `glossary/<id>.md`, then use
 `<Term id="<id>">words in the text</Term>`. Unknown ids fail the build.
 
-**Add a timeline snapshot year** — add `src/content/snapshots/<year>.md`
-(`title`, `summary`, `highlights`). The globe draws the borders of that exact
-year from the Alex's Atlas dataset by itself (before 3400 BCE, land only), so
-the summary should not name a border source or date. `borderYear` is legacy:
-`check:content` still requires it to be `null` or the year of an existing
-`public/data/snapshots/world_<year>.geojson` (built by the legacy
-`npm run data:snapshots -- <year>`), so give new stops `borderYear: null`.
+**Add a year's context (snapshot)** — add `src/content/snapshots/<year>.md`
+(`title`, `summary`, `highlights`). The caption under the year on `/globe` shows
+the latest snapshot at or before the selected year; snapshots are not timeline
+stops (the timeline steps by year, and `[`/`]` by border change). The globe
+draws the borders of any year from the Alex's Atlas dataset by itself (before
+3400 BCE, land only), so the summary should not name a border source or date.
+`borderYear` is legacy: `check:content` still requires it to be `null` or the
+year of an existing `public/data/snapshots/world_<year>.geojson` (built by the
+legacy `npm run data:snapshots -- <year>`), so give new snapshots
+`borderYear: null`.
 
 **Fix a wrong country name or border on the globe** — the globe draws only the
 Alex's Atlas dataset: add a sourced override entry in
@@ -353,17 +363,37 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   `fitZoom = log2(min(width, height)·π/512)`. The SVG is an orthographic
   approximation of MapLibre's perspective globe, so the globe shifts slightly
   in size and position when WebGL takes over.
-- **Snapshots** are the timeline's exploration stops and "world in" texts.
-  Their `borderYear` and the GPL files `public/data/snapshots/world_<year>.geojson`
+- **Snapshots** are the "world in" context texts: the caption under the year
+  shows the latest snapshot at or before the selected year. Their `borderYear` and the GPL files `public/data/snapshots/world_<year>.geojson`
   are legacy: only `check:content` and the geometry test still use them.
+- **The explorer's UI** (`GlobeExplorer.tsx` + `ui/`, adapted from the Alex's
+  Atlas site, `packages/AGENTS.md` §7) floats over a full-bleed globe below the
+  site header: the large year at the top centre with a caption that opens its
+  era's context (the nearest earlier snapshot); a top-left column of search
+  (places and powers from the dataset's index, plus matching notes), the history
+  notes panel and the map key, whose panels open to the right of their buttons,
+  one at a time; About (credits, how the map is made, shortcuts) at the top
+  right; zoom in, zoom out and reset at the bottom left; the timeline bar
+  (`Timeline` from `packages/globe`, `layout: 'bar'`) along the bottom, from
+  300,000 BCE to the present (human origins take the first 8 % of the track).
+  Clicking a polity outlines it and shows its lifespan on the timeline;
+  locating a note clears the polity and shows the note's dates there instead.
+  Phones (< 640 px) get two-row timeline controls and panels that close after a
+  choice; short screens (< 500 px high) put the map buttons in a row.
 - **Pins** appear only when `start <= selectedYear <= end`, unless show-all is
-  enabled. Course level, archive/current selection and search also filter them.
-  Every visible pin links directly to its note. Locate buttons in the catalogue
-  choose the note's exact start year and fly to its geographical position.
-- **URL state**: `/globe?year=1938&topic=<slug>` — used by the "See the world in
-  …" button on every topic page. `level`, `curriculum`, `all` and `q` also persist
-  in the URL. Home handoffs carry `lng`, `lat` and `scale`. The shared saved level
-  uses localStorage key `history-level`; storage failure must not break controls.
+  enabled. Course level, collection and the notes panel's search also filter
+  them. Every visible pin links directly to its note; hovering or focusing it
+  shows the preview card above the timeline (Esc dismisses it). Locate buttons
+  (notes panel, search, preview) choose the note's start year and fly to its
+  place, kept clear of the open panel and, on phones, the card. Pins off the
+  screen leave the Tab order; a pin's click opens its note without selecting
+  the polity under it.
+- **URL state** (`url.ts`): query parameters `year`, `level`, `curriculum`,
+  `topic`, `polity`, `all`, `q` and the camera `lng`, `lat`, `scale` — the topic
+  pages' "Find this note in …" links and the home handoff use the same names.
+  Scrubbing and panning replace the history entry (throttled); choosing a note
+  or a polity pushes one, so Back undoes it. The shared saved level uses
+  localStorage key `history-level`; storage failure must not break controls.
 - **Colours** (`map-colors.ts`, from the Alex's Atlas site): a grand-strategy
   political map in pastel tones. 21 major powers keep classic colours in every
   era by explicit colour keys (`power`, so colonies share their empire's);
@@ -376,15 +406,19 @@ screen replaces the globe. WebGL failures leave the SVG usable.
 - **Rendering**: labels are drawn by MapLibre from the self-hosted Newsreader
   font (no glyph server); MapLibre's worker is bundled via `?worker&url` and
   passed as `workerUrl` (MapLibre 6 cannot find it on its own when bundled).
-  `--ca-*` custom properties in `globe.css` theme the globe component.
+  `--ca-*` custom properties in `atlas.css` theme the globe component.
 - **Border detail**: the Alex's Atlas pipeline simplifies each level of detail
   with spherical Douglas–Peucker on shared topology, protecting microstates
   (`packages/borders/AGENTS.md`). Rebuild it with `npm run data:build`; files
   are content-hashed, so no cache-busting is needed. The legacy snapshot
   pipeline (`scripts/data/build-snapshots.mjs`, 100 m Douglas–Peucker, tested by
   `node --test scripts/data/geometry.test.mjs`) no longer feeds the site.
-- Keyboard: timeline is a native slider (arrows, Home/End, PageUp/Down); pins
-  are real links; Escape closes panels.
+- Keyboard (`ui/ShortcutsContent.tsx`, `?` lists them): `/` search, `L` the
+  year's list of polities, `N` the history notes, Space play/pause, `[` / `]`
+  previous/next border change, `F` fit the selection, `R` reset the view, Esc
+  closes the open panel, then clears the selection; the timeline is a native
+  slider (arrows ±1 year, Shift ±10, PageUp/PageDown, Home/End); pins are real
+  links.
 - In development `window.__globe` exposes the controller (`.globe` is the
   ChronoGlobe) for debugging.
 
@@ -399,8 +433,10 @@ about sources, never gamified beyond the key-term progress bar.
 - **Tokens only.** Colours, fonts, radii and shadows come from
   `src/styles/tokens.css` (`--paper`, `--ink`, `--accent`, `--brass`,
   `--term`, callout families…). Both themes are defined there; components
-  never hard-code colours. The globe has its own palette in `globe.css`
-  (always dark) and its map colours in `src/features/globe/map-colors.ts`.
+  never hard-code colours. The globe page has its own chrome in
+  `src/features/globe/atlas.css` (Alex's Atlas's charcoal greys, white accent,
+  Newsreader only, one button style from `--ca-control-*`; always dark, scoped
+  under `.gx`) and its map colours in `src/features/globe/map-colors.ts`.
 - **Themes:** light by default, dark via `prefers-color-scheme` or the header
   toggle (`html[data-theme]`, stored in `localStorage`). Check both.
 - **Type:** Newsreader for headings and reading text (optical sizing on),

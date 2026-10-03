@@ -8,7 +8,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@alexs-atlas/borders": ["./packages/borders/src/index.ts"],
-      "@alexs-atlas/globe": ["./packages/globe/src/index.ts"]
+      "@alexs-atlas/globe": ["./packages/globe/src/index.ts"],
+      "@alexs-atlas/globe/timeline": ["./packages/globe/src/timeline/index.ts"]
     }
   }
 }

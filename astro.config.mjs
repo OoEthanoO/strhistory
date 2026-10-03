@@ -27,6 +27,8 @@ export default defineConfig({
       alias: [
         { find: /^@alexs-atlas\/borders$/, replacement: pkg('borders/src/index.ts') },
         { find: /^@alexs-atlas\/globe\/style\.css$/, replacement: pkg('globe/src/style.css') },
+        // The timeline alone, so the globe page's first load carries no MapLibre.
+        { find: /^@alexs-atlas\/globe\/timeline$/, replacement: pkg('globe/src/timeline/index.ts') },
         { find: /^@alexs-atlas\/globe$/, replacement: pkg('globe/src/index.ts') },
       ],
     },
