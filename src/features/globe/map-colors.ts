@@ -16,6 +16,7 @@
 // fill is at least 11 from the sea and 9.5 from the land.
 import type { PolityProps } from '@alexs-atlas/borders';
 import { blendOver, resolveTheme, type GlobeTheme } from '@alexs-atlas/globe';
+import { pastedColorFor } from './color-schemes';
 import { COUNTRY_COLORS } from './country-colors';
 
 /** Globe theme, layered over the package defaults. */
@@ -156,7 +157,12 @@ const BY_KEY: ReadonlyMap<string, string> = new Map(IDENTITY.flatMap(([color, ke
 export const KEY_COLORS: readonly string[] = ['ne:gbr', 'ne:fra', 'ne:ita', 'ne:esp'].map((k) => BY_KEY.get(k)!);
 
 /** The palette function given to the globe: a polity's base colour (before blending). */
-export function mapColor(p: Pick<PolityProps, 'power' | 'pid' | 'c'>): string {
+export function mapColor(
+  p: Pick<PolityProps, 'power' | 'pid' | 'c'> & Partial<Pick<PolityProps, 'name' | 'subjecto'>>,
+  year?: number,
+): string {
+  const pasted = pastedColorFor(p, year);
+  if (pasted) return pasted;
   const key = p.power || p.pid;
   // A classic colour, else the country's flag colour (country-colors.ts), else a slot.
   const identity = BY_KEY.get(key) ?? COUNTRY_COLORS[key];
@@ -167,6 +173,9 @@ export function mapColor(p: Pick<PolityProps, 'power' | 'pid' | 'c'>): string {
 }
 
 /** A polity's colour as the globe draws it (blended over the land colour at `fillBlend`). */
-export function fillColor(p: Pick<PolityProps, 'power' | 'pid' | 'c'>): string {
-  return blendOver(mapColor(p), MAP_THEME_RESOLVED.land, MAP_THEME_RESOLVED.fillBlend);
+export function fillColor(
+  p: Pick<PolityProps, 'power' | 'pid' | 'c'> & Partial<Pick<PolityProps, 'name' | 'subjecto'>>,
+  year?: number,
+): string {
+  return blendOver(mapColor(p, year), MAP_THEME_RESOLVED.land, MAP_THEME_RESOLVED.fillBlend);
 }
