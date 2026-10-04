@@ -52,6 +52,7 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
       <details class="paper" id={`paper-${p.paper}`} data-paper={p.paper} hidden={p.paper === 3} open>
         <summary>
           <h2>Paper {p.paper} – <span data-paper-title data-current-title={p.name}>{p.name}</span></h2>
+          <span class="paper-divider" aria-hidden="true"></span>
           <span class="paper-level">{p.level}</span>
         </summary>
         {p.units.map(({ unit, topics: unitTopics }) => (
@@ -189,7 +190,8 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
   .paper summary::after { content: ''; align-self: center; flex-shrink: 0; width: 8px; height: 8px; margin-left: 4px; border: solid var(--ink-3); border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); transition: transform 0.15s; }
   .paper:not([open]) summary::after { transform: rotate(-45deg); }
   .paper h2 { margin: 0; font: 500 var(--step-1) var(--font-sans); }
-  .paper-level { flex-shrink: 0; margin-left: auto; font-size: 0.875rem; color: var(--ink-3); }
+  .paper-divider { flex: 1; align-self: center; min-width: 16px; border-top: 1px solid var(--ink-3); opacity: 0.35; }
+  .paper-level { flex-shrink: 0; font-size: 0.875rem; color: var(--ink-3); }
   .unit { padding: 0 0 8px 28px; }
   .unit h3 { margin: 4px 12px 4px; font: 600 0.875rem var(--font-sans); letter-spacing: 0; color: var(--ink-3); }
   .topic-list { list-style: none; margin: 0; padding: 0; }
