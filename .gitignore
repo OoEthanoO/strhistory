@@ -21,3 +21,11 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# Alex's Atlas modules (packages/): package builds, the dataset copy served by the
+# site (scripts/data/sync-atlas-data.mjs), the pipeline's Python environment
+packages/*/dist/
+public/data/alexs-atlas/
+__pycache__/
+.venv/
+test-results/

@@ -3,6 +3,12 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
+import { fileURLToPath } from 'node:url';
+
+// The Alex's Atlas modules (packages/) are used from their TypeScript sources, so
+// neither dev, check nor the deploy needs a separate package build step.
+/** @param {string} p */
+const pkg = (p) => fileURLToPath(new URL(`./packages/${p}`, import.meta.url));
 
 // The site is fully static: `astro build` writes plain files to dist/, and the
 // home server's Caddy serves them. See AGENTS.md → "Deployment".
@@ -17,6 +23,15 @@ export default defineConfig({
   // Only the public globe is indexable; department pages require access.
   integrations: [mdx(), react(), sitemap({ filter: (page) => new URL(page).pathname.replace(/\/$/, '') === '/globe' })],
   vite: {
+    resolve: {
+      alias: [
+        { find: /^@alexs-atlas\/borders$/, replacement: pkg('borders/src/index.ts') },
+        { find: /^@alexs-atlas\/globe\/style\.css$/, replacement: pkg('globe/src/style.css') },
+        // The timeline alone, so the globe page's first load carries no MapLibre.
+        { find: /^@alexs-atlas\/globe\/timeline$/, replacement: pkg('globe/src/timeline/index.ts') },
+        { find: /^@alexs-atlas\/globe$/, replacement: pkg('globe/src/index.ts') },
+      ],
+    },
     build: {
       // MapLibre is large (~1 MB); the home and explorer islands import it lazily.
       chunkSizeWarningLimit: 1600,

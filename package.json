@@ -4,16 +4,33 @@
   "type": "module",
   "version": "0.1.0",
   "description": "Interactive IB History globe, study notes, and history department website.",
+  "workspaces": [
+    "packages/borders",
+    "packages/globe"
+  ],
   "scripts": {
+    "predev": "node scripts/data/sync-atlas-data.mjs",
     "dev": "astro dev",
+    "prebuild": "node scripts/data/sync-atlas-data.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "npm run check:content && astro check",
     "check:content": "node scripts/check-content.mjs",
+    "check:packages": "tsc -b packages/borders packages/globe",
+    "test": "vitest run",
     "data:snapshots": "node scripts/data/build-snapshots.mjs",
+    "data:sync": "node scripts/data/sync-atlas-data.mjs",
+    "data:reference": "node packages/borders/pipeline/tools/py.mjs reference.py",
+    "data:validate": "node packages/borders/pipeline/tools/validate-overrides.mjs",
+    "data:build": "node packages/borders/pipeline/build.mjs",
+    "data:catalog": "node packages/borders/pipeline/tools/catalog.mjs",
+    "data:factcheck": "node packages/borders/pipeline/tools/py.mjs packages/borders/pipeline/factcheck/run_all.py",
+    "data:tileqa": "node packages/borders/pipeline/tools/py.mjs packages/borders/pipeline/factcheck/tile_qa.py",
     "astro": "astro"
   },
   "dependencies": {
+    "@alexs-atlas/borders": "0.1.0",
+    "@alexs-atlas/globe": "0.1.0",
     "@astrojs/mdx": "^8.0.2",
     "@astrojs/react": "^7.0.0",
     "@astrojs/sitemap": "^3.7.4",
@@ -37,7 +54,8 @@
     "@types/topojson-client": "^3.1.5",
     "js-yaml": "^5.4.2",
     "polylabel": "^2.1.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.3"
   },
   "engines": {
     "node": ">=22.12.0"

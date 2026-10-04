@@ -1,0 +1,31 @@
+{
+  "$schema": "../../../../../../overrides/schema.json",
+  "kind": "early",
+  "region": "test-early",
+  "scope": "TEST FIXTURE for pipeline/py/tests/test_overrides.py - not dataset content.",
+  "entries": [
+    {
+      "id": "e-test-0001",
+      "op": "add",
+      "years": [-50, -1],
+      "geometry": { "type": "polygon", "rings": [[[2.0, 48.0], [3.0, 48.0], [3.0, 49.0], [2.0, 49.0], [2.0, 48.0]]] },
+      "set": { "pid": "ovr:fixture-early-polity", "name": "Fixture early polity", "kind": "state" },
+      "reason": "Fixture: an add that ends in 1 BCE, so its end change year is 1 CE (there is no year 0).",
+      "sources": [{ "title": "Test fixture", "url": "https://example.org/fixture" }],
+      "confidence": "low",
+      "status": "active",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "e-test-0002",
+      "op": "note",
+      "years": [-500, -400],
+      "reason": "Fixture: a known gap, documented only and never applied.",
+      "confidence": "low",
+      "status": "known-gap",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    }
+  ]
+}

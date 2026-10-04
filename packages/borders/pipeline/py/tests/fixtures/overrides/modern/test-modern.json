@@ -1,0 +1,39 @@
+{
+  "$schema": "../../../../../../overrides/schema.json",
+  "kind": "modern",
+  "region": "test-modern",
+  "scope": "TEST FIXTURE for pipeline/py/tests/test_overrides.py - not dataset content.",
+  "units": [
+    {
+      "unit": "TON",
+      "timeline": [
+        { "years": [1946, 1969], "state": { "pid": "ne:ton", "name": "Tonga", "kind": "dependency", "power": "ne:gbr", "note": "British protected state" } },
+        { "years": [1970, "present"], "state": { "pid": "ne:ton", "name": "Tonga", "kind": "state" } }
+      ],
+      "sources": [{ "title": "Test fixture", "url": "https://example.org/fixture" }]
+    }
+  ],
+  "overlays": [
+    {
+      "id": "fixture-crimea",
+      "label": "Crimea (fixture)",
+      "geometry": { "type": "ne-disputed", "codes": ["B89"] },
+      "timeline": [
+        { "years": [2014, "present"], "set": { "name": "Crimea", "kind": "disputed", "controller": "ne:rus", "claimants": ["ne:ukr"] } }
+      ],
+      "sources": [{ "title": "Test fixture", "url": "https://example.org/fixture" }]
+    }
+  ],
+  "entries": [
+    {
+      "id": "m-test-0001",
+      "op": "note",
+      "years": [1946, "present"],
+      "reason": "Fixture: notes are the only entries allowed in modern files.",
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    }
+  ]
+}

@@ -1,9 +1,9 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { geoDistance, geoGraticule10, geoOrthographic, geoPath } from 'd3-geo';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { geoDistance, geoOrthographic, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import landTopology from 'world-atlas/land-110m.json';
-import { colorFor, LAND_BASE, OCEAN } from './palette';
-import initialBorders from './baked/prebaked_1783.json';
+// The 1789 borders with their map colours (scripts/data/build-prebaked.mjs).
+import baked from './baked/prebaked_1789.json';
 import { pinOffsets } from './pin-layout';
 import type { GlobeTopic } from './types';
 import './prebaked.css';
@@ -17,12 +17,16 @@ interface Props {
   onViewChange?: (view: GlobeView) => void;
   onInteractionEnd?: (view: GlobeView) => void;
   pinHref?: (topic: GlobeTopic) => string;
-  borderYear?: number | null;
+  /** Draw the baked borders (only true while the year shown lies in BAKED_FRAME). */
+  borders?: boolean;
 }
+/** The years whose borders the baked frame shows. */
+export const BAKED_FRAME = baked.frame as [number, number];
+const OCEAN = baked.ocean;
+const LAND = baked.land;
 const DEFAULT_CENTER: [number, number] = [15, 30];
 const topology = landTopology as unknown as Parameters<typeof feature>[0];
 const land = feature(topology, topology.objects.land);
-const graticule = geoGraticule10();
 const normalise = ({ center, scale }: GlobeView): GlobeView => ({
   center: [((center[0] + 540) % 360) - 180, Math.max(-80, Math.min(80, center[1]))],
   scale: Math.max(0.65, Math.min(6, scale)),
@@ -30,7 +34,7 @@ const normalise = ({ center, scale }: GlobeView): GlobeView => ({
 
 /** The first frame is baked into HTML; this same geometry remains draggable
  * while WebGL, detailed coastlines, historical borders and labels arrive. */
-export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale = 1, className = '', onViewChange, onInteractionEnd, pinHref, borderYear = null }: Props) {
+export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale = 1, className = '', onViewChange, onInteractionEnd, pinHref, borders = false }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<[number, number]>([800, 600]);
   const [view, setView] = useState<GlobeView>({ center, scale });
@@ -40,7 +44,6 @@ export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale =
   const callbacks = useRef({ onViewChange, onInteractionEnd });
   callbacks.current = { onViewChange, onInteractionEnd };
   const wheelEnd = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const id = useId().replaceAll(':', '');
   useEffect(() => { const next = { center, scale }; live.current = next; setView(next); }, [center[0], center[1], scale]);
   useEffect(() => {
     const observer = new ResizeObserver(([entry]) => setSize([entry.contentRect.width, entry.contentRect.height]));
@@ -111,13 +114,9 @@ export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale =
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onInteractionEnd?.(live.current); }
       }}
       onKeyUp={e => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', 'Home'].includes(e.key)) onInteractionEnd?.(live.current); }}>
-      <defs><radialGradient id={`${id}-halo`}><stop offset="80%" stopColor="#6f9bd8" stopOpacity="0.16" /><stop offset="100%" stopColor="#6f9bd8" stopOpacity="0" /></radialGradient></defs>
-      <circle cx={width / 2} cy={height / 2} r={radius * 1.08} fill={`url(#${id}-halo)`} />
       <circle cx={width / 2} cy={height / 2} r={radius} fill={OCEAN} />
-      <path d={path(graticule) ?? ''} fill="none" stroke="#a9c1e0" strokeOpacity="0.1" strokeWidth="0.6" />
-      <path d={path(land as never) ?? ''} fill={LAND_BASE} />
-      {borderYear === 1783 && initialBorders.features.map((f, i) => <path key={i} d={path(f as never) ?? ''} fill={colorFor(f.properties?.subjecto ?? f.properties?.name, borderYear)} fillOpacity="0.88" stroke={OCEAN} strokeWidth="0.5" />)}
-      <circle cx={width / 2} cy={height / 2} r={radius} fill="none" stroke="#a9c1e0" strokeOpacity="0.2" />
+      <path d={path(land as never) ?? ''} fill={LAND} />
+      {borders && baked.features.map((f, i) => <path key={i} d={path(f.d as never) ?? ''} fill={f.fill} stroke={f.edge} strokeWidth="0.6" />)}
       {pins.map(t => {
         const point = projection([t.lng, t.lat]);
         if (!point) return null;

@@ -1,0 +1,2975 @@
+{
+ "$schema": "../schema.json",
+ "kind": "historical",
+ "region": "southern-asia",
+ "scope": "Historical audit 1700-1945 of Southern Asia (Natural Earth subregion: Afghanistan, Bangladesh, Bhutan, India, Iran, Maldives, Nepal, Pakistan, Sri Lanka). Compared Cliopatria v0.2.0 coverage maps for sample years 1700-1945 with Wikipedia, Wikidata (every QID verified with the API), the Imperial Gazetteer of India and other cited works; fixes mislabelled and ghost territories, adds missing states, colonial enclaves, princely states and indigenous peoples where sources describe extents, and lists known gaps.",
+ "entries": [
+  {
+   "id": "h-southern-asia-0001",
+   "op": "update",
+   "years": [
+    1788,
+    1924
+   ],
+   "target": {
+    "pid": "clio:qajar-dynasty"
+   },
+   "set": {
+    "name": "Persia",
+    "altNames": [
+     "Qajar Iran",
+     "Sublime State of Persia",
+     "Guarded Domains of Iran"
+    ],
+    "wikidata": "Q63158027",
+    "wikipedia": "Qajar Iran"
+   },
+   "reason": "Cliopatria labels the Qajar state with its dynasty ('Qajar Dynasty', Wikidata Q189326 = the dynasty item). The polity on the map is the state, called Persia in English at the time (officially the 'Sublime State of Persia' / Guarded Domains of Iran, 1789-1925). Display name set to the period English name 'Persia', with the dynastic and official names as altNames; Wikidata switched to the state item Q63158027 'Qajar Iran (country 1789-1925)', verified with the Wikidata API.",
+   "sources": [
+    {
+     "title": "Wikipedia: Qajar Iran",
+     "url": "https://en.wikipedia.org/wiki/Qajar_Iran"
+    },
+    {
+     "title": "Wikidata Q63158027 (Qajar Iran)",
+     "url": "https://www.wikidata.org/wiki/Q63158027"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0002",
+   "op": "add",
+   "years": [
+    1895,
+    1897
+   ],
+   "geometry": {
+    "type": "record",
+    "pid": "clio:qajar-dynasty",
+    "year": 1894
+   },
+   "set": {
+    "pid": "clio:qajar-dynasty",
+    "name": "Persia",
+    "altNames": [
+     "Qajar Iran",
+     "Sublime State of Persia",
+     "Guarded Domains of Iran"
+    ],
+    "kind": "state",
+    "wikidata": "Q63158027",
+    "wikipedia": "Qajar Iran"
+   },
+   "reason": "Cliopatria swaps two labels in 1895-1897: the record covering Iran is named 'Dutch East Indies' and the record covering the Dutch East Indies is named 'Qajar Dynasty'. Iran was Qajar Persia throughout (Naser al-Din Shah to 1896, then Mozaffar ad-Din Shah). Re-adds Persia with its own 1894 geometry; the tier-0 add carves Iran out of the mislabelled 'Dutch East Indies' record. Companion entry h-southern-asia-0003 fixes the Indonesian side.",
+   "sources": [
+    {
+     "title": "Wikipedia: Qajar Iran",
+     "url": "https://en.wikipedia.org/wiki/Qajar_Iran"
+    },
+    {
+     "title": "Wikipedia: Mozaffar ad-Din Shah Qajar",
+     "url": "https://en.wikipedia.org/wiki/Mozaffar_ad-Din_Shah_Qajar"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0003",
+   "op": "add",
+   "years": [
+    1895,
+    1897
+   ],
+   "geometry": {
+    "type": "record",
+    "pid": "clio:dutch-east-indies",
+    "year": 1898
+   },
+   "set": {
+    "pid": "clio:dutch-east-indies",
+    "name": "Dutch East Indies",
+    "kind": "dependency",
+    "power": "ne:nld",
+    "wikidata": "Q188161",
+    "wikipedia": "Dutch East Indies"
+   },
+   "reason": "Companion of h-southern-asia-0002: in 1895-1897 Cliopatria's record over the Dutch East Indies (Indonesia, 61 parts) is labelled 'Qajar Dynasty' while the 'Dutch East Indies' record covers Iran. Re-adds the Dutch East Indies with Cliopatria's own 1898 Dutch East Indies geometry (the same shape, area within 1%), which carves the Indonesian area out of the mislabelled 'Qajar' record. Reviewer note: the south-eastern-asia file may fix the same swap from the other side - keep only one of the two re-adds.",
+   "sources": [
+    {
+     "title": "Wikipedia: Dutch East Indies",
+     "url": "https://en.wikipedia.org/wiki/Dutch_East_Indies"
+    },
+    {
+     "title": "Wikipedia: Qajar Iran",
+     "url": "https://en.wikipedia.org/wiki/Qajar_Iran"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0004",
+   "op": "add",
+   "years": [
+    1915,
+    1921
+   ],
+   "geometry": {
+    "type": "record",
+    "pid": "clio:qajar-dynasty",
+    "year": 1914
+   },
+   "set": {
+    "pid": "clio:qajar-dynasty",
+    "name": "Persia",
+    "altNames": [
+     "Qajar Iran",
+     "Sublime State of Persia",
+     "Guarded Domains of Iran"
+    ],
+    "kind": "state",
+    "wikidata": "Q63158027",
+    "wikipedia": "Qajar Iran"
+   },
+   "reason": "During the First World War Persia was a neutral, sovereign state whose territory was fought over and partly occupied by Russian, British and Ottoman forces (Persian campaign). Cliopatria carves Iran into 'Russian Empire' (north, 1915-1916), 'British Colonial Empire' (Bushehr coast 1915-1917, then the Norperforce road and the south-west 1918-1921), 'British Africa' (1919) and 'Ottoman Empire' (1915) as if annexed. Per the editorial policy occupied areas are not tier-0 territory: Persia is restored with its 1914 extent; the occupations are recorded in the known-gap entry h-southern-asia-0005.",
+   "sources": [
+    {
+     "title": "Wikipedia: Qajar Iran",
+     "url": "https://en.wikipedia.org/wiki/Qajar_Iran"
+    },
+    {
+     "title": "Wikipedia: Persian campaign (World War I)",
+     "url": "https://en.wikipedia.org/wiki/Persian_campaign_(World_War_I)"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0005",
+   "op": "note",
+   "years": [
+    1909,
+    1921
+   ],
+   "reason": "Known gap (not drawn): foreign military occupation of neutral Persia, to be added as tier-1 'disputed' overlays when sourced extents are collected - Russian troops in the north (Tabriz, Rasht, Qazvin, Mashhad) from 1909/1911 until their withdrawal in 1917-1918; Ottoman operations in Azerbaijan and Kermanshah-Hamadan 1914-1918; British forces at Bushehr (1915-1916), the East Persia Cordon (Seistan Force) in Sistan (1915-1920), the South Persia Rifles in Fars and Kerman (1916-1921) and Norperforce on the Baghdad-Kermanshah-Hamadan-Qazvin-Enzeli road (1918-1921). Cliopatria's shapes for these (see h-southern-asia-0004) are a usable starting point but were not verified.",
+   "sources": [
+    {
+     "title": "Wikipedia: Persian campaign (World War I)",
+     "url": "https://en.wikipedia.org/wiki/Persian_campaign_(World_War_I)"
+    },
+    {
+     "title": "Wikipedia: South Persia Rifles",
+     "url": "https://en.wikipedia.org/wiki/South_Persia_Rifles"
+    },
+    {
+     "title": "Wikipedia: Seistan Force",
+     "url": "https://en.wikipedia.org/wiki/Seistan_Force"
+    }
+   ],
+   "confidence": "medium",
+   "status": "known-gap",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0006",
+   "op": "add",
+   "years": [
+    1924,
+    1924
+   ],
+   "geometry": {
+    "type": "record",
+    "pid": "clio:qajar-dynasty",
+    "year": 1923
+   },
+   "set": {
+    "pid": "clio:qajar-dynasty",
+    "name": "Persia",
+    "altNames": [
+     "Qajar Iran",
+     "Sublime State of Persia",
+     "Guarded Domains of Iran"
+    ],
+    "kind": "state",
+    "wikidata": "Q63158027",
+    "wikipedia": "Qajar Iran"
+   },
+   "reason": "Cliopatria starts the Pahlavi state in 1924. The Qajar dynasty was deposed by the Majles on 31 October 1925 and Reza Khan was proclaimed Shah on 12-15 December 1925, so Persia was still Qajar at the end of 1924. Re-adds Qajar Persia for 1924 with its 1923 geometry (carving the early 'Pahlavi Dynasty' record); the Pahlavi state starts in 1925.",
+   "sources": [
+    {
+     "title": "Wikipedia: Qajar Iran",
+     "url": "https://en.wikipedia.org/wiki/Qajar_Iran"
+    },
+    {
+     "title": "Wikipedia: Pahlavi Iran",
+     "url": "https://en.wikipedia.org/wiki/Pahlavi_Iran"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0007",
+   "op": "update",
+   "years": [
+    1924,
+    1934
+   ],
+   "target": {
+    "pid": "clio:pahlavi-dynasty"
+   },
+   "set": {
+    "name": "Persia",
+    "altNames": [
+     "Imperial State of Persia",
+     "Pahlavi Iran",
+     "Pahlavi dynasty"
+    ],
+    "wikidata": "Q107258515",
+    "wikipedia": "Pahlavi Iran"
+   },
+   "reason": "The Pahlavi state (from December 1925) was known in English as Persia (the 'Imperial State of Persia') until Reza Shah asked foreign governments to use 'Iran' in 1935. Display name set to the period name; Wikidata switched from the dynasty item Q207991 to the state item Q107258515 'Pahlavi Iran (former sovereign state 1925-1979)', verified with the Wikidata API. (1924 is re-assigned to the Qajars by h-southern-asia-0006.)",
+   "sources": [
+    {
+     "title": "Wikipedia: Pahlavi Iran",
+     "url": "https://en.wikipedia.org/wiki/Pahlavi_Iran"
+    },
+    {
+     "title": "Wikipedia: Name of Iran",
+     "url": "https://en.wikipedia.org/wiki/Name_of_Iran"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0008",
+   "op": "update",
+   "years": [
+    1935,
+    1945
+   ],
+   "target": {
+    "pid": "clio:pahlavi-dynasty"
+   },
+   "set": {
+    "name": "Iran",
+    "altNames": [
+     "Imperial State of Iran",
+     "Persia",
+     "Pahlavi Iran",
+     "Pahlavi dynasty"
+    ],
+    "wikidata": "Q107258515",
+    "wikipedia": "Pahlavi Iran"
+   },
+   "reason": "From 21 March 1935 the country asked to be called Iran internationally ('Imperial State of Iran'). Display name 'Iran'; Wikidata set to the state item Q107258515 'Pahlavi Iran' (verified).",
+   "sources": [
+    {
+     "title": "Wikipedia: Pahlavi Iran",
+     "url": "https://en.wikipedia.org/wiki/Pahlavi_Iran"
+    },
+    {
+     "title": "Wikipedia: Name of Iran",
+     "url": "https://en.wikipedia.org/wiki/Name_of_Iran"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0009",
+   "op": "add",
+   "years": [
+    1942,
+    1945
+   ],
+   "geometry": {
+    "type": "record",
+    "pid": "clio:pahlavi-dynasty",
+    "year": 1941
+   },
+   "set": {
+    "pid": "clio:pahlavi-dynasty",
+    "name": "Iran",
+    "altNames": [
+     "Imperial State of Iran",
+     "Persia",
+     "Pahlavi Iran",
+     "Pahlavi dynasty"
+    ],
+    "kind": "state",
+    "wikidata": "Q107258515",
+    "wikipedia": "Pahlavi Iran"
+   },
+   "reason": "Cliopatria cuts Iran into 'British Colonial Empire', 'British Africa' and 'Union of Soviet Socialist Republics' records in 1942-1945. Iran remained a sovereign state under Anglo-Soviet military occupation (invasion of 25 August 1941; Tripartite Treaty of January 1942; withdrawal March-May 1946). Restores Iran with its 1941 extent in tier 0; the two occupation zones become tier-1 overlays (h-southern-asia-0010, -0011).",
+   "sources": [
+    {
+     "title": "Wikipedia: Anglo-Soviet invasion of Iran",
+     "url": "https://en.wikipedia.org/wiki/Anglo-Soviet_invasion_of_Iran"
+    },
+    {
+     "title": "Wikipedia: Pahlavi Iran",
+     "url": "https://en.wikipedia.org/wiki/Pahlavi_Iran"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0010",
+   "op": "add",
+   "years": [
+    1941,
+    1945
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "record",
+      "pid": "clio:union-of-soviet-socialist-republics",
+      "year": 1943
+     },
+     {
+      "type": "admin0",
+      "codes": [
+       "IRN"
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:soviet-occupation-of-northern-iran",
+    "name": "Soviet occupation zone in Iran",
+    "kind": "disputed",
+    "tier": 1,
+    "precision": "approximate",
+    "controller": "clio:union-of-soviet-socialist-republics",
+    "claimants": [
+     "clio:pahlavi-dynasty"
+    ],
+    "wikipedia": "Anglo-Soviet invasion of Iran",
+    "note": "Military occupation 1941-1946; Iran remained sovereign."
+   },
+   "reason": "Soviet occupation of northern Iran from the invasion of 25-31 August 1941 (Soviet and British forces met at Sanandaj and Qazvin) until the Soviet withdrawal in May 1946. Tier-1 overlay over sovereign Iran; extent = Cliopatria's 1943 Soviet record intersected with Iran (Azerbaijan, Gilan, Mazandaran, Gorgan and northern Khorasan), approximate.",
+   "sources": [
+    {
+     "title": "Wikipedia: Anglo-Soviet invasion of Iran",
+     "url": "https://en.wikipedia.org/wiki/Anglo-Soviet_invasion_of_Iran"
+    },
+    {
+     "title": "Wikipedia: Iran crisis of 1946",
+     "url": "https://en.wikipedia.org/wiki/Iran_crisis_of_1946"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0011",
+   "op": "add",
+   "years": [
+    1941,
+    1945
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "record",
+      "pid": "clio:british-colonial-empire",
+      "year": 1943
+     },
+     {
+      "type": "admin0",
+      "codes": [
+       "IRN"
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:british-occupation-of-southern-iran",
+    "name": "British occupation zone in Iran",
+    "kind": "disputed",
+    "tier": 1,
+    "precision": "approximate",
+    "controller": "clio:kingdom-of-great-britain",
+    "claimants": [
+     "clio:pahlavi-dynasty"
+    ],
+    "wikipedia": "Anglo-Soviet invasion of Iran",
+    "note": "Military occupation 1941-1946; Iran remained sovereign."
+   },
+   "reason": "British (Paiforce) occupation of south-western Iran - Khuzestan oilfields and Abadan, Kermanshah, Hamadan and the road to Qazvin - from August 1941 until the British withdrawal of March 1946 (the US Persian Gulf Command ran the southern railway from 1942). Tier-1 overlay; extent = Cliopatria's 1943 'British Colonial Empire' record intersected with Iran, approximate.",
+   "sources": [
+    {
+     "title": "Wikipedia: Anglo-Soviet invasion of Iran",
+     "url": "https://en.wikipedia.org/wiki/Anglo-Soviet_invasion_of_Iran"
+    },
+    {
+     "title": "Wikipedia: Persian Corridor",
+     "url": "https://en.wikipedia.org/wiki/Persian_Corridor"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0012",
+   "op": "add",
+   "years": [
+    1730,
+    1733
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "record",
+      "pid": "clio:hotaki-dynasty",
+      "year": 1730
+     },
+     {
+      "type": "admin0",
+      "codes": [
+       "IRN"
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "clio:safavid-dynasty",
+    "name": "Safavid Dynasty",
+    "altNames": [
+     "Safavid Iran",
+     "Persia"
+    ],
+    "kind": "state",
+    "wikidata": "Q161205",
+    "wikipedia": "Safavid Iran"
+   },
+   "reason": "Cliopatria gives the whole Iranian plateau to the Hotaki (Afghan) dynasty until 1733. Nader Khan defeated Ashraf Hotak at Damghan and Murche-Khort in late 1729 and restored the Safavid Tahmasp II at Isfahan; the Hotakis kept only Kandahar until 1738, and the Safavid line (Tahmasp II, then the infant Abbas III from 1732) reigned until Nader's coronation in 1736. Adds the Safavid state over the Iranian part of Cliopatria's 1730 Hotaki record (Cliopatria's Safavid name and Wikidata kept for continuity with its pre-1700 records).",
+   "sources": [
+    {
+     "title": "Wikipedia: Safavid Iran",
+     "url": "https://en.wikipedia.org/wiki/Safavid_Iran"
+    },
+    {
+     "title": "Wikipedia: Hotak dynasty",
+     "url": "https://en.wikipedia.org/wiki/Hotak_dynasty"
+    },
+    {
+     "title": "Wikipedia: Battle of Damghan (1729)",
+     "url": "https://en.wikipedia.org/wiki/Battle_of_Damghan_(1729)"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0013",
+   "op": "add",
+   "years": [
+    1734,
+    1735
+   ],
+   "geometry": {
+    "type": "record",
+    "pid": "clio:afsharid-iran",
+    "year": 1735
+   },
+   "set": {
+    "pid": "clio:safavid-dynasty",
+    "name": "Safavid Dynasty",
+    "altNames": [
+     "Safavid Iran",
+     "Persia"
+    ],
+    "kind": "state",
+    "wikidata": "Q161205",
+    "wikipedia": "Safavid Iran"
+   },
+   "reason": "Cliopatria starts 'Afsharid Iran' in 1734, but Nader ruled as regent for the Safavid Abbas III until he was crowned Shah on 8 March 1736 (Mughan assembly), which is the conventional start of Afsharid Iran (Wikidata Q63149558: 1736-1796). Re-labels 1734-1735 as Safavid using Cliopatria's 1735 Afsharid geometry.",
+   "sources": [
+    {
+     "title": "Wikipedia: Safavid Iran",
+     "url": "https://en.wikipedia.org/wiki/Safavid_Iran"
+    },
+    {
+     "title": "Wikipedia: Afsharid Iran",
+     "url": "https://en.wikipedia.org/wiki/Afsharid_Iran"
+    },
+    {
+     "title": "Wikipedia: Abbas III",
+     "url": "https://en.wikipedia.org/wiki/Abbas_III"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0014",
+   "op": "note",
+   "years": [
+    1722,
+    1729
+   ],
+   "reason": "Known gap: 1722-1729 Iran is drawn wrongly by Cliopatria (Safavid over most of Iran until 1726, then Hotaki over everything 1727-1733). After the fall of Isfahan (October 1722) the Hotakis (Mahmud, then Ashraf) held Isfahan, Kashan, Qom, Kerman and Fars; Tahmasp II kept Mazandaran and Astarabad (and Khorasan after Nader took Mashhad in 1726); the Ottomans occupied the west (Hamadan, Kermanshah, Tabriz, 1723-1730s) and Russia the Caspian provinces (1722-1732/35). Needs sourced period maps before it can be drawn.",
+   "sources": [
+    {
+     "title": "Wikipedia: Hotak dynasty",
+     "url": "https://en.wikipedia.org/wiki/Hotak_dynasty"
+    },
+    {
+     "title": "Wikipedia: Russo-Persian War (1722–1723)",
+     "url": "https://en.wikipedia.org/wiki/Russo-Persian_War_(1722–1723)"
+    },
+    {
+     "title": "Wikipedia: Ottoman–Hotaki War (1726–1727)",
+     "url": "https://en.wikipedia.org/wiki/Ottoman–Hotaki_War_(1726–1727)"
+    }
+   ],
+   "confidence": "medium",
+   "status": "known-gap",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0015",
+   "op": "add",
+   "years": [
+    1920,
+    1920
+   ],
+   "geometry": {
+    "type": "admin1",
+    "codes": [
+     "IR-19"
+    ]
+   },
+   "set": {
+    "pid": "ovr:persian-socialist-soviet-republic",
+    "name": "Persian Socialist Soviet Republic",
+    "altNames": [
+     "Gilan Republic",
+     "Soviet Republic of Gilan"
+    ],
+    "kind": "state",
+    "precision": "approximate",
+    "wikidata": "Q8341881",
+    "wikipedia": "Persian Socialist Soviet Republic",
+    "note": "Unrecognised Soviet-backed republic, 1920-1921."
+   },
+   "reason": "Missing polity: the Persian Socialist Soviet Republic (Gilan Republic), proclaimed at Rasht in May-June 1920 by the Jangali movement with Soviet support and ended in September 1921 (Russo-Persian treaty of February 1921, Soviet withdrawal, reconquest by Reza Khan's forces). De facto state controlling Gilan at the end of 1920; drawn as Gilan province (approximate - its hold on neighbouring Mazandaran was brief).",
+   "sources": [
+    {
+     "title": "Wikipedia: Persian Socialist Soviet Republic",
+     "url": "https://en.wikipedia.org/wiki/Persian_Socialist_Soviet_Republic"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0016",
+   "op": "note",
+   "years": [
+    1794,
+    1868
+   ],
+   "reason": "Checked: the Sultan of Muscat held Bandar Abbas with Hormuz and Qeshm on lease from Persia from the 1790s until 1868; Cliopatria shows an Omani record there only 1820-1869. Not changed (small area; lease dates vary between sources - 1793/1794 to 1868).",
+   "sources": [
+    {
+     "title": "Wikipedia: Bandar Abbas",
+     "url": "https://en.wikipedia.org/wiki/Bandar_Abbas"
+    },
+    {
+     "title": "Wikipedia: Muscat and Oman",
+     "url": "https://en.wikipedia.org/wiki/Muscat_and_Oman"
+    }
+   ],
+   "confidence": "low",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0017",
+   "op": "note",
+   "years": [
+    1700,
+    1945
+   ],
+   "reason": "Editorial decision: Iran's tribal confederacies (Bakhtiari, Qashqai, Lurs, Kurdish emirates such as Ardalan, Baluch chiefdoms, Turkmen Yomut and Goklen) and the autonomous Arab sheikhdom of Mohammerah in Khuzestan (Bani Ka'b / Sheikh Khaz'al, to 1924-1925) are not drawn. They were autonomous within the Persian state and sources give no stable territorial extents for 1700-1945; candidates for future tier-1 overlays.",
+   "sources": [
+    {
+     "title": "Wikipedia: Sheikh Khazal rebellion",
+     "url": "https://en.wikipedia.org/wiki/Sheikh_Khazal_rebellion"
+    },
+    {
+     "title": "Wikipedia: Bakhtiari people",
+     "url": "https://en.wikipedia.org/wiki/Bakhtiari_people"
+    },
+    {
+     "title": "Wikipedia: Qashqai people",
+     "url": "https://en.wikipedia.org/wiki/Qashqai_people"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0701",
+   "op": "add",
+   "years": [
+    1700,
+    1765
+   ],
+   "geometry": {
+    "type": "polygon",
+    "rings": [
+     [
+      [
+       81.909,
+       7.293
+      ],
+      [
+       81.878,
+       6.714
+      ],
+      [
+       81.719,
+       6.457
+      ],
+      [
+       81.338,
+       6.136
+      ],
+      [
+       80.967,
+       6.007
+      ],
+      [
+       80.894,
+       6.007
+      ],
+      [
+       80.837,
+       6.329
+      ],
+      [
+       80.694,
+       6.393
+      ],
+      [
+       80.708,
+       6.65
+      ],
+      [
+       80.416,
+       6.65
+      ],
+      [
+       80.28,
+       6.843
+      ],
+      [
+       80.381,
+       7.357
+      ],
+      [
+       79.724,
+       7.357
+      ],
+      [
+       79.738,
+       7.614
+      ],
+      [
+       79.884,
+       7.614
+      ],
+      [
+       79.917,
+       8.193
+      ],
+      [
+       79.771,
+       8.193
+      ],
+      [
+       79.791,
+       8.514
+      ],
+      [
+       80.01,
+       8.514
+      ],
+      [
+       80.091,
+       8.643
+      ],
+      [
+       80.748,
+       8.643
+      ],
+      [
+       80.752,
+       8.707
+      ],
+      [
+       81.056,
+       8.9
+      ],
+      [
+       81.129,
+       8.9
+      ],
+      [
+       81.186,
+       8.643
+      ],
+      [
+       81.04,
+       8.643
+      ],
+      [
+       81.036,
+       8.579
+      ],
+      [
+       81.093,
+       8.322
+      ],
+      [
+       81.389,
+       8.386
+      ],
+      [
+       81.385,
+       8.322
+      ],
+      [
+       81.512,
+       8.0
+      ],
+      [
+       81.654,
+       7.936
+      ],
+      [
+       81.651,
+       7.872
+      ],
+      [
+       81.428,
+       7.807
+      ],
+      [
+       81.417,
+       7.614
+      ],
+      [
+       81.691,
+       7.293
+      ],
+      [
+       81.909,
+       7.293
+      ]
+     ]
+    ]
+   },
+   "set": {
+    "pid": "ovr:kingdom-of-kandy",
+    "name": "Kingdom of Kandy",
+    "altNames": [
+     "Kanda Uda Rata",
+     "Mahanuwara"
+    ],
+    "kind": "state",
+    "precision": "approximate",
+    "wikidata": "Q1530762",
+    "wikipedia": "Kingdom of Kandy"
+   },
+   "reason": "Cliopatria has no Kingdom of Kandy: its interior polygon of Sri Lanka is labelled 'Dutch Ceylon' (1687-1768) while the real Dutch coastal possessions are labelled 'Dutch Republic'. Kandy stayed independent of the Dutch (who never controlled it) and still reached the sea on the east coast and at Puttalam/Chilaw until the war of 1761-1765. Re-labels Cliopatria's interior polygon as Kandy.",
+   "sources": [
+    {
+     "title": "Wikipedia: Kingdom of Kandy",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Kandy"
+    },
+    {
+     "title": "Wikipedia: Dutch Ceylon",
+     "url": "https://en.wikipedia.org/wiki/Dutch_Ceylon"
+    },
+    {
+     "title": "Codrington, A Short History of Lanka (1926), ch. 9 (Dutch period): treaty of 14 February 1766",
+     "url": "https://web.archive.org/web/20191223232642/http://lakdiva.org/codrington/chap09.html"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0702",
+   "op": "add",
+   "years": [
+    1766,
+    1814
+   ],
+   "geometry": {
+    "type": "polygon",
+    "rings": [
+     [
+      [
+       81.534,
+       7.1
+      ],
+      [
+       81.666,
+       6.843
+      ],
+      [
+       81.142,
+       6.586
+      ],
+      [
+       80.346,
+       6.714
+      ],
+      [
+       80.29,
+       7.036
+      ],
+      [
+       80.381,
+       7.357
+      ],
+      [
+       79.946,
+       7.422
+      ],
+      [
+       79.881,
+       7.55
+      ],
+      [
+       80.014,
+       8.579
+      ],
+      [
+       80.525,
+       8.579
+      ],
+      [
+       80.902,
+       8.772
+      ],
+      [
+       80.874,
+       8.322
+      ],
+      [
+       81.301,
+       8.129
+      ],
+      [
+       81.205,
+       7.743
+      ],
+      [
+       81.333,
+       7.422
+      ],
+      [
+       81.545,
+       7.293
+      ],
+      [
+       81.534,
+       7.1
+      ]
+     ]
+    ]
+   },
+   "set": {
+    "pid": "ovr:kingdom-of-kandy",
+    "name": "Kingdom of Kandy",
+    "altNames": [
+     "Kanda Uda Rata",
+     "Mahanuwara"
+    ],
+    "kind": "state",
+    "precision": "approximate",
+    "wikidata": "Q1530762",
+    "wikipedia": "Kingdom of Kandy"
+   },
+   "reason": "Kingdom of Kandy after the treaty of 14 February 1766, by which the king ceded to the Dutch East India Company all districts bordering the coast, leaving Kandy landlocked; it stayed so under the British (from 1796) until the Kandyan Convention of 2 March 1815. Uses Cliopatria's post-treaty interior polygon (labelled 'Dutch Ceylon' 1769-1795 and 'British Ceylon' 1796-1814 in Cliopatria; Cliopatria also dates the change to 1769 instead of 1766).",
+   "sources": [
+    {
+     "title": "Wikipedia: Kingdom of Kandy",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Kandy"
+    },
+    {
+     "title": "Codrington, A Short History of Lanka (1926), ch. 9 (Dutch period): treaty of 14 February 1766",
+     "url": "https://web.archive.org/web/20191223232642/http://lakdiva.org/codrington/chap09.html"
+    },
+    {
+     "title": "Wikipedia: Kandyan Convention",
+     "url": "https://en.wikipedia.org/wiki/Kandyan_Convention"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0703",
+   "op": "add",
+   "years": [
+    1700,
+    1765
+   ],
+   "geometry": {
+    "type": "difference",
+    "base": {
+     "type": "admin0",
+     "codes": [
+      "LKA"
+     ]
+    },
+    "minus": [
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         81.909,
+         7.293
+        ],
+        [
+         81.878,
+         6.714
+        ],
+        [
+         81.719,
+         6.457
+        ],
+        [
+         81.338,
+         6.136
+        ],
+        [
+         80.967,
+         6.007
+        ],
+        [
+         80.894,
+         6.007
+        ],
+        [
+         80.837,
+         6.329
+        ],
+        [
+         80.694,
+         6.393
+        ],
+        [
+         80.708,
+         6.65
+        ],
+        [
+         80.416,
+         6.65
+        ],
+        [
+         80.28,
+         6.843
+        ],
+        [
+         80.381,
+         7.357
+        ],
+        [
+         79.724,
+         7.357
+        ],
+        [
+         79.738,
+         7.614
+        ],
+        [
+         79.884,
+         7.614
+        ],
+        [
+         79.917,
+         8.193
+        ],
+        [
+         79.771,
+         8.193
+        ],
+        [
+         79.791,
+         8.514
+        ],
+        [
+         80.01,
+         8.514
+        ],
+        [
+         80.091,
+         8.643
+        ],
+        [
+         80.748,
+         8.643
+        ],
+        [
+         80.752,
+         8.707
+        ],
+        [
+         81.056,
+         8.9
+        ],
+        [
+         81.129,
+         8.9
+        ],
+        [
+         81.186,
+         8.643
+        ],
+        [
+         81.04,
+         8.643
+        ],
+        [
+         81.036,
+         8.579
+        ],
+        [
+         81.093,
+         8.322
+        ],
+        [
+         81.389,
+         8.386
+        ],
+        [
+         81.385,
+         8.322
+        ],
+        [
+         81.512,
+         8.0
+        ],
+        [
+         81.654,
+         7.936
+        ],
+        [
+         81.651,
+         7.872
+        ],
+        [
+         81.428,
+         7.807
+        ],
+        [
+         81.417,
+         7.614
+        ],
+        [
+         81.691,
+         7.293
+        ],
+        [
+         81.909,
+         7.293
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "clio:dutch-ceylon",
+    "name": "Dutch Ceylon",
+    "altNames": [
+     "Zeylan"
+    ],
+    "kind": "dependency",
+    "power": "ne:nld",
+    "subjecto": "Dutch East India Company",
+    "wikidata": "Q1841483",
+    "wikipedia": "Dutch Ceylon"
+   },
+   "reason": "Dutch Ceylon proper: the VOC's coastal possessions (Jaffna, Mannar, Negombo-Colombo-Galle-Matara, Trincomalee and Batticaloa forts), which Cliopatria labels 'Dutch Republic'. Drawn as Sri Lanka minus Kandy (h-southern-asia-0701). The pid is re-used because Cliopatria's own 'Dutch Ceylon' record is the interior (Kandy) and is carved away by h-southern-asia-0701 (expect a validator warning about a re-added Cliopatria pid).",
+   "sources": [
+    {
+     "title": "Wikipedia: Dutch Ceylon",
+     "url": "https://en.wikipedia.org/wiki/Dutch_Ceylon"
+    },
+    {
+     "title": "Wikipedia: Kingdom of Kandy",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Kandy"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0704",
+   "op": "add",
+   "years": [
+    1766,
+    1795
+   ],
+   "geometry": {
+    "type": "difference",
+    "base": {
+     "type": "admin0",
+     "codes": [
+      "LKA"
+     ]
+    },
+    "minus": [
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         81.534,
+         7.1
+        ],
+        [
+         81.666,
+         6.843
+        ],
+        [
+         81.142,
+         6.586
+        ],
+        [
+         80.346,
+         6.714
+        ],
+        [
+         80.29,
+         7.036
+        ],
+        [
+         80.381,
+         7.357
+        ],
+        [
+         79.946,
+         7.422
+        ],
+        [
+         79.881,
+         7.55
+        ],
+        [
+         80.014,
+         8.579
+        ],
+        [
+         80.525,
+         8.579
+        ],
+        [
+         80.902,
+         8.772
+        ],
+        [
+         80.874,
+         8.322
+        ],
+        [
+         81.301,
+         8.129
+        ],
+        [
+         81.205,
+         7.743
+        ],
+        [
+         81.333,
+         7.422
+        ],
+        [
+         81.545,
+         7.293
+        ],
+        [
+         81.534,
+         7.1
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "clio:dutch-ceylon",
+    "name": "Dutch Ceylon",
+    "altNames": [
+     "Zeylan"
+    ],
+    "kind": "dependency",
+    "power": "ne:nld",
+    "subjecto": "Dutch East India Company",
+    "wikidata": "Q1841483",
+    "wikipedia": "Dutch Ceylon"
+   },
+   "reason": "Dutch Ceylon after the 1766 treaty: the whole coastal belt around Kandy. British forces took Trincomalee, Batticaloa and Jaffna in August-September 1795 and Colombo surrendered on 15-16 February 1796, so the transfer is shown from 1796.",
+   "sources": [
+    {
+     "title": "Wikipedia: Dutch Ceylon",
+     "url": "https://en.wikipedia.org/wiki/Dutch_Ceylon"
+    },
+    {
+     "title": "Wikipedia: Kingdom of Kandy",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Kandy"
+    },
+    {
+     "title": "Codrington, A Short History of Lanka (1926), ch. 9 (Dutch period): treaty of 14 February 1766",
+     "url": "https://web.archive.org/web/20191223232642/http://lakdiva.org/codrington/chap09.html"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0705",
+   "op": "add",
+   "years": [
+    1796,
+    1814
+   ],
+   "geometry": {
+    "type": "difference",
+    "base": {
+     "type": "admin0",
+     "codes": [
+      "LKA"
+     ]
+    },
+    "minus": [
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         81.534,
+         7.1
+        ],
+        [
+         81.666,
+         6.843
+        ],
+        [
+         81.142,
+         6.586
+        ],
+        [
+         80.346,
+         6.714
+        ],
+        [
+         80.29,
+         7.036
+        ],
+        [
+         80.381,
+         7.357
+        ],
+        [
+         79.946,
+         7.422
+        ],
+        [
+         79.881,
+         7.55
+        ],
+        [
+         80.014,
+         8.579
+        ],
+        [
+         80.525,
+         8.579
+        ],
+        [
+         80.902,
+         8.772
+        ],
+        [
+         80.874,
+         8.322
+        ],
+        [
+         81.301,
+         8.129
+        ],
+        [
+         81.205,
+         7.743
+        ],
+        [
+         81.333,
+         7.422
+        ],
+        [
+         81.545,
+         7.293
+        ],
+        [
+         81.534,
+         7.1
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "clio:british-ceylon",
+    "name": "British Ceylon",
+    "altNames": [
+     "Ceylon"
+    ],
+    "kind": "dependency",
+    "power": "ne:gbr",
+    "subjecto": "United Kingdom",
+    "partof": "British Empire",
+    "wikidata": "Q918153",
+    "wikipedia": "British Ceylon"
+   },
+   "reason": "British Ceylon 1796-1814 = the former Dutch maritime provinces (Crown colony from 1 January 1802, confirmed by the Treaty of Amiens). Cliopatria labels this belt 'British Empire' and puts the name 'British Ceylon' on the independent Kandyan interior. Drawn as Sri Lanka minus Kandy; the pid is re-used (validator warning expected) because Cliopatria's own record is carved away by h-southern-asia-0702.",
+   "sources": [
+    {
+     "title": "Wikipedia: British Ceylon",
+     "url": "https://en.wikipedia.org/wiki/British_Ceylon"
+    },
+    {
+     "title": "Wikipedia: Kingdom of Kandy",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Kandy"
+    },
+    {
+     "title": "Wikipedia: Kandyan Wars",
+     "url": "https://en.wikipedia.org/wiki/Kandyan_Wars"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0706",
+   "op": "add",
+   "years": [
+    1815,
+    1945
+   ],
+   "geometry": {
+    "type": "admin0",
+    "codes": [
+     "LKA"
+    ]
+   },
+   "set": {
+    "pid": "clio:british-ceylon",
+    "name": "British Ceylon",
+    "altNames": [
+     "Ceylon"
+    ],
+    "kind": "dependency",
+    "power": "ne:gbr",
+    "subjecto": "United Kingdom",
+    "partof": "British Empire",
+    "wikidata": "Q918153",
+    "wikipedia": "British Ceylon"
+   },
+   "reason": "After the Kandyan Convention (2 March 1815) the whole island was the Crown colony of British Ceylon until independence (1948). Cliopatria folds Ceylon into 'British Empire' (1815-1858) and 'British Raj' (1859-1945), but Ceylon was never part of British India: it was a separate Crown colony under the Colonial Office. Tier-0 add of the whole island carves it out of those records.",
+   "sources": [
+    {
+     "title": "Wikipedia: British Ceylon",
+     "url": "https://en.wikipedia.org/wiki/British_Ceylon"
+    },
+    {
+     "title": "Wikipedia: Kandyan Convention",
+     "url": "https://en.wikipedia.org/wiki/Kandyan_Convention"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0710",
+   "op": "add",
+   "years": [
+    1700,
+    1886
+   ],
+   "geometry": {
+    "type": "admin0",
+    "codes": [
+     "MDV"
+    ]
+   },
+   "set": {
+    "pid": "ovr:maldives",
+    "name": "Sultanate of the Maldives",
+    "altNames": [
+     "Maldive Islands",
+     "Maldives"
+    ],
+    "wikidata": "Q11344632",
+    "wikipedia": "Sultanate of the Maldive Islands",
+    "kind": "state"
+   },
+   "reason": "Missing polity: Cliopatria has nothing on the Maldives, an independent Muslim sultanate since the 12th century (Portuguese occupation only 1558-1573). All Natural Earth Maldives atolls.",
+   "sources": [
+    {
+     "title": "Wikipedia: History of the Maldives",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Maldives"
+    },
+    {
+     "title": "Wikipedia: Maldives",
+     "url": "https://en.wikipedia.org/wiki/Maldives"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0711",
+   "op": "add",
+   "years": [
+    1887,
+    1945
+   ],
+   "geometry": {
+    "type": "admin0",
+    "codes": [
+     "MDV"
+    ]
+   },
+   "set": {
+    "pid": "ovr:maldives",
+    "name": "Sultanate of the Maldives",
+    "altNames": [
+     "Maldive Islands",
+     "Maldives"
+    ],
+    "wikidata": "Q11344632",
+    "wikipedia": "Sultanate of the Maldive Islands",
+    "kind": "dependency",
+    "power": "ne:gbr",
+    "subjecto": "United Kingdom (via Ceylon)",
+    "note": "British protected state from 1887."
+   },
+   "reason": "On 16 December 1887 Sultan Muhammad Mueenuddeen II signed an agreement with the Governor of Ceylon making the Maldives a British-protected state (external affairs and defence British, internal self-government retained) until 1965.",
+   "sources": [
+    {
+     "title": "Wikipedia: History of the Maldives",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Maldives"
+    },
+    {
+     "title": "Wikipedia: Maldives",
+     "url": "https://en.wikipedia.org/wiki/Maldives"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0720",
+   "op": "add",
+   "years": [
+    1700,
+    1786
+   ],
+   "geometry": {
+    "type": "admin1",
+    "codes": [
+     "IN-LD"
+    ]
+   },
+   "set": {
+    "pid": "ovr:arakkal-kingdom",
+    "name": "Arakkal kingdom (Laccadive Islands)",
+    "altNames": [
+     "Cannanore",
+     "Ali Rajas of Cannanore"
+    ],
+    "wikipedia": "Arakkal kingdom",
+    "kind": "state"
+   },
+   "reason": "Missing: the Lakshadweep islands (uncovered in Cliopatria and too far offshore for automatic island assignment) were held as a jagir by the Muslim Arakkal dynasty (Ali Rajas / Bibis of Cannanore) from the mid-16th century. Drawn as all Natural Earth Lakshadweep islands (the dynasty's small mainland seat at Cannanore is below the map's granularity).",
+   "sources": [
+    {
+     "title": "Wikipedia: Lakshadweep",
+     "url": "https://en.wikipedia.org/wiki/Lakshadweep"
+    },
+    {
+     "title": "Wikipedia: Arakkal kingdom",
+     "url": "https://en.wikipedia.org/wiki/Arakkal_kingdom"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0721",
+   "op": "add",
+   "years": [
+    1787,
+    1798
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-LD"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         71.5,
+         7.8
+        ],
+        [
+         74.5,
+         7.8
+        ],
+        [
+         74.5,
+         11.0
+        ],
+        [
+         71.5,
+         11.0
+        ],
+        [
+         71.5,
+         7.8
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:arakkal-kingdom",
+    "name": "Arakkal kingdom (Laccadive Islands)",
+    "altNames": [
+     "Cannanore",
+     "Ali Rajas of Cannanore"
+    ],
+    "wikipedia": "Arakkal kingdom",
+    "kind": "state"
+   },
+   "reason": "The northern Amindivi group (Amini, Kadmat, Kiltan, Chetlat, Bitra) revolted against Cannanore and came under Tipu Sultan's Mysore in 1787; the rest of the islands stayed with the Arakkal Bibi. Arakkal keeps the southern (Laccadive and Minicoy) islands here; the Amindivi go to Mysore (h-southern-asia-0722).",
+   "sources": [
+    {
+     "title": "Wikipedia: Lakshadweep",
+     "url": "https://en.wikipedia.org/wiki/Lakshadweep"
+    },
+    {
+     "title": "Wikipedia: Aminidivi",
+     "url": "https://en.wikipedia.org/wiki/Aminidivi"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0722",
+   "op": "assign",
+   "years": [
+    1787,
+    1798
+   ],
+   "target": {
+    "pid": "clio:kingdom-of-mysore"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-LD"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         71.5,
+         11.0
+        ],
+        [
+         74.5,
+         11.0
+        ],
+        [
+         74.5,
+         12.5
+        ],
+        [
+         71.5,
+         12.5
+        ],
+        [
+         71.5,
+         11.0
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Amindivi Islands under Tipu Sultan's Mysore (1787) until his fall in 1799. Assigned to Mysore (split from the southern Laccadives at 11 deg N).",
+   "sources": [
+    {
+     "title": "Wikipedia: Lakshadweep",
+     "url": "https://en.wikipedia.org/wiki/Lakshadweep"
+    },
+    {
+     "title": "Wikipedia: Aminidivi",
+     "url": "https://en.wikipedia.org/wiki/Aminidivi"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0723",
+   "op": "add",
+   "years": [
+    1799,
+    1907
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-LD"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         71.5,
+         7.8
+        ],
+        [
+         74.5,
+         7.8
+        ],
+        [
+         74.5,
+         11.0
+        ],
+        [
+         71.5,
+         11.0
+        ],
+        [
+         71.5,
+         7.8
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:arakkal-kingdom",
+    "name": "Arakkal kingdom (Laccadive Islands)",
+    "altNames": [
+     "Cannanore",
+     "Ali Rajas of Cannanore"
+    ],
+    "wikipedia": "Arakkal kingdom",
+    "kind": "dependency",
+    "power": "ne:gbr",
+    "subjecto": "East India Company / British India (tributary)"
+   },
+   "reason": "From 1796 the Arakkal Bibi kept Cannanore and the Laccadives (Minicoy formally surrendered to the East India Company in 1790) only as a tributary without sovereignty; the British took over the administration in 1908 (Minicoy's cession signed 1909, backdated to 1905). Shown as a British dependency held by the Arakkal family.",
+   "sources": [
+    {
+     "title": "Wikipedia: Lakshadweep",
+     "url": "https://en.wikipedia.org/wiki/Lakshadweep"
+    },
+    {
+     "title": "Wikipedia: Arakkal kingdom",
+     "url": "https://en.wikipedia.org/wiki/Arakkal_kingdom"
+    },
+    {
+     "title": "Wikipedia: Minicoy",
+     "url": "https://en.wikipedia.org/wiki/Minicoy"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0724",
+   "op": "assign",
+   "years": [
+    1799,
+    1858
+   ],
+   "target": {
+    "pid": "clio:british-empire"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-LD"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         71.5,
+         11.0
+        ],
+        [
+         74.5,
+         11.0
+        ],
+        [
+         74.5,
+         12.5
+        ],
+        [
+         71.5,
+         12.5
+        ],
+        [
+         71.5,
+         11.0
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Amindivi Islands annexed by the East India Company after the Fourth Anglo-Mysore War (1799) and attached to South Canara district, Madras Presidency. Assigned to the Company's (Cliopatria 'British Empire') record.",
+   "sources": [
+    {
+     "title": "Wikipedia: Lakshadweep",
+     "url": "https://en.wikipedia.org/wiki/Lakshadweep"
+    },
+    {
+     "title": "Wikipedia: Aminidivi",
+     "url": "https://en.wikipedia.org/wiki/Aminidivi"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0725",
+   "op": "assign",
+   "years": [
+    1859,
+    1907
+   ],
+   "target": {
+    "pid": "clio:british-raj"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-LD"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         71.5,
+         11.0
+        ],
+        [
+         74.5,
+         11.0
+        ],
+        [
+         74.5,
+         12.5
+        ],
+        [
+         71.5,
+         12.5
+        ],
+        [
+         71.5,
+         11.0
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Amindivi Islands in British India (South Canara district, Madras Presidency) under the Crown from 1858-1859.",
+   "sources": [
+    {
+     "title": "Wikipedia: Lakshadweep",
+     "url": "https://en.wikipedia.org/wiki/Lakshadweep"
+    },
+    {
+     "title": "Wikipedia: Aminidivi",
+     "url": "https://en.wikipedia.org/wiki/Aminidivi"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0726",
+   "op": "assign",
+   "years": [
+    1908,
+    1945
+   ],
+   "target": {
+    "pid": "clio:british-raj"
+   },
+   "geometry": {
+    "type": "admin1",
+    "codes": [
+     "IN-LD"
+    ]
+   },
+   "reason": "All Lakshadweep islands in British India from 1908 (Amindivi in South Canara, the Laccadives and Minicoy in Malabar district, Madras Presidency).",
+   "sources": [
+    {
+     "title": "Wikipedia: Lakshadweep",
+     "url": "https://en.wikipedia.org/wiki/Lakshadweep"
+    },
+    {
+     "title": "Wikipedia: Minicoy",
+     "url": "https://en.wikipedia.org/wiki/Minicoy"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0730",
+   "op": "add",
+   "years": [
+    1700,
+    1945
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         92.4,
+         11.0
+        ],
+        [
+         93.35,
+         11.0
+        ],
+        [
+         93.35,
+         13.75
+        ],
+        [
+         92.4,
+         13.75
+        ],
+        [
+         92.4,
+         11.0
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:andamanese-peoples",
+    "name": "Great Andamanese and Jarawa",
+    "altNames": [
+     "Andamanese peoples",
+     "Great Andamanese",
+     "Jarawa"
+    ],
+    "kind": "indigenous",
+    "tier": 1,
+    "precision": "approximate",
+    "wikipedia": "Andamanese peoples"
+   },
+   "reason": "Indigenous peoples missing from Cliopatria: the Great Andaman islands were the territory of the Great Andamanese (some ten tribes, among them the Aka-Bea, Aka-Jeru, Aka-Bo) and of the Jarawa (south-west of South and Middle Andaman). Tier-1 overlay over whatever holds the islands (nothing until the short British settlement of 1789-1796 and the Port Blair penal colony from 1858). The Great Andamanese were devastated by epidemics after 1858; the overlay records their homeland, not population.",
+   "sources": [
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: Great Andamanese",
+     "url": "https://en.wikipedia.org/wiki/Great_Andamanese"
+    },
+    {
+     "title": "Wikipedia: Jarawa people (Andaman Islands)",
+     "url": "https://en.wikipedia.org/wiki/Jarawa_people_(Andaman_Islands)"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0731",
+   "op": "add",
+   "years": [
+    1700,
+    1945
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         92.3,
+         10.45
+        ],
+        [
+         92.8,
+         10.45
+        ],
+        [
+         92.8,
+         10.95
+        ],
+        [
+         92.3,
+         10.95
+        ],
+        [
+         92.3,
+         10.45
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:onge",
+    "name": "Onge",
+    "altNames": [
+     "Önge"
+    ],
+    "kind": "indigenous",
+    "tier": 1,
+    "precision": "approximate",
+    "wikipedia": "Onge"
+   },
+   "reason": "The Onge, an Andamanese people, held Little Andaman (and earlier also visited Rutland Island). Tier-1 indigenous overlay.",
+   "sources": [
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: Onge",
+     "url": "https://en.wikipedia.org/wiki/Onge"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0732",
+   "op": "add",
+   "years": [
+    1700,
+    1945
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         92.1,
+         11.45
+        ],
+        [
+         92.33,
+         11.45
+        ],
+        [
+         92.33,
+         11.65
+        ],
+        [
+         92.1,
+         11.65
+        ],
+        [
+         92.1,
+         11.45
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:sentinelese",
+    "name": "Sentinelese",
+    "kind": "indigenous",
+    "tier": 1,
+    "precision": "approximate",
+    "wikipedia": "Sentinelese"
+   },
+   "reason": "The Sentinelese of North Sentinel Island, who have kept their independence and isolation throughout. Tier-1 indigenous overlay.",
+   "sources": [
+    {
+     "title": "Wikipedia: Sentinelese",
+     "url": "https://en.wikipedia.org/wiki/Sentinelese"
+    },
+    {
+     "title": "Wikipedia: North Sentinel Island",
+     "url": "https://en.wikipedia.org/wiki/North_Sentinel_Island"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0733",
+   "op": "add",
+   "years": [
+    1700,
+    1945
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         92.3,
+         6.4
+        ],
+        [
+         94.3,
+         6.4
+        ],
+        [
+         94.3,
+         9.6
+        ],
+        [
+         92.3,
+         9.6
+        ],
+        [
+         92.3,
+         6.4
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:nicobarese",
+    "name": "Nicobarese and Shompen",
+    "altNames": [
+     "Nicobarese",
+     "Shompen"
+    ],
+    "kind": "indigenous",
+    "tier": 1,
+    "precision": "approximate",
+    "wikipedia": "Nicobarese people"
+   },
+   "reason": "The Nicobar Islands' own peoples: the Nicobarese on the coasts of all inhabited islands and the Shompen in the interior of Great Nicobar. Danish (1756-1848/1868), Austrian (1778-1784) and British (from 1869) claims sat on top of their villages. Tier-1 overlay over the whole group.",
+   "sources": [
+    {
+     "title": "Wikipedia: Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: Nicobarese people",
+     "url": "https://en.wikipedia.org/wiki/Nicobarese_people"
+    },
+    {
+     "title": "Wikipedia: Shompen people",
+     "url": "https://en.wikipedia.org/wiki/Shompen_people"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0734",
+   "op": "subtract",
+   "years": [
+    1785,
+    1790
+   ],
+   "target": {
+    "pid": "clio:habsburg-monarchy"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         92.3,
+         6.4
+        ],
+        [
+         94.3,
+         6.4
+        ],
+        [
+         94.3,
+         9.6
+        ],
+        [
+         92.3,
+         9.6
+        ],
+        [
+         92.3,
+         6.4
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Cliopatria keeps the Austrian (Habsburg) Nicobar colony until 1790 and overlaps it with Danish India. Austria's colony on Nancowry lasted from June 1778 to 1784/1785. Removes the Nicobar Islands from the Habsburg Monarchy record after 1784 (only the island part - the record also holds Austria itself).",
+   "sources": [
+    {
+     "title": "Wikipedia: Austrian colonization of the Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/Austrian_colonization_of_the_Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0735",
+   "op": "subtract",
+   "years": [
+    1778,
+    1784
+   ],
+   "target": {
+    "pid": "clio:danish-india"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         92.3,
+         6.4
+        ],
+        [
+         94.3,
+         6.4
+        ],
+        [
+         94.3,
+         9.6
+        ],
+        [
+         92.3,
+         9.6
+        ],
+        [
+         92.3,
+         6.4
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "While the Austrian East India Company held its Nicobar colony (1778-1784) Cliopatria also keeps the islands in Danish India, giving two overlapping tier-0 owners. Removes the Nicobars from Danish India for those years (Denmark kept its claim and resumed afterwards).",
+   "sources": [
+    {
+     "title": "Wikipedia: Austrian colonization of the Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/Austrian_colonization_of_the_Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0736",
+   "op": "assign",
+   "years": [
+    1800,
+    1848
+   ],
+   "target": {
+    "pid": "clio:danish-india"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         92.3,
+         6.4
+        ],
+        [
+         94.3,
+         6.4
+        ],
+        [
+         94.3,
+         9.6
+        ],
+        [
+         92.3,
+         9.6
+        ],
+        [
+         92.3,
+         6.4
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Danish India's Nicobar claim (Frederiksoerne, colony from 1 January 1756, administered from Tranquebar) continued until the Danes withdrew their last settlers and relinquished the islands in 1848 (rights formally sold to Britain on 16 October 1868). Cliopatria drops the Nicobars from Danish India after 1799 and then gives them to the 'Dutch East Indies' (see h-southern-asia-0737).",
+   "sources": [
+    {
+     "title": "Wikipedia: Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: Austrian colonization of the Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/Austrian_colonization_of_the_Nicobar_Islands"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0737",
+   "op": "subtract",
+   "years": [
+    1800,
+    1872
+   ],
+   "target": {
+    "pid": "clio:dutch-east-indies"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         92.3,
+         6.4
+        ],
+        [
+         94.3,
+         6.4
+        ],
+        [
+         94.3,
+         9.6
+        ],
+        [
+         92.3,
+         9.6
+        ],
+        [
+         92.3,
+         6.4
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Ghost territory: Cliopatria puts the Nicobar Islands in the 'Dutch East Indies' (1814-1872). The Netherlands never held them; they were a Danish claim (to 1848/1868) and British from 1869.",
+   "sources": [
+    {
+     "title": "Wikipedia: Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0738",
+   "op": "subtract",
+   "years": [
+    1857,
+    1857
+   ],
+   "target": {
+    "pid": "clio:british-empire"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         91.8,
+         10.3
+        ],
+        [
+         94.6,
+         10.3
+        ],
+        [
+         94.6,
+         14.0
+        ],
+        [
+         91.8,
+         14.0
+        ],
+        [
+         91.8,
+         10.3
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Cliopatria's 1857-1858 'British Empire' record already holds the Andamans in 1857; the British survey party arrived in late 1857 and the Port Blair penal settlement was founded in March 1858 (the 1789-1796 settlement had been abandoned).",
+   "sources": [
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: Port Blair",
+     "url": "https://en.wikipedia.org/wiki/Port_Blair"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0739",
+   "op": "assign",
+   "years": [
+    1859,
+    1941
+   ],
+   "target": {
+    "pid": "clio:british-raj"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         91.8,
+         10.3
+        ],
+        [
+         94.6,
+         10.3
+        ],
+        [
+         94.6,
+         14.0
+        ],
+        [
+         91.8,
+         14.0
+        ],
+        [
+         91.8,
+         10.3
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Cliopatria's British Raj covers only part of the Andaman group (Little Andaman and outliers stay uncovered and are too far offshore for automatic assignment). The British claimed the whole archipelago from 1858 (Andaman and Nicobar Islands chief commissionership). Assigns the full Andaman group to the Raj; the indigenous overlays stay on top.",
+   "sources": [
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: Port Blair",
+     "url": "https://en.wikipedia.org/wiki/Port_Blair"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0740",
+   "op": "assign",
+   "years": [
+    1942,
+    1944
+   ],
+   "target": {
+    "pid": "clio:empire-of-japan"
+   },
+   "geometry": {
+    "type": "union",
+    "parts": [
+     {
+      "type": "intersection",
+      "parts": [
+       {
+        "type": "admin1",
+        "codes": [
+         "IN-AN"
+        ]
+       },
+       {
+        "type": "polygon",
+        "rings": [
+         [
+          [
+           91.8,
+           10.3
+          ],
+          [
+           94.6,
+           10.3
+          ],
+          [
+           94.6,
+           14.0
+          ],
+          [
+           91.8,
+           14.0
+          ],
+          [
+           91.8,
+           10.3
+          ]
+         ]
+        ]
+       }
+      ]
+     },
+     {
+      "type": "intersection",
+      "parts": [
+       {
+        "type": "admin1",
+        "codes": [
+         "IN-AN"
+        ]
+       },
+       {
+        "type": "polygon",
+        "rings": [
+         [
+          [
+           92.3,
+           6.4
+          ],
+          [
+           94.3,
+           6.4
+          ],
+          [
+           94.3,
+           9.6
+          ],
+          [
+           92.3,
+           9.6
+          ],
+          [
+           92.3,
+           6.4
+          ]
+         ]
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "reason": "Japanese occupation of the Andaman and Nicobar Islands: Port Blair was occupied on 23 March 1942 and the islands were surrendered in August-October 1945 (nominally handed to Azad Hind in December 1943). Cliopatria starts the occupation only in 1943; assigns both island groups to the Empire of Japan for 1942-1944 (1945 is British again at year end).",
+   "sources": [
+    {
+     "title": "Wikipedia: Japanese occupation of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/Japanese_occupation_of_the_Andaman_and_Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0741",
+   "op": "assign",
+   "years": [
+    1869,
+    1941
+   ],
+   "target": {
+    "pid": "clio:british-raj"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         92.3,
+         6.4
+        ],
+        [
+         94.3,
+         6.4
+        ],
+        [
+         94.3,
+         9.6
+        ],
+        [
+         92.3,
+         9.6
+        ],
+        [
+         92.3,
+         6.4
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Nicobar Islands part of British India from 1869 (Danish rights bought 16 October 1868). Cliopatria's Raj covers most of them from 1868; this assignment makes the whole group British for the full period (outlying islands otherwise stay unclaimed).",
+   "sources": [
+    {
+     "title": "Wikipedia: Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0742",
+   "op": "assign",
+   "years": [
+    1945,
+    1945
+   ],
+   "target": {
+    "pid": "clio:british-raj"
+   },
+   "geometry": {
+    "type": "union",
+    "parts": [
+     {
+      "type": "intersection",
+      "parts": [
+       {
+        "type": "admin1",
+        "codes": [
+         "IN-AN"
+        ]
+       },
+       {
+        "type": "polygon",
+        "rings": [
+         [
+          [
+           91.8,
+           10.3
+          ],
+          [
+           94.6,
+           10.3
+          ],
+          [
+           94.6,
+           14.0
+          ],
+          [
+           91.8,
+           14.0
+          ],
+          [
+           91.8,
+           10.3
+          ]
+         ]
+        ]
+       }
+      ]
+     },
+     {
+      "type": "intersection",
+      "parts": [
+       {
+        "type": "admin1",
+        "codes": [
+         "IN-AN"
+        ]
+       },
+       {
+        "type": "polygon",
+        "rings": [
+         [
+          [
+           92.3,
+           6.4
+          ],
+          [
+           94.3,
+           6.4
+          ],
+          [
+           94.3,
+           9.6
+          ],
+          [
+           92.3,
+           9.6
+          ],
+          [
+           92.3,
+           6.4
+          ]
+         ]
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "reason": "Andaman and Nicobar Islands back under British control at the end of 1945 (Japanese surrender signed at Port Blair on 7 October 1945); assigns the whole archipelago to the Raj for the last historical year.",
+   "sources": [
+    {
+     "title": "Wikipedia: Japanese occupation of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/Japanese_occupation_of_the_Andaman_and_Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  },
+  {
+   "id": "h-southern-asia-0743",
+   "op": "assign",
+   "years": [
+    1858,
+    1858
+   ],
+   "target": {
+    "pid": "clio:british-empire"
+   },
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "admin1",
+      "codes": [
+       "IN-AN"
+      ]
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         91.8,
+         10.3
+        ],
+        [
+         94.6,
+         10.3
+        ],
+        [
+         94.6,
+         14.0
+        ],
+        [
+         91.8,
+         14.0
+        ],
+        [
+         91.8,
+         10.3
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "reason": "Port Blair penal settlement founded in March 1858 after the 1857-1858 survey; Cliopatria's 1858 'British Empire' record covers only part of the Andaman group. Assigns the whole Andaman group to the Company/Crown record for 1858.",
+   "sources": [
+    {
+     "title": "Wikipedia: History of the Andaman and Nicobar Islands",
+     "url": "https://en.wikipedia.org/wiki/History_of_the_Andaman_and_Nicobar_Islands"
+    },
+    {
+     "title": "Wikipedia: Port Blair",
+     "url": "https://en.wikipedia.org/wiki/Port_Blair"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:audit-h-southern-asia",
+   "date": "2026-10-01"
+  }
+ ]
+}
