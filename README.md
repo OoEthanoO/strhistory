@@ -3,7 +3,7 @@
 The history department's website: an interactive, timeline-based globe of IB
 History topics with study notes, plus courses, teachers, news and study guides.
 
-**Live:** https://history.ethanyanxu.com
+**Live:** https://strhistory.ca
 
 - Spin the globe to any snapshot from 1100 to 2010 and see the world's borders
   as they were.

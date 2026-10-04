@@ -12,7 +12,7 @@ const target = process.argv[2];
 if (!target) throw new Error('Provide the private configuration path');
 mkdirSync(dirname(target), { recursive: true });
 writeFileSync(target, JSON.stringify({
-  origin: 'https://history.ethanyanxu.com', salt,
+  origin: 'https://strhistory.ca', salt,
   codeHash: scryptSync(code, salt, 64).toString('hex'),
   sessionKey: randomBytes(32).toString('hex'),
 }, null, 2), { mode: 0o600 });

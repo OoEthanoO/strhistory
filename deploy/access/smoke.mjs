@@ -1,17 +1,18 @@
 // Run against Caddy (staging or production), never astro preview. Code on stdin.
-// Usage: <code from secure input> | node deploy/access/smoke.mjs https://history.ethanyanxu.com
+// Usage: <code from secure input> | node deploy/access/smoke.mjs https://strhistory.ca [https://alias.example ...]
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 const base = process.argv[2];
 if (!base) throw new Error('Provide the base URL');
+const origin = new URL(base).origin;
 let code = '';
 for await (const chunk of process.stdin) code += chunk;
 code = code.trim();
 if (!code) throw new Error('Provide the access code on stdin');
 const request = (path, options = {}) => fetch(new URL(path, base), { redirect: 'manual', ...options });
 const post = (path, value, headers = {}) => request(path, { method: 'POST', headers: {
-  Origin: 'https://history.ethanyanxu.com', ...headers,
+  Origin: origin, ...headers,
 }, body: new URLSearchParams({ code: value, next: '/topics/storming-bastille-1789?from=globe' }) });
 const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((f) => f.isDirectory() ? walk(join(dir, f.name)) : [join(dir, f.name)]);
 const protectedPages = walk('dist').filter((f) => f.endsWith('.html')).map((f) => '/' + relative('dist', f).replaceAll('\\', '/'))
@@ -64,3 +65,16 @@ r = await post('/access/logout', '', { Cookie: cookie });
 assert.match(r.headers.get('set-cookie'), /Max-Age=0/);
 assert.equal((await request('/topics/')).status, 303);
 console.log('Public globe/assets, wrong code, unlock, all protected pages, return URL, cache headers and logout passed.');
+for (const alias of process.argv.slice(3)) {
+  for (const path of ['/globe?year=1789&topic=storming-bastille-1789', '/topics/storming-bastille-1789/', '/access?next=%2Ftopics%2F']) {
+    const r = await fetch(new URL(path, alias), { redirect: 'manual' });
+    assert.equal(r.status, 308, `permanent redirect: ${alias}${path}`);
+    assert.equal(r.headers.get('location'), origin + path, 'redirect retains the full path and query');
+  }
+  const r = await fetch(new URL('/access/unlock', alias), {
+    method: 'POST', redirect: 'manual', body: new URLSearchParams({ code: 'not-a-real-code' }),
+  });
+  assert.equal(r.status, 303, 'old forms must not forward credentials to another origin');
+  assert.equal(r.headers.get('location'), origin + '/access');
+  console.log(`Verified redirects from ${alias}.`);
+}
