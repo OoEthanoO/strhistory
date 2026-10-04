@@ -15,6 +15,81 @@ export interface PastedColorScheme {
   fixed: Readonly<Record<string, string>>;
 }
 
+/**
+ * Tune the pasted schemes without changing their stored base colours.
+ * Values are proportional percentages: -60 removes 60% of the existing
+ * saturation, while -10 makes the existing lightness 10% darker.
+ */
+export const SCHEME_SATURATION_ADJUSTMENT = -60;
+export const SCHEME_LIGHTNESS_ADJUSTMENT = -10;
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
+
+/**
+ * Adjust a hex colour's HSL saturation and lightness proportionally.
+ * Accepts #RGB[A] and #RRGGBB[AA], clamps both results to 0–100%, and
+ * preserves an alpha channel when one is supplied.
+ */
+export function adjustHexColor(
+  color: string,
+  saturationAdjustment: number,
+  lightnessAdjustment: number,
+): string {
+  if (!Number.isFinite(saturationAdjustment) || !Number.isFinite(lightnessAdjustment)) {
+    throw new Error('Colour adjustments must be finite numbers');
+  }
+
+  const match = /^#?([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.exec(color.trim());
+  if (!match) throw new Error(`Invalid HEX colour: ${color}`);
+
+  const expanded = match[1].length <= 4
+    ? [...match[1]].map((digit) => digit + digit).join('')
+    : match[1].toLowerCase();
+  const alpha = expanded.length === 8 ? expanded.slice(6, 8) : '';
+  const red = Number.parseInt(expanded.slice(0, 2), 16) / 255;
+  const green = Number.parseInt(expanded.slice(2, 4), 16) / 255;
+  const blue = Number.parseInt(expanded.slice(4, 6), 16) / 255;
+  const maximum = Math.max(red, green, blue);
+  const minimum = Math.min(red, green, blue);
+  const delta = maximum - minimum;
+  let hue = 0;
+  let saturation = 0;
+  let lightness = (maximum + minimum) / 2;
+
+  if (delta !== 0) {
+    saturation = delta / (1 - Math.abs(2 * lightness - 1));
+    if (maximum === red) hue = 60 * (((green - blue) / delta) % 6);
+    else if (maximum === green) hue = 60 * ((blue - red) / delta + 2);
+    else hue = 60 * ((red - green) / delta + 4);
+  }
+
+  hue = (hue + 360) % 360;
+  saturation = clamp(saturation + (saturation * saturationAdjustment / 100), 0, 1);
+  lightness = clamp(lightness + (lightness * lightnessAdjustment / 100), 0, 1);
+
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const intermediate = chroma * (1 - Math.abs(((hue / 60) % 2) - 1));
+  const offset = lightness - chroma / 2;
+  let adjustedRed = 0;
+  let adjustedGreen = 0;
+  let adjustedBlue = 0;
+
+  if (hue < 60) [adjustedRed, adjustedGreen] = [chroma, intermediate];
+  else if (hue < 120) [adjustedRed, adjustedGreen] = [intermediate, chroma];
+  else if (hue < 180) [adjustedGreen, adjustedBlue] = [chroma, intermediate];
+  else if (hue < 240) [adjustedGreen, adjustedBlue] = [intermediate, chroma];
+  else if (hue < 300) [adjustedRed, adjustedBlue] = [intermediate, chroma];
+  else [adjustedRed, adjustedBlue] = [chroma, intermediate];
+
+  const toHex = (value: number): string =>
+    Math.round(clamp(value + offset, 0, 1) * 255).toString(16).padStart(2, '0');
+  return `#${toHex(adjustedRed)}${toHex(adjustedGreen)}${toHex(adjustedBlue)}${alpha}`;
+}
+
+const adjustSchemeColor = (color: string): string =>
+  adjustHexColor(color, SCHEME_SATURATION_ADJUSTMENT, SCHEME_LIGHTNESS_ADJUSTMENT);
+
 // ---- Paste the pre-1900 scheme from the previous commit here ----------------------
 
 const PRE_1900_COLORS = [
@@ -434,17 +509,18 @@ export function pastedColorFor(p: SchemePolity, year?: number): string | undefin
   for (const key of [p.power, p.pid, p.subjecto, p.name]) {
     if (!key) continue;
     const fixed = scheme.fixed[key];
-    if (fixed) return fixed;
+    if (fixed) return adjustSchemeColor(fixed);
   }
 
   for (const id of [p.power, p.pid]) {
     const legacyKey = LEGACY_FIXED_KEY_BY_ID[id];
     if (!legacyKey) continue;
     const fixed = scheme.fixed[legacyKey];
-    if (fixed) return fixed;
+    if (fixed) return adjustSchemeColor(fixed);
   }
 
   if (scheme.colors.length === 0) return undefined;
   const slot = Number.isFinite(p.c) ? Math.trunc(p.c) : 0;
-  return scheme.colors[((slot % scheme.colors.length) + scheme.colors.length) % scheme.colors.length];
+  const color = scheme.colors[((slot % scheme.colors.length) + scheme.colors.length) % scheme.colors.length];
+  return adjustSchemeColor(color);
 }
