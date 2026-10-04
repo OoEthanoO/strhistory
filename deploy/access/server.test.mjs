@@ -6,7 +6,7 @@ import { createAccessServer, safeNext, COOKIE } from './server.mjs';
 
 const code = 'test-only-access-code';
 const salt = randomBytes(16).toString('hex');
-const config = { origin: 'https://history.ethanyanxu.com', salt,
+const config = { origin: 'https://strhistory.ca', salt,
   codeHash: scryptSync(code, salt, 64).toString('hex'), sessionKey: randomBytes(32).toString('hex') };
 
 test('return destinations stay on this website', () => {
@@ -48,6 +48,11 @@ test('unlock, reject, expiry, logout, origin, request bounds and throttling', as
   assert.equal((await request('/verify', { headers: { Cookie: cookie + 'x' } })).status, 303);
   assert.equal((await request('/access/unlock')).status, 405);
   assert.equal((await request('/access/unlock', form(code, '/', { Origin: 'https://evil.test' }))).status, 403);
+  // Redirect aliases must never become trusted login origins.
+  for (const origin of ['https://history.ethanyanxu.com', 'https://www.strhistory.ca', 'http://strhistory.ca']) {
+    assert.equal((await request('/access/unlock', form(code, '/', { Origin: origin }))).status, 403);
+    assert.equal((await request('/access/logout', form('', '/', { Origin: origin }))).status, 403);
+  }
   assert.equal((await request('/access/unlock', { method: 'POST', body: 'code=' + code })).status, 403);
   assert.equal((await request('/access/unlock', form('x'.repeat(5000)))).status, 413);
   assert.equal((await request('/access/unlock', form(code, '/', { 'Content-Type': 'application/json' }))).status, 415);

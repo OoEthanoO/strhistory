@@ -8,7 +8,19 @@
 # Caddy obtains and renews the HTTPS certificate itself once DNS for the domain
 # points at the server.
 
-history.ethanyanxu.com {
+# Keep existing bookmarks and the www spelling on the canonical domain.
+history.ethanyanxu.com, www.strhistory.ca {
+	# A form left open on an old host must be filled again on the new origin;
+	# do not forward its access code in a cross-origin POST.
+	@accessPost {
+		method POST
+		path /access/unlock /access/logout
+	}
+	redir @accessPost https://strhistory.ca/access 303
+	redir https://strhistory.ca{uri} 308
+}
+
+strhistory.ca {
 	encode zstd gzip
 
 	# `current` is a junction to the live release (releases\<commit>).
