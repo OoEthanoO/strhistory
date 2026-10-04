@@ -1,119 +1,111 @@
 ---
-import { getCollection } from 'astro:content';
-import Badge from '@/components/Badge.astro';
 import NewsCard from '@/components/NewsCard.astro';
 import TeacherCard from '@/components/TeacherCard.astro';
-import TopicCard from '@/components/TopicCard.astro';
 import HomeGlobe from '@/features/globe/HomeGlobe';
 import { getGlobeData } from '@/features/globe/data';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getCourses, getNews, getTeachers, getTopics } from '@/lib/content';
+import { getCourses, getNews, getTeachers, getTopics, getUnits } from '@/lib/content';
 import { formatYearRange } from '@/lib/format';
 const data = await getGlobeData();
 const topics = (await getTopics()).filter(t => t.data.curriculum === '2028');
-const glossary = await getCollection('glossary');
+const units = await getUnits();
 const courses = await getCourses();
 const teachers = (await getTeachers()).slice(0, 3);
 const news = (await getNews()).slice(0, 3);
-const featured = topics.slice(0, 6);
 const previews = topics.filter(t => t.data.period.start === 1789).slice(0, 2);
-const selections = [
-  { paper: 1, title: 'Political and economic transitions', description: 'Investigate change through historical sources.', level: 'SL & HL' },
-  { paper: 2, title: 'Authoritarian rule', description: 'Explore the emergence, exercise and impact of power.', level: 'SL & HL' },
-  { paper: 3, title: 'Europe: revolution & unification', description: 'The French Revolution and the unification of Germany and Italy.', level: 'HL' },
-];
+const paperOf = (t: (typeof topics)[number]) => units.find(u => u.id === t.data.unit.id)?.data.paper;
+const papers = [
+  { paper: 1, title: 'Political and economic transitions', level: 'SL & HL' },
+  { paper: 2, title: 'Authoritarian rule', level: 'SL & HL' },
+  { paper: 3, title: 'Europe: revolution & unification', level: 'HL' },
+].map(p => ({ ...p, notes: topics.filter(t => paperOf(t) === p.paper) }));
 ---
 <BaseLayout>
   <section class="hero container">
-    <div class="hero-heading">
-      <div><p class="eyebrow">The history department · First assessment 2028</p><h1>Every event has <em>a place.</em></h1></div>
-      <p>Explore the world. Follow a moment.<br />Discover the history behind it.</p>
-    </div>
+    <h1>Every event has <span class="mark">a place<svg viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3 9C45 3 95 2 130 5s52 5 67 1" /></svg></span></h1>
+    <p>IB History study notes, pinned to where and when they happened.</p>
     <div class="hero-grid">
       <HomeGlobe client:load {...data} />
       <aside class="discovery" aria-labelledby="discovery-title">
-        <div class="discovery-heading"><span class="eyebrow">A closer look</span><span aria-hidden="true">1789</span></div>
-        <h2 id="discovery-title">A world on the <em>edge of change.</em></h2>
-        <p>Start in 1789, as revolution reshaped France. Every pin opens a focused note about a particular event, in its own time and place.</p>
+        <h2 id="discovery-title">On the globe in 1789</h2>
         <div class="previews">
-          {previews.map(t => <a class="preview" href={`/topics/${t.id}`}><span class="preview-meta">{t.data.location.place} · {formatYearRange(t.data.period.start, t.data.period.end)}</span><h3>{t.data.shortTitle ?? t.data.title}<span aria-hidden="true">↗</span></h3><p>{t.data.summary}</p></a>)}
+          {previews.map(t => <a class="preview" href={`/topics/${t.id}`}><span class="preview-meta">{t.data.location.place} · {formatYearRange(t.data.period.start, t.data.period.end)}</span><h3>{t.data.shortTitle ?? t.data.title}</h3><p>{t.data.summary}</p></a>)}
         </div>
-        <a class="browse" href="/topics">Search all study notes <span aria-hidden="true">→</span></a>
-        <p class="discovery-foot">Choose SL or HL in the explorer and notes library.</p>
+        <a class="more" href="/topics">All notes →</a>
       </aside>
     </div>
-    <div class="explore-strip"><p><strong>Human origins to today.</strong> The timeline follows world history, beyond the course.</p><a href="/globe?year=-300000">Start exploring <span aria-hidden="true">→</span></a></div>
   </section>
-  <section class="section section--alt">
-    <div class="container">
-      <div class="section-head"><div><p class="eyebrow">Find your next connection</p><h2>Small notes. A bigger picture.</h2></div><a class="more" href="/topics">All {topics.length} course notes →</a></div>
-      <div class="grid" style="--min: 300px">{featured.map(t => <TopicCard topic={t} />)}</div>
-      <div class="study-tools"><p>Highlighted sources, key terms with significance, and questions to test understanding.</p><a href="/glossary">Explore {glossary.length} glossary terms →</a></div>
+
+  <section class="section container">
+    <div class="section-head"><h2>Course notes</h2><a class="more" href="/topics">Search all notes →</a></div>
+    <div class="papers">
+      {papers.map(p => (
+        <div class={`paper paper--${p.paper}`}>
+          <p class="paper-top"><span>Paper {p.paper}</span><span>{p.level}</span></p>
+          <h3>{p.title}</h3>
+          <ul>{p.notes.map(t => <li><a href={`/topics/${t.id}`}><span>{t.data.shortTitle ?? t.data.title}</span><span>{formatYearRange(t.data.period.start, t.data.period.end)}</span></a></li>)}</ul>
+          <a class="more" href={`/topics?level=${p.paper === 3 ? 'HL' : 'SL'}#paper-${p.paper}`}>View in library →</a>
+        </div>
+      ))}
+    </div>
+    <p class="source">Course structure: <a href="https://ibo.org/globalassets/new-structure/programmes/dp/pdfs/dp-history-sb-en.pdf">IB History subject brief, first assessment 2028</a>.</p>
+  </section>
+
+  <section class="section container dept">
+    <div>
+      <div class="section-head"><h2>Courses</h2><a class="more" href="/courses">All courses →</a></div>
+      <ul class="course-list">{courses.map(c => <li><a href={`/courses/${c.id}`}><span>{c.data.title}</span><span>{c.data.level} · {c.data.grades}{c.data.placeholder ? ' · Sample' : ''}</span></a></li>)}</ul>
+    </div>
+    <div>
+      <div class="section-head"><h2>Teachers</h2><a class="more" href="/teachers">All teachers →</a></div>
+      <div class="grid" style="--min: 260px">{teachers.map(t => <TeacherCard teacher={t} compact />)}</div>
     </div>
   </section>
-  <section class="section">
-    <div class="container"><p class="eyebrow">Our IB History selections</p><h2>One shared foundation. More depth at HL.</h2>
-      <p class="section-intro">The course follows the revised curriculum, first assessed in 2028. SL and HL share Papers 1 and 2; Higher Level adds regional study.</p>
-      <div class="papers">{selections.map(s => <a class="paper" href={`/topics?level=${s.paper === 3 ? 'HL' : 'SL'}#paper-${s.paper}`}><div class="paper-top"><Badge tone={`paper-${s.paper}`}>Paper {s.paper}</Badge><span>{s.level}</span></div><h3>{s.title}</h3><p>{s.description}</p><span class="more">View notes →</span></a>)}</div>
-      <p class="curriculum-source">Course structure: <a href="https://ibo.org/globalassets/new-structure/programmes/dp/pdfs/dp-history-sb-en.pdf">IB History subject brief, first assessment 2028</a>. Notes are being added to the department's selected studies.</p>
-    </div>
-  </section>
-  <section class="section section--alt">
-    <div class="container dept"><div><p class="eyebrow">Beyond the map</p><h2>Meet the department.</h2><p>Discover our courses, the people who teach them, and the tools that support historical enquiry.</p><ul class="course-list">{courses.map(c => <li><a href={`/courses/${c.id}`}><span>{c.data.title}</span><span>{c.data.level} · {c.data.grades}{c.data.placeholder ? ' · Sample' : ''}</span></a></li>)}</ul><a class="more" href="/about">About the department →</a></div><div><div class="section-head"><h3>Our teachers</h3><a class="more" href="/teachers">Meet everyone →</a></div><div class="grid" style="--min: 200px">{teachers.map(t => <TeacherCard teacher={t} compact />)}</div></div></div>
-  </section>
-  {news.length > 0 && <section class="section"><div class="container"><div class="section-head"><div><p class="eyebrow">Department journal</p><h2>News & notices</h2></div><a class="more" href="/news">All news →</a></div><div class="grid" style="--min: 300px">{news.map(n => <NewsCard post={n} />)}</div></div></section>}
+
+  {news.length > 0 && <section class="section container"><div class="section-head"><h2>News</h2><a class="more" href="/news">All news →</a></div><div class="grid" style="--min: 300px">{news.map(n => <NewsCard post={n} />)}</div></section>}
 </BaseLayout>
 <style>
-  .hero { padding-top: clamp(28px, 4vw, 52px); }
-  .hero-heading { display: flex; justify-content: space-between; align-items: end; gap: 32px; margin-bottom: 32px; }
-  .hero-heading h1 { font-size: clamp(2.6rem, 4.5vw, 4.4rem); font-weight: 480; letter-spacing: -.035em; margin: 0; line-height: 1.1; }
-  .hero-heading h1 em { color: var(--accent); }
-  .hero-heading > p { font-size: 14px; line-height: 1.7; color: var(--ink-2); margin: 0 0 4px; }
-  .hero-grid { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(270px, 1fr); gap: 32px; }
-  .discovery { display: flex; flex-direction: column; padding: 12px 0; }
-  .discovery-heading { display: flex; justify-content: space-between; border-bottom: 1px solid var(--rule); padding-bottom: 14px; margin-bottom: 22px; }
-  .discovery-heading .eyebrow { margin: 0; }
-  .discovery-heading > span:last-child { font: 11px var(--font-mono); color: var(--ink-3); }
-  .discovery h2 { font-size: clamp(1.8rem, 2.7vw, 2.7rem); line-height: 1.08; font-weight: 500; margin-bottom: 14px; }
-  .discovery h2 em { color: var(--accent); }
-  .discovery > p { color: var(--ink-2); font-size: 14px; line-height: 1.7; }
-  .previews { margin-top: 4px; }
-  .preview { display: block; padding: 18px 0; color: var(--ink); border-bottom: 1px solid var(--rule); text-decoration: none; }
-  .preview-meta { display: block; text-transform: uppercase; letter-spacing: .05em; font-size: 10px; color: var(--ink-3); margin-bottom: 9px; }
-  .preview h3 { font-size: 1.35rem; margin-bottom: 5px; display: flex; justify-content: space-between; gap: 8px; }
-  .preview h3 span { font: 17px var(--font-sans); color: var(--accent); }
-  .preview p { color: var(--ink-2); font-size: 12px; line-height: 1.6; margin: 0; }
-  .preview:hover h3 { color: var(--accent); }
-  .browse { display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 13px; padding-top: 22px; text-decoration: none; }
-  .discovery .discovery-foot { font-size: 11px; color: var(--ink-3); margin: 12px 0 0; }
-  .explore-strip { padding: 22px 0 26px; display: flex; justify-content: space-between; gap: 20px; font-size: 13px; color: var(--ink-2); }
-  .explore-strip p { margin: 0; }
-  .explore-strip strong { color: var(--ink); font-weight: 550; }
-  .explore-strip a { white-space: nowrap; text-decoration: none; font-weight: 600; }
-  .section-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
-  .section-head h2, .section-head h3 { margin: 0; }
-  .more { font-size: 13px; font-weight: 600; text-decoration: none; }
+  .hero { padding-top: clamp(32px, 5vw, 64px); text-align: center; }
+  .hero h1 { font-size: clamp(2.4rem, 5.5vw, 4.4rem); letter-spacing: -.05em; line-height: 1.05; margin: 0; }
+  .mark { position: relative; display: inline-block; white-space: nowrap; }
+  .mark svg { position: absolute; left: 0; bottom: -.08em; width: 100%; height: .22em; overflow: visible; fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+  .hero > p { font-size: var(--step-1); color: var(--ink-3); margin: 16px 0 clamp(28px, 4vw, 44px); }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(270px, 1fr); gap: 16px; text-align: left; }
+  .discovery { align-self: start; display: flex; flex-direction: column; gap: 8px; padding: 20px; border-radius: var(--radius-l); background: var(--paper-2); }
+  .discovery h2 { font-size: var(--step-1); margin: 0 0 4px; }
+  .previews { display: grid; gap: 8px; }
+  .preview { display: block; padding: 16px 18px; border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow-s); color: var(--ink); text-decoration: none; transition: box-shadow .15s; }
+  .preview:hover { box-shadow: var(--shadow); color: var(--ink); }
+  .preview-meta { display: block; font-size: 12px; color: var(--ink-3); margin-bottom: 4px; }
+  .preview h3 { font-size: 1.1rem; margin-bottom: 4px; }
+  .preview p { color: var(--ink-3); font-size: 13px; line-height: 1.55; margin: 0; }
+  .discovery .more { padding: 8px 4px 0; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+  .section-head h2 { margin: 0; font-size: var(--step-3); }
+  .more { font-size: 14px; font-weight: 600; text-decoration: none; }
   .more:hover { text-decoration: underline; }
-  .study-tools { display: flex; justify-content: space-between; gap: 20px; margin-top: 28px; font-size: 13px; color: var(--ink-2); }
-  .study-tools p { margin: 0; }
-  .study-tools a { flex-shrink: 0; }
-  .section-intro { color: var(--ink-2); max-width: 65ch; }
-  .papers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 32px; }
-  .paper { display: flex; flex-direction: column; padding: 24px; border: 1px solid var(--rule); border-radius: var(--radius-l); text-decoration: none; color: var(--ink); background: var(--card); transition: border-color .15s; }
-  .paper:hover { border-color: var(--brass); }
-  .paper-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .paper-top > span { color: var(--ink-3); font-size: 11px; }
-  .paper h3 { font-size: 1.6rem; margin: 22px 0 12px; }
-  .paper p { font-size: 14px; color: var(--ink-2); }
-  .paper .more { padding-top: 20px; margin-top: auto; color: var(--accent); }
-  .curriculum-source { color: var(--ink-3); font-size: 12px; margin: 20px 0 0; }
-  .dept { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 64px; }
-  .dept p { color: var(--ink-2); }
-  .course-list { list-style: none; margin: 24px 0; padding: 0; border-top: 1px solid var(--rule); }
-  .course-list a { display: flex; flex-direction: column; padding: 14px 0; border-bottom: 1px solid var(--rule); text-decoration: none; }
-  .course-list span:first-child { font-family: var(--font-serif); font-size: 1.2rem; }
-  .course-list span:last-child { font-size: 12px; color: var(--ink-3); }
-  @media(max-width: 900px) { .hero-grid { grid-template-columns: minmax(0, 1.7fr) minmax(240px, 1fr); gap: 24px; } .hero-heading > p { display: none; } .dept { gap: 32px; } }
-  @media(max-width: 700px) { .hero-grid, .dept, .papers { grid-template-columns: 1fr; } .hero-heading { margin-bottom: 22px; } .discovery h2 br { display: none; } .discovery { padding-top: 4px; } .explore-strip, .study-tools { flex-direction: column; gap: 10px; } .section-head { align-items: start; flex-direction: column; gap: 12px; } .previews { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; } }
-  @media(prefers-reduced-motion: reduce) { .paper { transition: none; } }
+  .papers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .paper { --tint: var(--c-exam); display: flex; flex-direction: column; padding: 22px 24px; border-radius: var(--radius-l); background: var(--c-exam-soft); }
+  .paper--2 { --tint: var(--c-context); background: var(--c-context-soft); }
+  .paper--3 { --tint: var(--c-historiography); background: var(--c-historiography-soft); }
+  .paper-top { display: flex; justify-content: space-between; margin: 0; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+  .paper-top span:first-child { font-weight: 600; color: var(--tint); }
+  .paper h3 { font-size: 1.35rem; margin: 10px 0 12px; }
+  .paper ul { list-style: none; margin: 0 0 16px; padding: 0; }
+  .paper li a { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid color-mix(in srgb, var(--tint) 18%, transparent); color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 500; }
+  .paper li a:hover { color: var(--tint); }
+  .paper li span:last-child { flex-shrink: 0; color: var(--ink-3); font-weight: 400; }
+  .paper .more { margin-top: auto; color: var(--tint); }
+  .source { color: var(--ink-3); font-size: 13px; margin: 16px 0 0; }
+  .dept { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; padding-top: 0; }
+  .dept .section-head h2 { font-size: var(--step-2); }
+  .course-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .course-list a { display: flex; flex-direction: column; padding: 14px 18px; border-radius: var(--radius); box-shadow: var(--shadow-s); color: var(--ink); text-decoration: none; }
+  .course-list a:hover { background: var(--paper-2); color: var(--ink); }
+  .course-list span:first-child { font: 600 1.02rem var(--font-display); letter-spacing: -.02em; }
+  .course-list span:last-child { font-size: 13px; color: var(--ink-3); }
+  .section + .section:not(.dept) { padding-top: 0; }
+  @media(max-width: 900px) { .hero-grid { grid-template-columns: minmax(0, 1.7fr) minmax(240px, 1fr); } .dept { gap: 32px; } }
+  @media(max-width: 700px) { .hero-grid, .dept, .papers { grid-template-columns: 1fr; } .section-head { flex-wrap: wrap; } }
+  @media(prefers-reduced-motion: reduce) { .preview { transition: none; } }
 </style>

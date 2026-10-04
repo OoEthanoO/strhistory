@@ -17,16 +17,17 @@ export const site = {
   repo: 'https://github.com/OoEthanoO/strhistory',
 } as const;
 
-export type NavItem = { href: string; label: string };
+type NavLink = { href: string; label: string };
+export type NavItem = NavLink | { label: string; children: NavLink[] };
 
 export const nav: NavItem[] = [
   { href: '/globe', label: 'Globe' },
   { href: '/topics', label: 'Notes' },
   { href: '/glossary', label: 'Glossary' },
-  { href: '/courses', label: 'Courses' },
-  { href: '/teachers', label: 'Teachers' },
-  { href: '/news', label: 'News' },
   { href: '/resources', label: 'Resources' },
+  { label: 'Department', children: [
+    { href: '/courses', label: 'Courses' },
+    { href: '/teachers', label: 'Teachers' },
+    { href: '/news', label: 'News' },
+  ] },
 ];
-
-export const footerNav: NavItem[] = [...nav, { href: '/about', label: 'About' }];

@@ -17,14 +17,13 @@ const { tone = 'neutral', title } = Astro.props;
     padding: 3px 10px;
     border-radius: 999px;
     font-family: var(--font-sans);
-    font-size: 0.78rem;
-    font-weight: 650;
-    letter-spacing: 0.02em;
+    font-size: 0.8rem;
+    font-weight: 500;
     line-height: 1.4;
     white-space: nowrap;
     background: var(--paper-2);
     color: var(--ink-2);
-    border: 1px solid var(--rule);
+    border: 1px solid transparent;
   }
   .badge--accent {
     background: var(--accent-soft);
@@ -54,6 +53,7 @@ const { tone = 'neutral', title } = Astro.props;
   .badge--sample {
     background: transparent;
     color: var(--ink-3);
+    border-color: var(--rule-strong);
     border-style: dashed;
   }
 </style>

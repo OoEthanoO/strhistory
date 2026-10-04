@@ -7,8 +7,8 @@
 /* ---------- prose ---------- */
 
 .prose {
-  font-family: var(--font-serif);
-  font-size: clamp(1.08rem, 1.02rem + 0.25vw, 1.22rem);
+  font-family: var(--font-sans);
+  font-size: clamp(1.02rem, 0.98rem + 0.2vw, 1.12rem);
   line-height: 1.7;
   color: var(--ink);
   max-width: var(--prose);
@@ -23,7 +23,7 @@
 }
 .prose h2 {
   font-size: var(--step-3);
-  margin: 2.2em 0 0.6em;
+  margin: 1.8em 0 0.5em;
   padding-top: 0.2em;
 }
 .prose h3 {
@@ -77,9 +77,8 @@
 .prose blockquote {
   margin: 1.5em 0;
   padding: 0.2em 0 0.2em 1.2em;
-  border-left: 3px solid var(--brass);
+  border-left: 3px solid var(--rule-strong);
   color: var(--ink-2);
-  font-style: italic;
 }
 .prose hr {
   margin: 3em auto;
@@ -145,7 +144,7 @@
   margin: 0;
   width: min(360px, calc(100vw - 24px));
   padding: 16px 18px;
-  border: 1px solid var(--rule);
+  border: 0;
   border-radius: var(--radius);
   background: var(--card);
   color: var(--ink);
@@ -178,17 +177,15 @@
   }
 }
 .note-pop__kicker {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-weight: 600;
   color: var(--term);
 }
 .note-pop--quote .note-pop__kicker {
   color: var(--brass);
 }
 .note-pop__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.2;
@@ -210,10 +207,8 @@
   background: var(--paper-2);
 }
 .note-pop__label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-weight: 600;
   color: var(--accent);
 }
 .note-pop__section .note-pop__text {
@@ -234,7 +229,6 @@
   padding: 24px 26px 20px;
   border-radius: var(--radius-l);
   background: var(--brass-soft);
-  border: 1px solid color-mix(in srgb, var(--brass) 30%, transparent);
 }
 .note-kq__mark {
   position: absolute;
@@ -252,7 +246,7 @@
 }
 .note-kq .note-kq__quote p {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
   line-height: 1.5;
   font-weight: 450;
@@ -311,10 +305,9 @@
   --c: var(--c-context);
   --c-soft: var(--c-context-soft);
   margin: 1.8em 0;
-  padding: 16px 20px 6px;
-  border-radius: var(--radius);
+  padding: 18px 22px 8px;
+  border-radius: var(--radius-l);
   background: var(--c-soft);
-  border-left: 4px solid var(--c);
   font-family: var(--font-sans);
   font-size: 0.97rem;
   line-height: 1.6;
@@ -340,10 +333,10 @@
   align-items: center;
   gap: 8px;
   margin: 0 0 8px !important;
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
   color: var(--c);
 }
 .note-callout__body p,
@@ -358,7 +351,6 @@
   margin: 1.2em 0;
   padding: 16px 20px;
   border-radius: var(--radius);
-  border: 1px solid var(--rule);
   background: var(--card);
   font-family: var(--font-sans);
   font-size: 0.97rem;
@@ -373,14 +365,12 @@
 }
 .note-view__school {
   flex-basis: 100%;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-weight: 600;
   color: var(--c-historiography);
 }
 .note-view__historian {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 1.2rem;
   font-weight: 600;
 }
@@ -406,8 +396,6 @@
   margin: 0 0 12px !important;
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--ink-3);
 }
 .note-chrono__list {
@@ -466,16 +454,15 @@
 
 .note-recall {
   margin: 0.8em 0;
-  border: 1px solid var(--rule);
   border-radius: var(--radius);
   background: var(--card);
+  box-shadow: var(--shadow-s);
   font-family: var(--font-sans);
   font-size: 0.97rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: box-shadow 0.2s;
 }
 .note-recall[open] {
-  border-color: var(--rule-strong);
-  box-shadow: var(--shadow-s);
+  box-shadow: var(--shadow);
 }
 .note-recall summary {
   display: flex;

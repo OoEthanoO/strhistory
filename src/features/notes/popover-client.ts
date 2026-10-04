@@ -53,17 +53,7 @@ function saveSeen(seen: Set<string>) {
 }
 
 function renderProgress(seen: Set<string>) {
-  const triggers = [...document.querySelectorAll<HTMLElement>('[data-term]')];
-  const all = new Set(triggers.map((el) => el.dataset.term!));
-  for (const el of triggers) el.toggleAttribute('data-seen', seen.has(el.dataset.term!));
-  const explored = [...all].filter((id) => seen.has(id)).length;
-  for (const out of document.querySelectorAll<HTMLElement>('[data-term-progress]')) {
-    out.querySelector('[data-count]')!.textContent = String(explored);
-    out.querySelector('[data-total]')!.textContent = String(all.size);
-    const bar = out.querySelector<HTMLElement>('[data-bar]');
-    if (bar) bar.style.width = `${all.size ? (explored / all.size) * 100 : 0}%`;
-    out.toggleAttribute('data-complete', all.size > 0 && explored === all.size);
-  }
+  for (const el of document.querySelectorAll<HTMLElement>('[data-term]')) el.toggleAttribute('data-seen', seen.has(el.dataset.term!));
 }
 
 // ---------- wiring (once per page, however many components include this) ----------
@@ -102,16 +92,7 @@ if (!(window as Flagged).__notesPopovers) {
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     const trigger = target.closest<HTMLElement>('[data-pop]');
-    if (trigger) {
-      toggle(trigger);
-      return;
-    }
-    if (target.closest('[data-term-reset]')) {
-      e.preventDefault();
-      seen.clear();
-      saveSeen(seen);
-      renderProgress(seen);
-    }
+    if (trigger) toggle(trigger);
   });
 
   document.addEventListener('keydown', (e) => {

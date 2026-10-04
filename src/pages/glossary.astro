@@ -17,11 +17,8 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
   title="Glossary"
   description="Key terms for IB History, each with a definition and an explanation of why it matters."
 >
-  <PageHeader
-    eyebrow="Glossary"
-    title="Key terms"
-    lede={`${terms.length} terms from the notes. Each explains what the term means and — more importantly for the exam — why it matters.`}
-  >
+  <div class="glossary-header">
+  <PageHeader title="Glossary">
     <div class="tools">
       <label class="search">
         <span class="visually-hidden">Filter terms</span>
@@ -32,15 +29,17 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
             stroke-width="1.8"
             stroke-linecap="round"></path></svg
         >
-        <input type="search" placeholder="Filter terms…" data-filter autocomplete="off" />
+        <input type="search" placeholder={`Filter ${terms.length} terms…`} data-filter autocomplete="off" />
       </label>
-      <nav class="letters" aria-label="Jump to letter">
-        {letters.map((l) => <a href={`#letter-${l}`}>{l}</a>)}
-      </nav>
     </div>
   </PageHeader>
+  </div>
 
-  <div class="container glossary">
+  <div class="container glossary-layout">
+    <nav class="letters" aria-label="Jump to letter">
+      {letters.map((l) => <a href={`#letter-${l}`}>{l}</a>)}
+    </nav>
+    <div class="glossary">
     {
       letters.map((letter) => (
         <section class="letter-group" id={`letter-${letter}`} data-group>
@@ -102,36 +101,82 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
       ))
     }
     <p class="no-results" hidden data-no-results>No terms match that filter.</p>
+    </div>
   </div>
 </BaseLayout>
 
 <script>
-  const input = document.querySelector<HTMLInputElement>('[data-filter]');
+  const input = document.querySelector<HTMLInputElement>('[data-filter]')!;
   const entries = [...document.querySelectorAll<HTMLElement>('[data-entry]')];
   const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
-  const none = document.querySelector<HTMLElement>('[data-no-results]');
-  input?.addEventListener('input', () => {
+  const none = document.querySelector<HTMLElement>('[data-no-results]')!;
+  const index = document.querySelector<HTMLElement>('.letters')!;
+  const layout = document.querySelector<HTMLElement>('.glossary-layout')!;
+
+  function positionIndex() {
+    const bounds = layout.getBoundingClientRect();
+    const style = getComputedStyle(layout);
+    index.style.setProperty('--index-top', `${bounds.top + window.scrollY}px`);
+    index.style.setProperty('--index-left', `${bounds.left + parseFloat(style.paddingLeft)}px`);
+    index.style.setProperty('--index-width', style.gridTemplateColumns.split(' ')[0]);
+    index.dataset.fixed = '';
+  }
+  positionIndex();
+  window.addEventListener('resize', positionIndex);
+  document.fonts.ready.then(positionIndex);
+
+  // All terms stay visible unless a search filters them.
+  function render() {
     const q = input.value.trim().toLowerCase();
     let shown = 0;
-    for (const e of entries) {
-      e.hidden = !!q && !e.dataset.text!.includes(q);
+    entries.forEach((e) => {
+      e.hidden = !e.dataset.text!.includes(q);
       if (!e.hidden) shown++;
-    }
+    });
     for (const g of groups) g.hidden = !g.querySelector('[data-entry]:not([hidden])');
-    if (none) none.hidden = shown > 0;
+    none.hidden = shown > 0;
+  }
+
+  // Anchor links also reveal their target when a search is active.
+  function showHash() {
+    const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    const entry = target?.matches('[data-entry]') ? target : target?.querySelector<HTMLElement>('[data-entry]');
+    if (!entry) return;
+    input.value = '';
+    render();
+    for (const e of entries) e.classList.toggle('is-target', e === target);
+    target!.scrollIntoView();
+  }
+
+  input.addEventListener('input', render);
+  input.addEventListener('blur', () => {
+    queueMicrotask(() => input.focus({ preventScroll: true }));
   });
-  // Highlight the entry linked from a notes popover.
-  const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
-  target?.classList.add('is-target');
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Tab') event.preventDefault();
+  });
+  document.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      input.focus();
+      input.select();
+      return;
+    }
+  });
+  window.addEventListener('hashchange', showHash);
+  render();
+  showHash();
+  input.focus({ preventScroll: true });
 </script>
 
 <style>
+  .glossary-header :global(.page-head) { padding-bottom: 8px; margin-bottom: 8px; }
   .tools {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 16px 24px;
-    margin-top: 28px;
+    gap: 12px 24px;
+    margin-top: 20px;
   }
   .search {
     display: flex;
@@ -139,15 +184,10 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     gap: 10px;
     flex: 1 1 280px;
     max-width: 420px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    border: 1px solid var(--rule-strong);
-    background: var(--card);
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    background: var(--paper-2);
     color: var(--ink-3);
-  }
-  .search:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
   }
   .search input {
     flex: 1;
@@ -159,43 +199,73 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     outline: none;
   }
   .letters {
+    position: sticky;
+    top: var(--header-h);
+    align-self: start;
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    max-height: calc(100dvh - var(--header-h) - 32px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    overscroll-behavior: contain;
+    padding: 4px;
+    border-radius: var(--radius-s);
   }
   .letters a {
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 100%;
+    max-width: 32px;
+    min-height: 28px;
+    flex-shrink: 0;
+    border-radius: var(--radius-s);
     font-family: var(--font-serif);
     font-weight: 600;
     text-decoration: none;
     color: var(--ink-2);
   }
+  .letters[data-fixed] {
+    position: fixed;
+    top: var(--index-top);
+    left: var(--index-left);
+    width: var(--index-width);
+    max-height: max(28px, calc(100dvh - var(--index-top) - 16px));
+  }
   .letters a:hover {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--card);
+    color: var(--ink);
+  }
+  .glossary-layout {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
   }
   .glossary {
+    grid-column: 2;
     padding-bottom: clamp(48px, 7vw, 96px);
   }
   .letter-group {
-    display: grid;
-    grid-template-columns: 80px minmax(0, 1fr);
-    gap: 24px;
-    padding-block: 20px;
-    border-top: 1px solid var(--rule);
+    scroll-margin-top: calc(var(--header-h) + 16px);
   }
+  .letter-group:not([hidden]) ~ .letter-group { margin-top: 24px; }
   .letter-group[hidden] {
     display: none;
   }
   .letter {
-    font-size: var(--step-4);
-    color: var(--brass);
-    line-height: 1;
-    margin: 0;
+    position: sticky;
+    top: var(--header-h);
+    z-index: 1;
+    padding: 8px 12px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-serif);
+    font-size: var(--step-5);
+    color: var(--ink-3);
+    margin: 0 -12px 4px;
+    scroll-margin-top: calc(var(--header-h) + 24px);
   }
   dl {
     margin: 0;
@@ -206,7 +276,6 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     gap: 6px 32px;
     padding: 16px 12px;
     margin-inline: -12px;
-    border-radius: var(--radius);
     border-bottom: 1px solid var(--rule);
     scroll-margin-top: calc(var(--header-h) + 24px);
   }
@@ -220,7 +289,7 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     background: var(--brass-soft);
   }
   dt {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 1.2rem;
     font-weight: 600;
     line-height: 1.3;
@@ -244,10 +313,8 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
   }
   .sig-label {
     display: block;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--accent);
   }
   .links {
@@ -263,7 +330,8 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     color: var(--ink-3);
   }
   @media (max-width: 720px) {
-    .letter-group,
+    .glossary-layout { grid-template-columns: 40px minmax(0, 1fr); gap: 16px; }
+    .letters a { max-width: 28px; min-height: 28px; }
     .entry {
       grid-template-columns: 1fr;
     }

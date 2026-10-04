@@ -19,14 +19,13 @@ interface Props {
 
 const { topic } = Astro.props;
 const { data } = topic;
-const { Content, headings } = await render(topic);
+const { Content } = await render(topic);
 const unit = await getEntry(data.unit);
 const related = await getEntries(data.related);
 const authors = await getEntries(data.authors);
 const snapshot = snapshotYearFor(topic);
 const terms = await Promise.all(termIdsIn(topic.body ?? '').map((id) => getTerm(id)));
 terms.sort((a, b) => a.data.term.localeCompare(b.data.term));
-const toc = headings.filter((h) => h.depth === 2);
 const collectionQuery = `curriculum=${data.curriculum}&level=${data.level}`;
 const libraryHref = `/topics?${collectionQuery}`;
 const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`;
@@ -48,7 +47,6 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
       <div class="meta">
         <Badge tone={`paper-${unit.data.paper}`}>Paper {unit.data.paper}</Badge>
         <Badge>{data.level === 'HL' ? 'HL only' : 'SL & HL'}</Badge>
-        <Badge tone={data.curriculum === 'archive' ? 'sample' : 'accent'}>{data.curriculum === 'archive' ? 'Earlier syllabus' : '2028 course'}</Badge>
         <span class="meta-item">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
             ><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"
@@ -68,7 +66,6 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
           >
           {data.location.place}
         </span>
-        <span class="meta-item">{unit.data.component}</span>
       </div>
       <p class="lede">{data.summary}</p>
       {data.curriculum === 'archive' && <p class="archive-notice">Archived study notes from the earlier syllabus. This topic is outside the department’s selected 2028 course. <a href="/topics?curriculum=2028">Browse the current notes.</a></p>}
@@ -83,7 +80,6 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
           >
           Find this note in {formatYear(snapshot)}
         </a>
-        {terms.length > 0 && <a class="btn" href="#key-terms">{terms.length} key terms</a>}
       </div>
       {
         data.keyQuestions.length > 0 && (
@@ -101,46 +97,6 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
   </header>
 
   <div class="container topic-body">
-    <aside class="topic-aside">
-      <div class="aside-sticky">
-        {
-          toc.length > 0 && (
-            <nav class="toc" aria-label="On this page">
-              <p class="aside-title">On this page</p>
-              <ol>
-                {toc.map((h) => (
-                  <li>
-                    <a href={`#${h.slug}`} data-toc-link={h.slug}>
-                      {h.text}
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            </nav>
-          )
-        }
-        {
-          terms.length > 0 && (
-            <div class="progress" data-term-progress>
-              <p class="aside-title">Key terms explored</p>
-              <p class="progress-count">
-                <span data-count>0</span> / <span data-total>{terms.length}</span>
-              </p>
-              <div class="progress-track">
-                <span data-bar />
-              </div>
-              <p class="progress-hint">
-                Click the <span class="hint-term">underlined terms</span> to reveal why they matter.
-              </p>
-              <p class="progress-done">
-                All key terms explored. <a href="#" data-term-reset>Reset</a>
-              </p>
-            </div>
-          )
-        }
-      </div>
-    </aside>
-
     <article class="prose topic-notes">
       <Content components={notesComponents} />
 
@@ -184,20 +140,15 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
           )
         }
         {data.updated && <p>Last updated {formatDate(data.updated)}.</p>}
-        <p>
-          Spotted a mistake? Tell your teacher — or, if you are editing the site, this page is
-          <code>src/content/topics/{topic.id}.mdx</code>.
-        </p>
       </footer>
     </article>
   </div>
 
   {
     related.length > 0 && (
-      <section class="section section--alt">
+      <section class="section related">
         <div class="container">
-          <p class="eyebrow">Keep going</p>
-          <h2>Related topics</h2>
+          <h2>Related notes</h2>
           <div class="grid" style="--min: 300px">
             {related.map((r) => (
               <TopicCard topic={r} />
@@ -221,7 +172,7 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
     link.href = url.href;
   }
 
-  // Reading progress bar and table-of-contents highlighting.
+  // Reading progress bar.
   const bar = document.querySelector<HTMLElement>('[data-reading-bar]');
   const article = document.querySelector<HTMLElement>('.topic-notes');
   const onScroll = () => {
@@ -233,26 +184,6 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
-
-  const links = new Map(
-    [...document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')].map((a) => [a.dataset.tocLink!, a]),
-  );
-  if (links.size) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue;
-          links.forEach((a) => a.removeAttribute('aria-current'));
-          links.get(e.target.id)?.setAttribute('aria-current', 'true');
-        }
-      },
-      { rootMargin: '-20% 0px -70% 0px' },
-    );
-    links.forEach((_, id) => {
-      const h = document.getElementById(id);
-      if (h) observer.observe(h);
-    });
-  }
 </script>
 
 <style>
@@ -274,11 +205,7 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
   }
 
   .topic-hero {
-    padding-block: clamp(32px, 6vw, 72px) clamp(28px, 4vw, 48px);
-    border-bottom: 1px solid var(--rule);
-    background:
-      radial-gradient(ellipse 60% 80% at 100% 0%, var(--accent-soft), transparent 70%),
-      var(--paper);
+    padding-top: clamp(32px, 5vw, 56px);
   }
   .crumbs {
     display: flex;
@@ -298,8 +225,8 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
   }
   .topic-hero h1 {
     max-width: 22ch;
-    font-size: var(--step-5);
-    margin-bottom: 18px;
+    font-size: var(--step-4);
+    margin-bottom: 16px;
   }
   .meta {
     display: flex;
@@ -327,136 +254,44 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
   .archive-notice {
     max-width: 72ch;
     padding: 14px 18px;
-    border-left: 3px solid var(--brass);
-    background: var(--paper-2);
+    border-radius: var(--radius);
+    background: var(--brass-soft);
     color: var(--ink-2);
     font-size: 0.92rem;
   }
   .key-questions {
     margin-top: 32px;
-    max-width: 780px;
     padding: 18px 22px;
-    border-radius: var(--radius);
-    border: 1px solid var(--rule);
-    background: var(--card);
+    border-radius: var(--radius-l);
+    background: var(--accent-soft);
   }
   .key-questions h2 {
     font-family: var(--font-sans);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    font-weight: 600;
     color: var(--accent);
     margin-bottom: 8px;
   }
   .key-questions ol {
     margin: 0;
     padding-left: 1.3em;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 1.1rem;
   }
   .key-questions li {
     margin-bottom: 4px;
   }
 
+  .topic-hero .container,
   .topic-body {
-    display: grid;
-    grid-template-columns: 240px minmax(0, 1fr);
-    gap: clamp(32px, 5vw, 72px);
-    padding-block: clamp(36px, 5vw, 64px) clamp(48px, 6vw, 80px);
+    max-width: calc(var(--prose) + 2 * var(--gutter));
   }
-  .aside-sticky {
-    position: sticky;
-    top: calc(var(--header-h) + 24px);
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-    font-size: 0.9rem;
-  }
-  .aside-title {
-    margin: 0 0 10px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-  }
-  .toc ol {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    border-left: 1px solid var(--rule);
-  }
-  .toc a {
-    display: block;
-    padding: 5px 0 5px 14px;
-    margin-left: -1px;
-    border-left: 2px solid transparent;
-    color: var(--ink-2);
-    text-decoration: none;
-    line-height: 1.35;
-  }
-  .toc a:hover {
-    color: var(--ink);
-  }
-  .toc a[aria-current] {
-    color: var(--accent);
-    border-left-color: var(--accent);
-    font-weight: 600;
-  }
-  .progress {
-    padding: 14px 16px;
-    border-radius: var(--radius);
-    background: var(--paper-2);
-  }
-  .progress-count {
-    margin: 0 0 8px;
-    font-family: var(--font-serif);
-    font-size: 1.6rem;
-    line-height: 1;
-  }
-  .progress-track {
-    height: 6px;
-    border-radius: 6px;
-    background: var(--rule);
-    overflow: hidden;
-  }
-  .progress-track span {
-    display: block;
-    height: 100%;
-    width: 0;
-    border-radius: 6px;
-    background: var(--seen);
-    transition: width 0.4s var(--ease);
-  }
-  .progress-hint,
-  .progress-done {
-    margin: 10px 0 0;
-    font-size: 0.82rem;
-    color: var(--ink-3);
-    line-height: 1.45;
-  }
-  .hint-term {
-    color: var(--term);
-    text-decoration: underline dotted 1.5px;
-    text-underline-offset: 0.2em;
-  }
-  .progress-done {
-    display: none;
-    color: var(--seen);
-    font-weight: 600;
-  }
-  .progress[data-complete] .progress-hint {
-    display: none;
-  }
-  .progress[data-complete] .progress-done {
-    display: block;
+  .topic-body {
+    padding-block: clamp(32px, 4vw, 48px) clamp(48px, 6vw, 80px);
   }
 
   .term-index {
-    margin-top: 3.5em;
-    padding-top: 1em;
-    border-top: 1px solid var(--rule);
+    margin-top: 3em;
   }
   .term-index dl {
     margin: 0;
@@ -464,33 +299,38 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
     font-size: 0.95rem;
   }
   .term-row {
-    display: grid;
-    grid-template-columns: minmax(0, 12em) minmax(0, 1fr);
-    gap: 4px 24px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--rule);
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    border-radius: var(--radius);
+    background: var(--term-soft);
   }
   .term-row dt {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-weight: 600;
     font-size: 1.08rem;
   }
   .term-when {
-    display: block;
+    margin-left: 8px;
     font-family: var(--font-sans);
     font-weight: 500;
     font-size: 0.8rem;
     color: var(--ink-3);
   }
   .term-row dd {
-    margin: 0;
+    margin: 4px 0 0;
     color: var(--ink-2);
   }
   .term-row dd p {
     margin: 0 0 6px;
   }
   .term-sig strong {
-    color: var(--accent);
+    color: var(--term);
+  }
+  .related {
+    padding-top: 0;
+  }
+  .related h2 {
+    font-size: var(--step-2);
   }
   .topic-foot {
     margin-top: 3em;
@@ -501,27 +341,5 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
   .topic-foot p {
     margin-bottom: 6px;
   }
-  .topic-foot code {
-    font-size: 0.85em;
-  }
 
-  @media (max-width: 960px) {
-    .topic-body {
-      grid-template-columns: 1fr;
-    }
-    .topic-aside {
-      order: -1;
-    }
-    .aside-sticky {
-      position: static;
-    }
-    .toc {
-      display: none;
-    }
-  }
-  @media (max-width: 560px) {
-    .term-row {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>
