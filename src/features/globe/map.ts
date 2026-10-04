@@ -1,50 +1,65 @@
 /**
- * GlobeController — everything that touches MapLibre lives here, so the React
+ * GlobeController — everything that touches the globe lives here, so the React
  * components only deal with state. One instance per mounted explorer.
  *
- * Layers (bottom → top): ocean, graticule, Natural Earth land, historical
- * polities (fill, borders, hover outline), polity labels. Topic pins are HTML
- * markers (real <a> links), which keeps them keyboard- and screen-reader-usable.
+ * The globe is Alex's Atlas's ChronoGlobe (packages/globe, migration path C in
+ * packages/globe/AGENTS.md §8.7): the borders of any year from the Alex's Atlas
+ * dataset (served at /data/alexs-atlas/), the political-map colours of
+ * map-colors.ts with each polity's own outline, curved labels in Newsreader, the
+ * star field, the hover tooltip and click selection. Topic pins are HTML markers
+ * on its MapLibre map (real <a> links), which keeps them keyboard- and
+ * screen-reader-usable.
  */
-import {
-  Map as MapLibreMap,
-  Marker,
-  setWorkerUrl,
-  type ExpressionSpecification,
-  type GeoJSONSource,
-  type MapLayerMouseEvent,
-  type StyleSpecification,
-} from 'maplibre-gl';
+import { Marker, type Map as MapLibreMap } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import '@alexs-atlas/globe/style.css';
 // MapLibre 6 loads its worker from a URL relative to its own module, which a
-// bundler cannot see. Bundle the worker explicitly and hand MapLibre its URL.
+// bundler cannot see. Bundle the worker explicitly and hand ChronoGlobe its URL.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+import { createBorders, type BordersClient, type Manifest } from '@alexs-atlas/borders';
+import { ChronoGlobe, type GlobeView, type SelectInfo } from '@alexs-atlas/globe';
 import { formatRange } from './era';
-import { colorFor, LAND_BASE, OCEAN, UNCLAIMED } from './palette';
-import type { GlobeTopic, PolityHover } from './types';
+import { MAP_THEME, mapColor } from './map-colors';
+import type { GlobeTopic } from './types';
 import { pinOffsets } from './pin-layout';
 
-setWorkerUrl(workerUrl);
-
-type Feature = {
-  type: 'Feature';
-  id?: number | string;
-  properties: Record<string, unknown>;
-  geometry: unknown;
-};
-type FeatureCollection = { type: 'FeatureCollection'; features: Feature[] };
+/** The dataset's entry point; every other file it names is content-hashed. */
+export const MANIFEST_URL = '/data/alexs-atlas/manifest.json';
+/** Map labels are drawn locally from this self-hosted CSS font (BaseLayout loads it). */
+const LABEL_FONT = 'Newsreader Variable';
+/** The default camera: Europe, Africa and western Asia in view. */
+const HOME_CENTER: [number, number] = [15, 30];
+/** A note's pin is shown at least this close when the globe flies to it. */
+const PIN_SCALE = 2 ** 0.9;
 
 export interface GlobeCallbacks {
   onPinEnter(topic: GlobeTopic): void;
   onPinLeave(topic: GlobeTopic): void;
   /** Called on pin click. Leave the event alone to follow the link to the notes. */
   onPinClick(topic: GlobeTopic, event: MouseEvent): void;
-  onPolityHover(hover: PolityHover | null): void;
   onLoadingChange(loading: boolean): void;
-  onSnapshotChange?(year: number | null): void;
-  onViewChange?(view: { center: [number, number]; scale: number }): void;
-  onInteractionEnd?(view: { center: [number, number]; scale: number }): void;
+  /** The year whose borders are now on screen (null: before the dataset, physical geography only). */
+  onBordersChange?(year: number | null): void;
+  /** The year now shown, whether or not the dataset has borders for it. */
+  onYearApplied?(year: number): void;
+  onViewChange?(view: GlobeView): void;
+  onInteractionEnd?(view: GlobeView): void;
+  /** A polity was selected on the map (click) or by select(); null when cleared. */
+  onSelect?(info: SelectInfo | null): void;
+  /** The borders of a later year could not be loaded; the previous borders stay. */
+  onDataError?(error: unknown): void;
   onFailure?(): void;
+}
+
+export interface GlobeOptions {
+  year: number;
+  view?: GlobeView;
+  /** The explorer's own client, shared with its search and timeline (one download cache). */
+  borders?: BordersClient;
+  /** Smallest scale the user can zoom out to (default 0.6). */
+  minScale?: number;
+  /** The home page's preview: no hover tooltip. */
+  compact?: boolean;
 }
 
 export interface PinState {
@@ -53,288 +68,136 @@ export interface PinState {
   hovered: string | null;
 }
 
-const POLYGONS: ExpressionSpecification = ['!', ['has', 'kind']];
-const EMPTY: FeatureCollection = { type: 'FeatureCollection', features: [] };
-// Keep URLs aligned so cached low-resolution geometry is replaced on upgrade.
-const GEOMETRY_VERSION = '2';
-// MapLibre creates finer tiles as zoom increases. Retain subpixel coastlines
-// and small borders instead of applying the default 0.375-pixel tolerance.
-const GEOMETRY_TOLERANCE = 0.1;
-
-/** Zoom at which the whole globe fits comfortably in the element. */
-export function fitZoom(el: HTMLElement, _compact = false): number {
-  const m = Math.max(100, Math.min(el.clientWidth, el.clientHeight));
-  // Calibrated to the baked SVG's 90% diameter at the fixed globe perspective.
-  return Math.log2((m * Math.PI) / 512);
-}
-
-function graticule(step: number): FeatureCollection {
-  const features: Feature[] = [];
-  for (let lng = -180; lng < 180; lng += step) {
-    const coords: number[][] = [];
-    for (let lat = -80; lat <= 80; lat += 2) coords.push([lng, lat]);
-    features.push({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords } });
-  }
-  for (let lat = -75; lat <= 75; lat += step) {
-    const coords: number[][] = [];
-    for (let lng = -180; lng <= 180; lng += 2) coords.push([lng, lat]);
-    features.push({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords } });
-  }
-  return { type: 'FeatureCollection', features };
-}
-
-function buildStyle(): StyleSpecification {
-  const hovered = ['boolean', ['feature-state', 'hover'], false];
-  return {
-    version: 8,
-    projection: { type: 'globe' },
-    glyphs: '/glyphs/{fontstack}/{range}.pbf',
-    // A light atmosphere: at full strength it washes the polity colours out.
-    sky: {
-      'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.28, 4, 0.28, 7, 0],
-    },
-    light: { anchor: 'map', position: [1.5, 90, 80] },
-    sources: {
-      graticule: { type: 'geojson', data: graticule(15) as never },
-      land: { type: 'geojson', data: `/data/land.geojson?v=${GEOMETRY_VERSION}`, tolerance: GEOMETRY_TOLERANCE },
-      polities: { type: 'geojson', data: EMPTY as never, tolerance: GEOMETRY_TOLERANCE },
-    },
-    layers: [
-      { id: 'ocean', type: 'background', paint: { 'background-color': OCEAN } },
-      {
-        id: 'graticule',
-        type: 'line',
-        source: 'graticule',
-        paint: { 'line-color': '#a9c1e0', 'line-opacity': 0.07, 'line-width': 0.6 },
-      },
-      { id: 'land', type: 'fill', source: 'land', paint: { 'fill-color': LAND_BASE } },
-      {
-        id: 'polity-fill',
-        type: 'fill',
-        source: 'polities',
-        filter: POLYGONS,
-        paint: {
-          'fill-color': ['get', 'color'],
-          'fill-opacity': ['case', hovered as never, 1, 0.88],
-        },
-      },
-      {
-        id: 'polity-border',
-        type: 'line',
-        source: 'polities',
-        filter: ['all', POLYGONS, ['>=', ['get', 'precision'], 2]],
-        paint: {
-          'line-color': 'rgba(6, 9, 14, 0.75)',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 1, 0.5, 6, 1.4],
-        },
-      },
-      {
-        // BORDERPRECISION 1 = approximate: drawn dashed so students can see it.
-        id: 'polity-border-approx',
-        type: 'line',
-        source: 'polities',
-        filter: ['all', POLYGONS, ['<', ['get', 'precision'], 2]],
-        paint: {
-          'line-color': 'rgba(6, 9, 14, 0.6)',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 1, 0.5, 6, 1.2],
-          'line-dasharray': [2, 2],
-        },
-      },
-      {
-        id: 'polity-hover',
-        type: 'line',
-        source: 'polities',
-        filter: POLYGONS,
-        paint: {
-          'line-color': '#fff4dc',
-          'line-width': 1.6,
-          'line-opacity': ['case', hovered as never, 0.95, 0],
-        },
-      },
-      {
-        id: 'polity-label',
-        type: 'symbol',
-        source: 'polities',
-        filter: ['==', ['get', 'kind'], 'label'],
-        layout: {
-          'text-field': ['get', 'name'],
-          'text-font': ['noto-sans'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            1, ['interpolate', ['linear'], ['get', 'area'], 1, 8, 40, 10, 400, 12.5],
-            5, ['interpolate', ['linear'], ['get', 'area'], 1, 12, 40, 15, 400, 19],
-          ],
-          'text-max-width': 7,
-          'text-letter-spacing': 0.03,
-          'text-padding': 4,
-          'symbol-sort-key': ['-', 0, ['get', 'area']],
-        },
-        paint: {
-          'text-color': 'rgba(255, 250, 240, 0.88)',
-          'text-halo-color': 'rgba(8, 10, 16, 0.78)',
-          'text-halo-width': 1.3,
-          'text-halo-blur': 0.4,
-        },
-      },
-    ],
-  };
-}
-
-function colorize(fc: FeatureCollection, borderYear: number): FeatureCollection {
-  return {
-    ...fc,
-    features: fc.features.map((feature) => {
-      const properties = { ...feature.properties };
-      properties.color = properties.name
-        ? colorFor((properties.subjecto as string) ?? (properties.name as string), borderYear)
-        : UNCLAIMED;
-      return { ...feature, properties };
-    }),
-  };
-}
-
 export class GlobeController {
-  readonly map: MapLibreMap;
-  private cb: GlobeCallbacks;
+  readonly globe: ChronoGlobe;
+  private readonly cb: GlobeCallbacks;
+  private readonly container: HTMLElement;
+  readonly borders: BordersClient;
+  private manifest: Manifest | undefined;
   private markers = new Map<string, HTMLAnchorElement>();
-  private markerObjs: Marker[] = [];
   private pinEntries: Array<{ topic: GlobeTopic; marker: Marker; element: HTMLAnchorElement }> = [];
-  private cache = new Map<number, Promise<FeatureCollection>>();
-  private hoveredId: number | string | null = null;
-  private spinning = false;
   private readonly ready: Promise<void>;
   private readonly reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  private readonly compact: boolean;
-  private destroyed = false;
-  private snapshotRequest = 0;
-  private snapshotCleanup: (() => void) | undefined;
-  private fitLevel: number;
-  private readonly resizeObserver: ResizeObserver;
 
-  constructor(container: HTMLElement, cb: GlobeCallbacks, center: [number, number] = [15, 30], options: { compact?: boolean } = {}) {
+  constructor(container: HTMLElement, cb: GlobeCallbacks, options: GlobeOptions) {
     this.cb = cb;
-    this.compact = options.compact ?? false;
-    this.fitLevel = fitZoom(container, this.compact);
-    this.map = new MapLibreMap({
+    this.container = container;
+    this.borders = options.borders ?? createBorders({ manifestUrl: MANIFEST_URL });
+    const compact = options.compact ?? false;
+    this.globe = new ChronoGlobe(
       container,
-      style: buildStyle(),
-      center,
-      zoom: this.fitLevel,
-      minZoom: -1,
-      maxZoom: 7,
-      attributionControl: false,
-      dragRotate: false,
-      pitchWithRotate: false,
-      touchPitch: false,
-      renderWorldCopies: false,
-    });
-    this.map.touchZoomRotate.disableRotation();
-    this.map.keyboard.disableRotation();
-    this.resizeObserver = new ResizeObserver(() => {
-      if (this.destroyed || !container.clientWidth || !container.clientHeight) return;
-      const next = fitZoom(container, this.compact);
-      const delta = next - this.fitLevel;
-      if (Math.abs(delta) < 0.001) return;
-      this.fitLevel = next;
-      this.map.resize();
-      this.map.jumpTo({ zoom: this.map.getZoom() + delta });
-    });
-    this.resizeObserver.observe(container);
-    // A loaded style is not a rendered globe. Keep the interactive baked globe
-    // visible until the land source is available and has reached a render frame.
-    this.ready = new Promise((resolve) => {
-      let pending = false;
-      const check = () => {
-        if (pending || this.destroyed || !this.map.isStyleLoaded() || !this.map.isSourceLoaded('land')) return;
-        pending = true;
-        this.map.off('sourcedata', check);
-        this.map.once('render', () => { if (!this.destroyed) resolve(); });
-        this.map.triggerRepaint();
-      };
-      this.map.on('sourcedata', check);
-      this.map.once('load', check);
-    });
-    this.map.on('error', (event) => {
-      if ('sourceId' in event && event.sourceId === 'land') this.cb.onFailure?.();
-    });
-    this.map.getCanvas().addEventListener('webglcontextlost', () => this.cb.onFailure?.());
-    this.map.on('move', () => { this.cb.onViewChange?.(this.getView()); this.layoutPins(); });
-    for (const type of ['dragend', 'zoomend'] as const) {
-      this.map.on(type, (event) => { if (event.originalEvent) this.cb.onInteractionEnd?.(this.getView()); });
+      {
+        data: { client: this.borders },
+        year: options.year,
+        view: options.view ?? { center: HOME_CENTER, scale: 1 },
+        minScale: options.minScale ?? 0.6,
+        fontFamily: LABEL_FONT,
+        // Names in capitals along each polity's shape, as on grand-strategy maps.
+        labelMode: 'curved',
+        // Map colours in the manner of a grand-strategy game (map-colors.ts).
+        theme: MAP_THEME,
+        palette: mapColor,
+        hover: !compact,
+        workerUrl,
+        // The site credits the data itself, one click from every view (CC BY 4.0
+        // §3(a)(2)): the explorer's info panel and the home globe's credit link.
+        attribution: false,
+      },
+      {
+        onYearApplied: (year) => {
+          this.cb.onYearApplied?.(year);
+          this.cb.onBordersChange?.(this.covers(year) ? year : null);
+        },
+        onLoadingChange: (loading) => this.cb.onLoadingChange(loading),
+        onViewChange: (view) => this.cb.onViewChange?.(view),
+        onInteractionEnd: (view) => this.cb.onInteractionEnd?.(view),
+        onSelect: (info) => this.cb.onSelect?.(info),
+        onFailure: (reason, error) => {
+          // After the first frame, a year whose borders fail to load leaves ChronoGlobe
+          // 'ready' with the previous borders, and the next year change retries: log it
+          // and keep the map. Anything that leaves the globe 'failed' (WebGL, a lost
+          // context, no first frame) falls back to the baked SVG globe. The state is
+          // read from the container: a WebGL failure arrives inside ChronoGlobe's
+          // constructor, before this.globe is assigned.
+          if (reason === 'data' && container.getAttribute('data-ca-state') === 'ready') {
+            console.error('Could not load the borders', error);
+            this.cb.onDataError?.(error);
+            return;
+          }
+          this.cb.onFailure?.();
+        },
+      },
+    );
+    this.borders.ready().then((manifest) => { this.manifest = manifest; }, () => {});
+    // Resolves once the first year's borders rendered; on failure onFailure reports it
+    // and this never resolves (the baked SVG globe stays in place).
+    this.ready = this.globe.whenReady().catch(() => new Promise<void>(() => {}));
+    const map = this.mapOrNull();
+    if (map) {
+      map.on('move', () => this.layoutPins());
+      // A click is a completed gesture too (the home page hands off to /globe on it).
+      map.on('click', () => this.cb.onInteractionEnd?.(this.getView()));
     }
-    this.map.on('click', () => this.cb.onInteractionEnd?.(this.getView()));
-    this.bindInteractions();
+  }
+
+  /** The MapLibre map, or null when WebGL failed or after destroy(). */
+  get map(): MapLibreMap | null {
+    return this.mapOrNull();
+  }
+
+  private mapOrNull(): MapLibreMap | null {
+    try {
+      return this.globe.map;
+    } catch {
+      return null;
+    }
   }
 
   whenReady() {
     return this.ready;
   }
 
-  // ---------- snapshots ----------
+  // ---------- borders ----------
 
-  async setSnapshot(borderYear: number | null) {
-    const request = ++this.snapshotRequest;
-    this.snapshotCleanup?.();
-    this.cb.onLoadingChange(true);
-    this.cb.onSnapshotChange?.(null);
-    try {
-      await this.ready;
-      if (this.destroyed || request !== this.snapshotRequest) return;
-      this.clearHover();
-      this.map.removeFeatureState({ source: 'polities' });
-      const source = this.map.getSource('polities') as GeoJSONSource;
-      await source.setData(EMPTY as never);
-      if (borderYear === null || this.destroyed || request !== this.snapshotRequest) return;
-      const data = colorize(await this.load(borderYear), borderYear);
-      if (this.destroyed || request !== this.snapshotRequest) return;
-      await source.setData(data as never);
-      if (this.destroyed || request !== this.snapshotRequest) return;
-      const reveal = () => {
-        if (this.destroyed || request !== this.snapshotRequest || !this.map.isSourceLoaded('polities')) return;
-        this.map.off('sourcedata', reveal);
-        this.map.once('render', () => {
-          if (!this.destroyed && request === this.snapshotRequest) this.cb.onSnapshotChange?.(borderYear);
-        });
-        this.map.triggerRepaint();
-      };
-      this.snapshotCleanup = () => this.map.off('sourcedata', reveal);
-      this.map.on('sourcedata', reveal);
-      reveal();
-    } catch (err) {
-      console.error(`Could not load snapshot ${borderYear}`, err);
-    } finally {
-      if (request === this.snapshotRequest && !this.destroyed) this.cb.onLoadingChange(false);
-    }
+  /** Whether the dataset has borders for `year` (before it: physical geography). */
+  private covers(year: number): boolean {
+    const years = this.manifest?.years;
+    return !years || (year >= years.from && year <= years.to);
   }
 
-  /** Warm the cache for snapshots the user is likely to open next. */
+  /** Shows the borders of `year` (coalesced, latest wins; the old borders stay until the new ones rendered). */
+  setYear(year: number) {
+    this.globe.setYear(year);
+  }
+
+  /** While true (a timeline drag or playback) borders load at the coarsest level of detail. */
+  setInteracting(active: boolean) {
+    this.globe.setInteracting(active);
+  }
+
+  /** Warm the cache for years the user is likely to open next. */
   prefetch(years: number[]) {
-    const run = () => years.forEach((y) => this.load(y).catch(() => {}));
+    if (this.globe.loadState === 'failed') return; // nothing could show them
+    const run = () => years.forEach((y) => { if (y !== 0) this.borders.prefetch(y); });
     if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 3000 });
     else setTimeout(run, 800);
   }
 
-  private load(year: number): Promise<FeatureCollection> {
-    let p = this.cache.get(year);
-    if (!p) {
-      p = fetch(`/data/snapshots/world_${year}.geojson?v=${GEOMETRY_VERSION}`)
-        .then((r) => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          return r.json() as Promise<FeatureCollection>;
-        });
-      this.cache.set(year, p);
-      p.catch(() => this.cache.delete(year));
-    }
-    return p;
+  /** Clears the polity selected by a click on the map. */
+  clearSelection() {
+    this.globe.select(null);
   }
 
   // ---------- pins ----------
 
   setTopics(topics: GlobeTopic[]) {
-    for (const m of this.markerObjs) m.remove();
-    this.markerObjs = [];
+    // A removed pin never fires mouseleave or blur.
+    this.container.classList.remove('is-pin-hovered');
+    for (const { marker } of this.pinEntries) marker.remove();
     this.pinEntries = [];
     this.markers.clear();
+    const map = this.mapOrNull();
+    if (!map) return;
     for (const topic of topics) {
       const el = document.createElement('a');
       el.className = 'globe-pin';
@@ -344,15 +207,21 @@ export class GlobeController {
       el.innerHTML =
         '<svg class="globe-pin__stem" viewBox="-100 -100 200 200" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="0" /></svg><span class="globe-pin__dot"></span><span class="globe-pin__label"></span>';
       el.querySelector('.globe-pin__label')!.textContent = topic.shortTitle;
-      el.addEventListener('mouseenter', () => this.cb.onPinEnter(topic));
-      el.addEventListener('mouseleave', () => this.cb.onPinLeave(topic));
-      el.addEventListener('focus', () => this.cb.onPinEnter(topic));
-      el.addEventListener('blur', () => this.cb.onPinLeave(topic));
-      el.addEventListener('click', (e) => this.cb.onPinClick(topic, e));
+      // The map's polity tooltip stays hidden while a pin has the pointer or focus.
+      const enter = () => { this.container.classList.add('is-pin-hovered'); this.cb.onPinEnter(topic); };
+      const leave = () => { this.container.classList.remove('is-pin-hovered'); this.cb.onPinLeave(topic); };
+      el.addEventListener('mouseenter', enter);
+      el.addEventListener('mouseleave', leave);
+      el.addEventListener('focus', enter);
+      el.addEventListener('blur', leave);
+      el.addEventListener('click', (e) => {
+        // The link opens the note; the click must not also select the polity under the pin.
+        e.stopPropagation();
+        this.cb.onPinClick(topic, e);
+      });
       const marker = new Marker({ element: el, anchor: 'center', opacityWhenCovered: '0' })
         .setLngLat([topic.lng, topic.lat])
-        .addTo(this.map);
-      this.markerObjs.push(marker);
+        .addTo(map);
       this.pinEntries.push({ topic, marker, element: el });
       this.markers.set(topic.slug, el);
       this.describePin(el, topic);
@@ -362,17 +231,25 @@ export class GlobeController {
   }
 
   private layoutPins() {
-    const offsets = pinOffsets(this.pinEntries.map(({ topic }) => {
-      const point = this.map.project([topic.lng, topic.lat]);
+    const map = this.mapOrNull();
+    if (!map) return;
+    const { clientWidth: width, clientHeight: height } = map.getContainer();
+    const points = this.pinEntries.map(({ topic }) => {
+      const point = map.project([topic.lng, topic.lat]);
       return { id: topic.slug, x: point.x, y: point.y };
-    }));
-    for (const { topic, marker, element } of this.pinEntries) {
+    });
+    const offsets = pinOffsets(points);
+    this.pinEntries.forEach(({ topic, marker, element }, i) => {
       const [x, y] = offsets.get(topic.slug) ?? [0, 0];
       marker.setOffset([x, y]);
       const stem = element.querySelector('line')!;
       stem.setAttribute('x2', String(-x));
       stem.setAttribute('y2', String(-y));
-    }
+      // Pins off the screen leave the Tab order (the notes panel still reaches them).
+      const px = points[i].x + x;
+      const py = points[i].y + y;
+      element.tabIndex = px < 0 || py < 0 || px > width || py > height ? -1 : 0;
+    });
   }
 
   updatePins(state: PinState, topics: GlobeTopic[]) {
@@ -397,103 +274,59 @@ export class GlobeController {
   }
 
   // ---------- camera ----------
+  // A view is { center, scale } with scale = 2^(zoom − fit zoom), shared with the home
+  // page's handoff URL and the baked SVG globe (PrebakedGlobe). The SVG is an
+  // orthographic approximation of MapLibre's perspective globe, so the globe shifts
+  // slightly in size and position when WebGL takes over.
 
-  baseZoom() {
-    return this.fitLevel;
-  }
-
-  getView(): { center: [number, number]; scale: number } {
-    const center = this.map.getCenter();
-    return { center: [center.lng, center.lat], scale: 2 ** (this.map.getZoom() - this.baseZoom()) };
+  getView(): GlobeView {
+    return this.globe.getView();
   }
 
   setView(center: [number, number], scale = 1) {
-    this.map.jumpTo({ center, zoom: this.baseZoom() + Math.log2(Math.max(0.4, scale)) });
+    this.globe.setView({ center, scale });
   }
 
-  flyTo(topic: GlobeTopic) {
-    this.stopSpin();
-    this.map.flyTo({
+  /**
+   * Flies to a note's place. `offset` (px) moves the place off the centre of the map,
+   * e.g. to keep it clear of panels and cards over the globe.
+   */
+  flyTo(topic: GlobeTopic, o: { offset?: [number, number]; animate?: boolean } = {}) {
+    this.globe.stopSpin();
+    const map = this.mapOrNull();
+    if (!map) return;
+    const { scale } = this.getView();
+    map.flyTo({
       center: [topic.lng, topic.lat],
-      zoom: Math.max(this.map.getZoom(), this.baseZoom() + 0.9),
-      duration: this.reducedMotion ? 0 : 1800,
+      zoom: map.getZoom() + Math.log2(Math.max(scale, PIN_SCALE) / scale),
+      offset: o.offset ?? [0, 0],
+      duration: this.reducedMotion || o.animate === false ? 0 : 1800,
       essential: true,
     });
   }
 
   zoomBy(delta: number) {
-    this.stopSpin();
-    this.map.easeTo({ zoom: this.map.getZoom() + delta, duration: this.reducedMotion ? 0 : 300 });
+    this.globe.stopSpin();
+    this.globe.zoomBy(delta);
   }
 
   resetView() {
-    this.stopSpin();
-    this.map.easeTo({ center: [15, 30], zoom: this.baseZoom(), duration: this.reducedMotion ? 0 : 900 });
+    this.globe.stopSpin();
+    this.globe.setView({ center: HOME_CENTER, scale: 1 }, { animate: true });
   }
 
   /** Slow idle rotation until the user touches the globe. */
   startSpin() {
-    if (this.reducedMotion || this.spinning) return;
-    this.spinning = true;
-    this.map.on('moveend', this.spinStep);
-    this.ready.then(this.spinStep);
+    this.globe.startSpin();
   }
 
-  stopSpin = () => {
-    if (!this.spinning) return;
-    this.spinning = false;
-    this.map.off('moveend', this.spinStep);
-  };
-
-  private spinStep = () => {
-    if (!this.spinning) return;
-    const center = this.map.getCenter();
-    center.lng -= 4;
-    this.map.easeTo({ center, duration: 1000, easing: (n) => n });
-  };
-
-  // ---------- hover ----------
-
-  private bindInteractions() {
-    const map = this.map;
-    const onPolity = (e: MapLayerMouseEvent) => {
-      const f = e.features?.[0];
-      if (!f || f.id === undefined) return;
-      if (f.id !== this.hoveredId) {
-        this.clearHover();
-        this.hoveredId = f.id;
-        map.setFeatureState({ source: 'polities', id: f.id }, { hover: true });
-      }
-      const name = f.properties?.name as string | undefined;
-      this.cb.onPolityHover(
-        name
-          ? { name, subjecto: (f.properties?.subjecto as string) ?? null, x: e.point.x, y: e.point.y }
-          : null,
-      );
-    };
-    map.on('mousemove', 'polity-fill', onPolity);
-    map.on('click', 'polity-fill', onPolity); // touch devices have no hover
-    map.on('mouseleave', 'polity-fill', () => {
-      this.clearHover();
-      this.cb.onPolityHover(null);
-    });
-    for (const type of ['mousedown', 'touchstart', 'wheel', 'dragstart'] as const) {
-      map.on(type, this.stopSpin);
-    }
-  }
-
-  private clearHover() {
-    if (this.hoveredId !== null) {
-      this.map.setFeatureState({ source: 'polities', id: this.hoveredId }, { hover: false });
-      this.hoveredId = null;
-    }
+  stopSpin() {
+    this.globe.stopSpin();
   }
 
   destroy() {
-    this.destroyed = true;
-    this.resizeObserver.disconnect();
-    this.snapshotCleanup?.();
-    this.stopSpin();
-    this.map.remove();
+    this.pinEntries = [];
+    this.markers.clear();
+    this.globe.destroy();
   }
 }

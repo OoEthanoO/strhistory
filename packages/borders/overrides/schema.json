@@ -1,0 +1,916 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexs-atlas.local/schema/overrides.schema.json",
+  "title": "Alex’s Atlas border overrides",
+  "description": "Manual, sourced fixes applied on top of the open source data. Years are integer historical years with no year 0 (-1 = 1 BCE, 1 = 1 CE); every range is inclusive. A border change that takes effect at any date in year Y is first shown in year Y (the map for year Y shows borders at 31 December of Y). The string \"present\" may stand for the build's present year in a range end. Historical and early files fix the Cliopatria-based layer (years <= 1945); modern files build the Natural-Earth-based layer (years 1946..present). See packages/borders/AGENTS.md for semantics and examples.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/historicalFile"
+    },
+    {
+      "$ref": "#/$defs/modernFile"
+    }
+  ],
+  "$defs": {
+    "year": {
+      "description": "Historical year, no 0. Negative = BCE.",
+      "type": "integer",
+      "minimum": -3400,
+      "maximum": 2100,
+      "not": {
+        "const": 0
+      }
+    },
+    "yearOrPresent": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/year"
+        },
+        {
+          "const": "present"
+        }
+      ]
+    },
+    "years": {
+      "description": "Inclusive [from, to].",
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/year"
+        },
+        {
+          "$ref": "#/$defs/yearOrPresent"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "lonlat": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "ring": {
+      "description": "Closed ring of [lon, lat] positions (first == last), at least 4 positions.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lonlat"
+      },
+      "minItems": 4
+    },
+    "pid": {
+      "description": "Polity id. 'clio:<slug>' for Cliopatria polities (slug = NFKD, strip marks, lowercase, non-alphanumerics to '-'), 'ne:<ADM0_A3>' for present-day Natural Earth states, 'ovr:<slug>' for polities added by overrides.",
+      "type": "string",
+      "pattern": "^(clio|ne|ovr):[a-z0-9][a-z0-9-]*$"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "title",
+        "url"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 3
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https?://"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "geometry": {
+      "description": "How to construct an area. Everything is clipped to Natural Earth 10m land (plus minor islands) by the pipeline, so polygons may run into the sea.",
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Union of Natural Earth admin-0 units by ADM0_A3 code (see .cache/reference/ne-admin0.json).",
+          "required": [
+            "type",
+            "codes"
+          ],
+          "properties": {
+            "type": {
+              "const": "admin0"
+            },
+            "codes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Z0-9]{3}$"
+              },
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "description": "Union of Natural Earth admin-1 units by adm1_code (e.g. 'USA-3517') or iso_3166_2 (e.g. 'US-HI'); see .cache/reference/ne-admin1.json.",
+          "required": [
+            "type",
+            "codes"
+          ],
+          "properties": {
+            "type": {
+              "const": "admin1"
+            },
+            "codes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 3
+              },
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "description": "Hand-authored polygon(s) in lon/lat. Use 'rings' for one polygon (outer ring first, then holes) or 'polygons' for several. Approximate unless sources give exact boundaries.",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "polygon"
+            },
+            "rings": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ring"
+              },
+              "minItems": 1
+            },
+            "polygons": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/ring"
+                },
+                "minItems": 1
+              },
+              "minItems": 1
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "rings"
+              ]
+            },
+            {
+              "required": [
+                "polygons"
+              ]
+            }
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "description": "Whole Natural Earth land parts (islands) containing these points. A point in the sea snaps to the nearest land part within 5 km, else the build fails.",
+          "required": [
+            "type",
+            "points"
+          ],
+          "properties": {
+            "type": {
+              "const": "islands"
+            },
+            "points": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/lonlat"
+              },
+              "minItems": 1
+            },
+            "names": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "description": "Natural Earth disputed-area features by BRK_A3 code (see .cache/reference/ne-disputed.json).",
+          "required": [
+            "type",
+            "codes"
+          ],
+          "properties": {
+            "type": {
+              "const": "ne-disputed"
+            },
+            "codes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "description": "The (clipped) geometry of an existing record of polity `pid` alive in `year` (Cliopatria or an earlier 'add').",
+          "required": [
+            "type",
+            "pid",
+            "year"
+          ],
+          "properties": {
+            "type": {
+              "const": "record"
+            },
+            "pid": {
+              "$ref": "#/$defs/pid"
+            },
+            "year": {
+              "$ref": "#/$defs/year"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "parts"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "union",
+                "intersection"
+              ]
+            },
+            "parts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/geometry"
+              },
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "base",
+            "minus"
+          ],
+          "properties": {
+            "type": {
+              "const": "difference"
+            },
+            "base": {
+              "$ref": "#/$defs/geometry"
+            },
+            "minus": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/geometry"
+              },
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "attributes": {
+      "description": "Polity attributes. For 'add' entries pid and name are required.",
+      "type": "object",
+      "properties": {
+        "pid": {
+          "$ref": "#/$defs/pid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "altNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kind": {
+          "description": "state = sovereign or de facto independent polity; dependency = colony, protectorate, mandate or occupied/administered territory (set power to the controlling state); indigenous = indigenous nation or confederacy; disputed = area whose control is contested (tier 1 overlay); other = anything else. unclaimed = land held by no polity (only in modern unit periods, e.g. Antarctica; use pid 'ovr:unclaimed').",
+          "enum": [
+            "state",
+            "dependency",
+            "indigenous",
+            "disputed",
+            "other",
+            "unclaimed"
+          ]
+        },
+        "tier": {
+          "description": "0 = base layer: areas are exclusive (an add carves its area out of other tier-0 records alive in the same years). 1 = overlay drawn hatched above tier 0 without carving (indigenous territories over colonial claims, disputed areas, approximate extents).",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "power": {
+          "description": "Controlling polity pid used for colour grouping (colonies share their empire's colour).",
+          "$ref": "#/$defs/pid"
+        },
+        "subjecto": {
+          "description": "Controlling power as the period names it (hover 'Part of ...').",
+          "type": "string"
+        },
+        "partof": {
+          "description": "Wider grouping, e.g. 'Holy Roman Empire', 'British Empire'.",
+          "type": "string"
+        },
+        "wikidata": {
+          "type": "string",
+          "pattern": "^Q[0-9]+$"
+        },
+        "wikipedia": {
+          "description": "English Wikipedia article title.",
+          "type": "string"
+        },
+        "precision": {
+          "description": "exact = boundary follows sources/admin units closely; approximate = indicative extent (drawn dashed).",
+          "enum": [
+            "exact",
+            "approximate"
+          ]
+        },
+        "controller": {
+          "description": "For disputed overlays: pid of the polity in de facto control.",
+          "$ref": "#/$defs/pid"
+        },
+        "claimants": {
+          "description": "For disputed overlays: pids of claimant polities.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pid"
+          }
+        },
+        "note": {
+          "description": "Short note shown in the polity panel.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "entryCommon": {
+      "type": "object",
+      "required": [
+        "id",
+        "op",
+        "years",
+        "reason",
+        "confidence",
+        "status",
+        "author",
+        "date"
+      ],
+      "properties": {
+        "id": {
+          "description": "Unique and stable, prefixed by file, e.g. 'h-northern-america-0007'.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "op": {
+          "enum": [
+            "add",
+            "subtract",
+            "assign",
+            "update",
+            "delete",
+            "note"
+          ]
+        },
+        "years": {
+          "$ref": "#/$defs/years"
+        },
+        "target": {
+          "description": "The existing polity the fix applies to (subtract/assign/update/delete).",
+          "type": "object",
+          "properties": {
+            "pid": {
+              "$ref": "#/$defs/pid"
+            }
+          },
+          "required": [
+            "pid"
+          ],
+          "additionalProperties": false
+        },
+        "geometry": {
+          "$ref": "#/$defs/geometry"
+        },
+        "set": {
+          "$ref": "#/$defs/attributes"
+        },
+        "carve": {
+          "description": "For tier-0 'add': remove the added area from other tier-0 records alive in the same years (default true). Set false only when the overlap is intended.",
+          "type": "boolean"
+        },
+        "reason": {
+          "description": "What is wrong or missing and why this fix is right. Future editors read this.",
+          "type": "string",
+          "minLength": 15
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "status": {
+          "description": "active = applied by the build; proposed = documented but not applied (needs review); known-gap = documented missing item that cannot be drawn yet; rejected = kept for the record, not applied.",
+          "enum": [
+            "active",
+            "proposed",
+            "known-gap",
+            "rejected"
+          ]
+        },
+        "author": {
+          "type": "string",
+          "minLength": 2
+        },
+        "date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "verifiedBy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "review": {
+          "description": "Verifier notes: what was checked, what was changed.",
+          "type": "string"
+        }
+      }
+    },
+    "entry": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entryCommon"
+        },
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "const": "add"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "geometry",
+              "set"
+            ],
+            "properties": {
+              "set": {
+                "required": [
+                  "pid",
+                  "name",
+                  "kind"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "subtract",
+                  "assign"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "geometry",
+              "target"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "const": "update"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "target",
+              "set"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "const": "delete"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "active"
+              },
+              "op": {
+                "not": {
+                  "const": "note"
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "sources"
+            ],
+            "properties": {
+              "sources": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "historicalFile": {
+      "type": "object",
+      "required": [
+        "kind",
+        "region",
+        "entries"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "kind": {
+          "description": "historical = fixes for 1700..1945; early = fixes for years before 1700.",
+          "enum": [
+            "historical",
+            "early"
+          ]
+        },
+        "region": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "scope": {
+          "description": "Free text: what this file audited (regions, years, sources consulted).",
+          "type": "string"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entry"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "state": {
+      "description": "The polity a modern unit belongs to in a period.",
+      "type": "object",
+      "required": [
+        "pid",
+        "name",
+        "kind"
+      ],
+      "properties": {
+        "pid": {
+          "$ref": "#/$defs/pid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "altNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kind": {
+          "enum": [
+            "state",
+            "dependency",
+            "indigenous",
+            "disputed",
+            "other",
+            "unclaimed"
+          ],
+          "description": "See attributes.kind. 'unclaimed' (pid 'ovr:unclaimed') marks land held by no polity, e.g. Antarctica."
+        },
+        "power": {
+          "$ref": "#/$defs/pid"
+        },
+        "subjecto": {
+          "type": "string"
+        },
+        "partof": {
+          "type": "string"
+        },
+        "wikidata": {
+          "type": "string",
+          "pattern": "^Q[0-9]+$"
+        },
+        "wikipedia": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "period": {
+      "type": "object",
+      "required": [
+        "years",
+        "state"
+      ],
+      "properties": {
+        "years": {
+          "$ref": "#/$defs/years"
+        },
+        "state": {
+          "$ref": "#/$defs/state"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "subunit": {
+      "description": "Part of a unit that belongs to a different polity in some years. In years without a matching period it falls back to its parent unit's polity.",
+      "type": "object",
+      "required": [
+        "id",
+        "geometry",
+        "timeline"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "label": {
+          "type": "string"
+        },
+        "geometry": {
+          "$ref": "#/$defs/geometry"
+        },
+        "timeline": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/period"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "unit": {
+      "description": "One Natural Earth admin-0 unit (ADM0_A3) and who held it, year by year, from 1946 to the present. Its area minus any subunits active in a year goes to the timeline period covering that year; every year 1946..present must be covered unless subunits cover the whole unit in that year.",
+      "type": "object",
+      "required": [
+        "unit",
+        "timeline",
+        "sources"
+      ],
+      "properties": {
+        "unit": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{3}$"
+        },
+        "label": {
+          "type": "string"
+        },
+        "timeline": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/period"
+          }
+        },
+        "subunits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/subunit"
+          }
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          },
+          "minItems": 1
+        },
+        "notes": {
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "author": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "verifiedBy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "review": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "overlay": {
+      "description": "Tier-1 overlay in the modern layer (disputed or occupied areas, approximate indigenous territories); never carves the base partition.",
+      "type": "object",
+      "required": [
+        "id",
+        "geometry",
+        "timeline",
+        "sources"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "label": {
+          "type": "string"
+        },
+        "geometry": {
+          "$ref": "#/$defs/geometry"
+        },
+        "timeline": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "years",
+              "set"
+            ],
+            "properties": {
+              "years": {
+                "$ref": "#/$defs/years"
+              },
+              "set": {
+                "$ref": "#/$defs/attributes"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          },
+          "minItems": 1
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "author": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "verifiedBy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "review": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "modernFile": {
+      "type": "object",
+      "required": [
+        "kind",
+        "region",
+        "units"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "kind": {
+          "const": "modern"
+        },
+        "region": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/unit"
+          }
+        },
+        "overlays": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/overlay"
+          }
+        },
+        "entries": {
+          "description": "Only op 'note' entries (editorial decisions, known gaps) are allowed here.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entry"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

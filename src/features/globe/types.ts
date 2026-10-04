@@ -33,11 +33,3 @@ export interface GlobeData {
   snapshots: GlobeSnapshot[];
   currentYear: number;
 }
-
-/** What the pointer is over on the map (a polity/region). */
-export interface PolityHover {
-  name: string;
-  subjecto: string | null;
-  x: number;
-  y: number;
-}

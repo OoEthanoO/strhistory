@@ -17,7 +17,7 @@ const post = (path, value, headers = {}) => request(path, { method: 'POST', head
 const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((f) => f.isDirectory() ? walk(join(dir, f.name)) : [join(dir, f.name)]);
 const protectedPages = walk('dist').filter((f) => f.endsWith('.html')).map((f) => '/' + relative('dist', f).replaceAll('\\', '/'))
   .filter((p) => !['/globe/index.html', '/access/index.html'].includes(p));
-for (const path of [...protectedPages, '/', '/topics', '/topics/', '/glossary', '/TOPICS/FIRST-CRUSADE/INDEX.HTML', '/topics%2Ffirst-crusade/index.html', '/globe/../topics/first-crusade/', '/_astro/../topics/first-crusade/', '/topics/first-crusade/index.html?x=.css']) {
+for (const path of [...protectedPages, '/', '/topics', '/topics/', '/glossary', '/TOPICS/FIRST-CRUSADE/INDEX.HTML', '/topics%2Ffirst-crusade/index.html', '/globe/../topics/first-crusade/', '/_astro/../topics/first-crusade/', '/topics/first-crusade/index.html?x=.css', '/data/alexs-atlas/../../topics/first-crusade/', '/data/alexs-atlas/chunks/../../../topics/first-crusade/index.html']) {
   const r = await request(path);
   assert.equal(r.status, 303, `locked: ${path}`);
   assert.match(r.headers.get('location'), /^\/access\?next=/);
@@ -35,6 +35,15 @@ for (const asset of readdirSync('dist/_astro')) {
   const r = await request('/_astro/' + asset, { method: 'HEAD' });
   assert.equal(r.status, 200, `public asset: ${asset}`);
 }
+// The globe's borders dataset is public too: the manifest revalidated, hashed files immutable.
+const atlasFiles = walk('dist/data/alexs-atlas').map((f) => '/' + relative('dist', f).replaceAll('\\', '/'));
+for (const path of atlasFiles) {
+  const r = await request(path, { method: 'HEAD' });
+  assert.equal(r.status, 200, `public dataset file: ${path}`);
+  if (path.endsWith('/manifest.json')) assert.match(r.headers.get('cache-control'), /no-cache/);
+  else if (/\.[0-9a-f]{8}(\.topo)?\.json$/.test(path)) assert.match(r.headers.get('cache-control'), /immutable/);
+}
+console.log(`Public: ${atlasFiles.length} borders dataset files.`);
 assert.doesNotMatch(await (await request('/sitemap-0.xml')).text(), /\/topics|\/teachers|\/courses/);
 let r = await post('/access/unlock', 'wrong-access-code');
 assert.match(r.headers.get('location'), /error=invalid/);

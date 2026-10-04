@@ -1,12 +1,15 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", ".cache"],
+  "exclude": ["dist", ".cache", "packages"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@alexs-atlas/borders": ["./packages/borders/src/index.ts"],
+      "@alexs-atlas/globe": ["./packages/globe/src/index.ts"],
+      "@alexs-atlas/globe/timeline": ["./packages/globe/src/timeline/index.ts"]
     }
   }
 }

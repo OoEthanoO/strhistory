@@ -1,0 +1,2032 @@
+{
+ "$schema": "../schema.json",
+ "kind": "historical",
+ "region": "curated-fixes",
+ "scope": "Sourced fixes for concrete errors found in the built 1700-1945 data (Cliopatria) by integration review: polities on the wrong islands or continents (Channel Islands, Chukotka, Cayman Islands, Greenland, Cape Colony / Sierra Leone, Hispaniola, Lepanto), unclaimed land that was claimed (Greenland, northern Canada) or indigenous (Hokkaido), and wrong names or kinds (United Kingdom, Kingdom of Ireland, Greece, Congo, Saint-Domingue). Curated by agent:curated-fixes, 2026-10-02.",
+ "entries": [
+  {
+   "id": "h-curated-fixes-0001",
+   "op": "assign",
+   "years": [
+    1700,
+    1708
+   ],
+   "target": {
+    "pid": "clio:kingdom-of-england"
+   },
+   "geometry": {
+    "type": "islands",
+    "points": [
+     [
+      -2.13,
+      49.21
+     ],
+     [
+      -2.58,
+      49.45
+     ],
+     [
+      -2.2,
+      49.71
+     ],
+     [
+      -2.36,
+      49.43
+     ]
+    ],
+    "names": [
+     "Jersey",
+     "Guernsey",
+     "Alderney",
+     "Sark"
+    ]
+   },
+   "reason": "The Channel Islands (bailiwicks of Jersey and Guernsey, with Alderney and Sark) have been possessions of the English, later British, crown since the 13th century and were never French after 1204; the build gives them to the French polity because Cliopatria has no record on them and the coastal fill takes the nearest neighbour. They follow the polity that holds London in the data: the Kingdom of England (Cliopatria switches England to Great Britain only in 1709 although the Acts of Union took effect in 1707).",
+   "sources": [
+    {
+     "title": "Wikipedia: Channel Islands",
+     "url": "https://en.wikipedia.org/wiki/Channel_Islands"
+    },
+    {
+     "title": "Wikipedia: German occupation of the Channel Islands",
+     "url": "https://en.wikipedia.org/wiki/German_occupation_of_the_Channel_Islands"
+    },
+    {
+     "title": "Britannica: Channel Islands",
+     "url": "https://www.britannica.com/place/Channel-Islands"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0002",
+   "op": "assign",
+   "years": [
+    1709,
+    1939
+   ],
+   "target": {
+    "pid": "clio:kingdom-of-great-britain"
+   },
+   "geometry": {
+    "type": "islands",
+    "points": [
+     [
+      -2.13,
+      49.21
+     ],
+     [
+      -2.58,
+      49.45
+     ],
+     [
+      -2.2,
+      49.71
+     ],
+     [
+      -2.36,
+      49.43
+     ]
+    ],
+    "names": [
+     "Jersey",
+     "Guernsey",
+     "Alderney",
+     "Sark"
+    ]
+   },
+   "reason": "The Channel Islands (bailiwicks of Jersey and Guernsey, with Alderney and Sark) have been possessions of the English, later British, crown since the 13th century and were never French after 1204; the build gives them to the French polity because Cliopatria has no record on them and the coastal fill takes the nearest neighbour. They follow the polity that holds London in the data: Great Britain, from 1801 the United Kingdom (Cliopatria keeps the pid clio:kingdom-of-great-britain for both; see the name fixes below).",
+   "sources": [
+    {
+     "title": "Wikipedia: Channel Islands",
+     "url": "https://en.wikipedia.org/wiki/Channel_Islands"
+    },
+    {
+     "title": "Wikipedia: German occupation of the Channel Islands",
+     "url": "https://en.wikipedia.org/wiki/German_occupation_of_the_Channel_Islands"
+    },
+    {
+     "title": "Britannica: Channel Islands",
+     "url": "https://www.britannica.com/place/Channel-Islands"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0003",
+   "op": "note",
+   "years": [
+    1940,
+    1944
+   ],
+   "reason": "Editorial decision: the Channel Islands were occupied by Germany from 30 June/1 July 1940 to 9 May 1945. Before 1946 the map shows the holder at the end of each year, so 1940-1944 keep the German polity that the data already assigns (Cliopatria: Nazi Germany) and 1945 returns them to the United Kingdom (next entry).",
+   "sources": [
+    {
+     "title": "Wikipedia: German occupation of the Channel Islands",
+     "url": "https://en.wikipedia.org/wiki/German_occupation_of_the_Channel_Islands"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0004",
+   "op": "assign",
+   "years": [
+    1945,
+    1945
+   ],
+   "target": {
+    "pid": "clio:kingdom-of-great-britain"
+   },
+   "geometry": {
+    "type": "islands",
+    "points": [
+     [
+      -2.13,
+      49.21
+     ],
+     [
+      -2.58,
+      49.45
+     ],
+     [
+      -2.2,
+      49.71
+     ],
+     [
+      -2.36,
+      49.43
+     ]
+    ],
+    "names": [
+     "Jersey",
+     "Guernsey",
+     "Alderney",
+     "Sark"
+    ]
+   },
+   "reason": "The Channel Islands (bailiwicks of Jersey and Guernsey, with Alderney and Sark) have been possessions of the English, later British, crown since the 13th century and were never French after 1204; the build gives them to the French polity because Cliopatria has no record on them and the coastal fill takes the nearest neighbour. They follow the polity that holds London in the data: the United Kingdom after the liberation of 9 May 1945.",
+   "sources": [
+    {
+     "title": "Wikipedia: Channel Islands",
+     "url": "https://en.wikipedia.org/wiki/Channel_Islands"
+    },
+    {
+     "title": "Wikipedia: German occupation of the Channel Islands",
+     "url": "https://en.wikipedia.org/wiki/German_occupation_of_the_Channel_Islands"
+    },
+    {
+     "title": "Britannica: Channel Islands",
+     "url": "https://www.britannica.com/place/Channel-Islands"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0005",
+   "op": "update",
+   "years": [
+    1801,
+    1921
+   ],
+   "target": {
+    "pid": "clio:kingdom-of-great-britain"
+   },
+   "set": {
+    "name": "United Kingdom of Great Britain and Ireland",
+    "wikidata": "Q174193",
+    "wikipedia": "United Kingdom of Great Britain and Ireland"
+   },
+   "reason": "Cliopatria keeps the name \"Kingdom of Great Britain\" for the British state until 1945 (e.g. London in 1913-1914). The Acts of Union 1800 created the United Kingdom of Great Britain and Ireland on 1 January 1801; it kept that name until the Irish Free State left in December 1922.",
+   "sources": [
+    {
+     "title": "Wikipedia: Acts of Union 1800",
+     "url": "https://en.wikipedia.org/wiki/Acts_of_Union_1800"
+    },
+    {
+     "title": "Wikipedia: United Kingdom of Great Britain and Ireland",
+     "url": "https://en.wikipedia.org/wiki/United_Kingdom_of_Great_Britain_and_Ireland"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0006",
+   "op": "update",
+   "years": [
+    1922,
+    1945
+   ],
+   "target": {
+    "pid": "clio:kingdom-of-great-britain"
+   },
+   "set": {
+    "name": "United Kingdom",
+    "altNames": [
+     "United Kingdom of Great Britain and Northern Ireland"
+    ],
+    "wikidata": "Q145",
+    "wikipedia": "United Kingdom"
+   },
+   "reason": "After the Irish Free State was established on 6 December 1922 the state was the United Kingdom of Great Britain and Northern Ireland (name formalised by the Royal and Parliamentary Titles Act 1927); Cliopatria still calls it \"Kingdom of Great Britain\".",
+   "sources": [
+    {
+     "title": "Wikipedia: Irish Free State",
+     "url": "https://en.wikipedia.org/wiki/Irish_Free_State"
+    },
+    {
+     "title": "Wikipedia: Royal and Parliamentary Titles Act 1927",
+     "url": "https://en.wikipedia.org/wiki/Royal_and_Parliamentary_Titles_Act_1927"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0007",
+   "op": "add",
+   "years": [
+    1700,
+    1708
+   ],
+   "geometry": {
+    "type": "islands",
+    "points": [
+     [
+      -8,
+      53.3
+     ]
+    ],
+    "names": [
+     "Ireland"
+    ]
+   },
+   "set": {
+    "pid": "ovr:kingdom-of-ireland",
+    "name": "Kingdom of Ireland",
+    "kind": "dependency",
+    "power": "clio:kingdom-of-england",
+    "tier": 0,
+    "precision": "exact",
+    "wikidata": "Q215530",
+    "wikipedia": "Kingdom of Ireland"
+   },
+   "reason": "The Kingdom of Ireland (1542-1800) was a separate kingdom under the English, later British, crown with its own parliament, subordinate to Westminster (Poynings' Law, Declaratory Act 1719/20) until the Acts of Union merged it into the United Kingdom on 1 January 1801. Cliopatria draws Ireland as part of the Kingdom of England / Great Britain. Shown as a dependency sharing the British colour.",
+   "sources": [
+    {
+     "title": "Wikipedia: Kingdom of Ireland",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Ireland"
+    },
+    {
+     "title": "Wikipedia: Declaratory Act 1719",
+     "url": "https://en.wikipedia.org/wiki/Declaratory_Act_1719"
+    },
+    {
+     "title": "Wikipedia: Acts of Union 1800",
+     "url": "https://en.wikipedia.org/wiki/Acts_of_Union_1800"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0008",
+   "op": "add",
+   "years": [
+    1709,
+    1800
+   ],
+   "geometry": {
+    "type": "islands",
+    "points": [
+     [
+      -8,
+      53.3
+     ]
+    ],
+    "names": [
+     "Ireland"
+    ]
+   },
+   "set": {
+    "pid": "ovr:kingdom-of-ireland",
+    "name": "Kingdom of Ireland",
+    "kind": "dependency",
+    "power": "clio:kingdom-of-great-britain",
+    "tier": 0,
+    "precision": "exact",
+    "wikidata": "Q215530",
+    "wikipedia": "Kingdom of Ireland"
+   },
+   "reason": "The Kingdom of Ireland (1542-1800) was a separate kingdom under the English, later British, crown with its own parliament, subordinate to Westminster (Poynings' Law, Declaratory Act 1719/20) until the Acts of Union merged it into the United Kingdom on 1 January 1801. Cliopatria draws Ireland as part of the Kingdom of England / Great Britain. Shown as a dependency sharing the British colour.",
+   "sources": [
+    {
+     "title": "Wikipedia: Kingdom of Ireland",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Ireland"
+    },
+    {
+     "title": "Wikipedia: Acts of Union 1800",
+     "url": "https://en.wikipedia.org/wiki/Acts_of_Union_1800"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0009",
+   "op": "assign",
+   "years": [
+    1868,
+    1916
+   ],
+   "target": {
+    "pid": "clio:russian-empire"
+   },
+   "geometry": {
+    "type": "polygon",
+    "rings": [
+     [
+      [
+       -180,
+       64
+      ],
+      [
+       -169.2,
+       64
+      ],
+      [
+       -169.2,
+       70.5
+      ],
+      [
+       -180,
+       70.5
+      ],
+      [
+       -180,
+       64
+      ]
+     ]
+    ]
+   },
+   "reason": "The Chukchi Peninsula east of 180 deg (Cape Dezhnev, Provideniya Bay) is Russian territory; the 1867 cession of Alaska drew the boundary through the Bering Strait between the Diomede Islands. Cliopatria's Alaska polygon reaches over the strait to Cape Dezhnev, so the build gives that land part to the United States. The polygon (east of 180 deg, north of 64 deg N, west of 169.2 deg W) excludes St. Lawrence Island and Little Diomede (US). Assigned to the Russian polity that holds the rest of Chukotka in the data: Russian Empire in 1868-1916.",
+   "sources": [
+    {
+     "title": "Wikipedia: Alaska Purchase",
+     "url": "https://en.wikipedia.org/wiki/Alaska_Purchase"
+    },
+    {
+     "title": "Wikipedia: Chukotka Autonomous Okrug",
+     "url": "https://en.wikipedia.org/wiki/Chukotka_Autonomous_Okrug"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0010",
+   "op": "assign",
+   "years": [
+    1917,
+    1919
+   ],
+   "target": {
+    "pid": "clio:russian-republic"
+   },
+   "geometry": {
+    "type": "polygon",
+    "rings": [
+     [
+      [
+       -180,
+       64
+      ],
+      [
+       -169.2,
+       64
+      ],
+      [
+       -169.2,
+       70.5
+      ],
+      [
+       -180,
+       70.5
+      ],
+      [
+       -180,
+       64
+      ]
+     ]
+    ]
+   },
+   "reason": "The Chukchi Peninsula east of 180 deg (Cape Dezhnev, Provideniya Bay) is Russian territory; the 1867 cession of Alaska drew the boundary through the Bering Strait between the Diomede Islands. Cliopatria's Alaska polygon reaches over the strait to Cape Dezhnev, so the build gives that land part to the United States. The polygon (east of 180 deg, north of 64 deg N, west of 169.2 deg W) excludes St. Lawrence Island and Little Diomede (US). Assigned to the Russian polity that holds the rest of Chukotka in the data: Russian Republic in 1917-1919.",
+   "sources": [
+    {
+     "title": "Wikipedia: Alaska Purchase",
+     "url": "https://en.wikipedia.org/wiki/Alaska_Purchase"
+    },
+    {
+     "title": "Wikipedia: Chukotka Autonomous Okrug",
+     "url": "https://en.wikipedia.org/wiki/Chukotka_Autonomous_Okrug"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0011",
+   "op": "assign",
+   "years": [
+    1920,
+    1921
+   ],
+   "target": {
+    "pid": "clio:republics-of-the-soviet-union"
+   },
+   "geometry": {
+    "type": "polygon",
+    "rings": [
+     [
+      [
+       -180,
+       64
+      ],
+      [
+       -169.2,
+       64
+      ],
+      [
+       -169.2,
+       70.5
+      ],
+      [
+       -180,
+       70.5
+      ],
+      [
+       -180,
+       64
+      ]
+     ]
+    ]
+   },
+   "reason": "The Chukchi Peninsula east of 180 deg (Cape Dezhnev, Provideniya Bay) is Russian territory; the 1867 cession of Alaska drew the boundary through the Bering Strait between the Diomede Islands. Cliopatria's Alaska polygon reaches over the strait to Cape Dezhnev, so the build gives that land part to the United States. The polygon (east of 180 deg, north of 64 deg N, west of 169.2 deg W) excludes St. Lawrence Island and Little Diomede (US). Assigned to the Russian polity that holds the rest of Chukotka in the data: Republics of the Soviet Union in 1920-1921.",
+   "sources": [
+    {
+     "title": "Wikipedia: Alaska Purchase",
+     "url": "https://en.wikipedia.org/wiki/Alaska_Purchase"
+    },
+    {
+     "title": "Wikipedia: Chukotka Autonomous Okrug",
+     "url": "https://en.wikipedia.org/wiki/Chukotka_Autonomous_Okrug"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0012",
+   "op": "assign",
+   "years": [
+    1922,
+    1945
+   ],
+   "target": {
+    "pid": "clio:union-of-soviet-socialist-republics"
+   },
+   "geometry": {
+    "type": "polygon",
+    "rings": [
+     [
+      [
+       -180,
+       64
+      ],
+      [
+       -169.2,
+       64
+      ],
+      [
+       -169.2,
+       70.5
+      ],
+      [
+       -180,
+       70.5
+      ],
+      [
+       -180,
+       64
+      ]
+     ]
+    ]
+   },
+   "reason": "The Chukchi Peninsula east of 180 deg (Cape Dezhnev, Provideniya Bay) is Russian territory; the 1867 cession of Alaska drew the boundary through the Bering Strait between the Diomede Islands. Cliopatria's Alaska polygon reaches over the strait to Cape Dezhnev, so the build gives that land part to the United States. The polygon (east of 180 deg, north of 64 deg N, west of 169.2 deg W) excludes St. Lawrence Island and Little Diomede (US). Assigned to the Russian polity that holds the rest of Chukotka in the data: Soviet Union in 1922-1945.",
+   "sources": [
+    {
+     "title": "Wikipedia: Alaska Purchase",
+     "url": "https://en.wikipedia.org/wiki/Alaska_Purchase"
+    },
+    {
+     "title": "Wikipedia: Chukotka Autonomous Okrug",
+     "url": "https://en.wikipedia.org/wiki/Chukotka_Autonomous_Okrug"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0013",
+   "op": "add",
+   "years": [
+    1721,
+    1733
+   ],
+   "geometry": {
+    "type": "record",
+    "pid": "clio:greenland",
+    "year": 1734
+   },
+   "set": {
+    "pid": "clio:greenland",
+    "name": "Greenland",
+    "kind": "dependency",
+    "power": "clio:denmark-norway",
+    "tier": 0,
+    "precision": "approximate",
+    "wikidata": "Q223"
+   },
+   "reason": "Danish-Norwegian colonisation of Greenland began with Hans Egede's mission in 1721 (Godthab/Nuuk founded 1728). Cliopatria starts its Greenland record only in 1734 and gives the Nuuk coast to the Dutch Republic in 1721-1733 (Dutch whalers traded there but held no colony). Extends the 1734 west-coast footprint back to 1721.",
+   "sources": [
+    {
+     "title": "Wikipedia: History of Greenland",
+     "url": "https://en.wikipedia.org/wiki/History_of_Greenland"
+    },
+    {
+     "title": "Wikipedia: Hans Egede",
+     "url": "https://en.wikipedia.org/wiki/Hans_Egede"
+    },
+    {
+     "title": "Wikipedia: Erik the Red's Land",
+     "url": "https://en.wikipedia.org/wiki/Erik_the_Red%27s_Land"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0014",
+   "op": "update",
+   "years": [
+    1734,
+    1939
+   ],
+   "target": {
+    "pid": "clio:greenland"
+   },
+   "set": {
+    "kind": "dependency",
+    "power": "clio:denmark-norway"
+   },
+   "reason": "Cliopatria marks Greenland as a sovereign state. It was a colony of Denmark-Norway and, after the Treaty of Kiel (1814), of Denmark (Cliopatria keeps the pid clio:denmark-norway for Denmark until 1940, so that pid gives the colour).",
+   "sources": [
+    {
+     "title": "Wikipedia: History of Greenland",
+     "url": "https://en.wikipedia.org/wiki/History_of_Greenland"
+    },
+    {
+     "title": "Wikipedia: Hans Egede",
+     "url": "https://en.wikipedia.org/wiki/Hans_Egede"
+    },
+    {
+     "title": "Wikipedia: Erik the Red's Land",
+     "url": "https://en.wikipedia.org/wiki/Erik_the_Red%27s_Land"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0015",
+   "op": "assign",
+   "years": [
+    1921,
+    1940
+   ],
+   "target": {
+    "pid": "clio:greenland"
+   },
+   "geometry": {
+    "type": "islands",
+    "points": [
+     [
+      -40,
+      72
+     ],
+     [
+      -53.5,
+      69.75
+     ]
+    ],
+    "names": [
+     "Greenland",
+     "Disko Island"
+    ]
+   },
+   "reason": "From 1921 Denmark claimed and administered the whole of Greenland (closing it to foreigners); the Permanent Court of International Justice upheld Danish sovereignty over all of Greenland against Norway's occupation of Erik the Red's Land in 1933 (Eastern Greenland case). Cliopatria covers only the colonised coasts until 1935, leaving the ice sheet and the east coast unclaimed.",
+   "sources": [
+    {
+     "title": "Wikipedia: History of Greenland",
+     "url": "https://en.wikipedia.org/wiki/History_of_Greenland"
+    },
+    {
+     "title": "Wikipedia: Hans Egede",
+     "url": "https://en.wikipedia.org/wiki/Hans_Egede"
+    },
+    {
+     "title": "Wikipedia: Erik the Red's Land",
+     "url": "https://en.wikipedia.org/wiki/Erik_the_Red%27s_Land"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0016",
+   "op": "update",
+   "years": [
+    1940,
+    1940
+   ],
+   "target": {
+    "pid": "clio:greenland"
+   },
+   "set": {
+    "kind": "dependency",
+    "power": "clio:denmark"
+   },
+   "reason": "Germany occupied Denmark in April 1940; Greenland stayed a Danish colony administered locally by its two governors. Colour of Denmark (clio:denmark) because the data gives Copenhagen to the German polity in 1940-1944.",
+   "sources": [
+    {
+     "title": "Wikipedia: Greenland in World War II",
+     "url": "https://en.wikipedia.org/wiki/Greenland_in_World_War_II"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0017",
+   "op": "add",
+   "years": [
+    1941,
+    1945
+   ],
+   "geometry": {
+    "type": "islands",
+    "points": [
+     [
+      -40,
+      72
+     ],
+     [
+      -53.5,
+      69.75
+     ]
+    ],
+    "names": [
+     "Greenland",
+     "Disko Island"
+    ]
+   },
+   "set": {
+    "pid": "clio:greenland",
+    "name": "Greenland",
+    "kind": "dependency",
+    "power": "clio:denmark",
+    "tier": 0,
+    "precision": "exact",
+    "wikidata": "Q223"
+   },
+   "reason": "Cliopatria gives all of Greenland to the United States in 1941-1945. Under the 1941 Agreement relating to the Defense of Greenland the US built bases and defended the island, but Greenland remained Danish territory administered by its Danish governors; it is shown as the Danish colony (the US presence was not a change of sovereignty or administration).",
+   "sources": [
+    {
+     "title": "Wikipedia: Greenland in World War II",
+     "url": "https://en.wikipedia.org/wiki/Greenland_in_World_War_II"
+    },
+    {
+     "title": "Wikipedia: History of Greenland",
+     "url": "https://en.wikipedia.org/wiki/History_of_Greenland"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0018",
+   "op": "assign",
+   "years": [
+    1700,
+    1708
+   ],
+   "target": {
+    "pid": "clio:english-colonial-empire"
+   },
+   "geometry": {
+    "type": "islands",
+    "points": [
+     [
+      -81.25,
+      19.32
+     ],
+     [
+      -80.07,
+      19.69
+     ],
+     [
+      -79.8,
+      19.72
+     ]
+    ],
+    "names": [
+     "Grand Cayman",
+     "Little Cayman",
+     "Cayman Brac"
+    ]
+   },
+   "reason": "England acquired the Cayman Islands with Jamaica by the Treaty of Madrid (1670); they were settled from Jamaica in the 1730s and governed as a dependency of Jamaica until 1962. Cliopatria has no record on them (unclaimed in the build). Assigned to the polity that holds Jamaica in the data: the English colonial empire.",
+   "sources": [
+    {
+     "title": "Wikipedia: Cayman Islands",
+     "url": "https://en.wikipedia.org/wiki/Cayman_Islands"
+    },
+    {
+     "title": "Wikipedia: Treaty of Madrid (1670)",
+     "url": "https://en.wikipedia.org/wiki/Treaty_of_Madrid_(1670)"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0019",
+   "op": "assign",
+   "years": [
+    1709,
+    1945
+   ],
+   "target": {
+    "pid": "clio:british-colonial-empire"
+   },
+   "geometry": {
+    "type": "islands",
+    "points": [
+     [
+      -81.25,
+      19.32
+     ],
+     [
+      -80.07,
+      19.69
+     ],
+     [
+      -79.8,
+      19.72
+     ]
+    ],
+    "names": [
+     "Grand Cayman",
+     "Little Cayman",
+     "Cayman Brac"
+    ]
+   },
+   "reason": "England acquired the Cayman Islands with Jamaica by the Treaty of Madrid (1670); they were settled from Jamaica in the 1730s and governed as a dependency of Jamaica until 1962. Cliopatria has no record on them (unclaimed in the build). Assigned to the polity that holds Jamaica in the data: the British colonial empire.",
+   "sources": [
+    {
+     "title": "Wikipedia: Cayman Islands",
+     "url": "https://en.wikipedia.org/wiki/Cayman_Islands"
+    },
+    {
+     "title": "Wikipedia: Treaty of Madrid (1670)",
+     "url": "https://en.wikipedia.org/wiki/Treaty_of_Madrid_(1670)"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0020",
+   "op": "add",
+   "years": [
+    1700,
+    1798
+   ],
+   "geometry": {
+    "type": "difference",
+    "base": {
+     "type": "islands",
+     "points": [
+      [
+       142.5,
+       43.5
+      ]
+     ],
+     "names": [
+      "Hokkaido"
+     ]
+    },
+    "minus": [
+     {
+      "type": "record",
+      "pid": "clio:tokugawa-shogunate",
+      "year": 1700
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:ainu-mosir",
+    "name": "Ainu Mosir",
+    "altNames": [
+     "Ezochi",
+     "Ezo",
+     "Ainu lands"
+    ],
+    "kind": "indigenous",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "Ezo"
+   },
+   "reason": "Hokkaido (Ezo, Ezochi) was the land of the Ainu; the Japanese Matsumae domain held only the Wajinchi at the southern tip of the Oshima peninsula (the Tokugawa footprint in the data) and trading posts on the coasts, while the shogunate put East Ezo under its direct rule in 1799-1821 (the shogunate footprint of Cliopatria in those years) and took over control of most of Ezochi from 1855; Japan annexed the island and renamed it Hokkaido in 1869. Cliopatria leaves the rest of the Ainu lands unclaimed. Before 1799 no state claimed the Ainu lands: tier 0 indigenous extent (the island minus the Matsumae lands).",
+   "sources": [
+    {
+     "title": "Wikipedia: Ezo",
+     "url": "https://en.wikipedia.org/wiki/Ezo"
+    },
+    {
+     "title": "Wikipedia: Matsumae Domain",
+     "url": "https://en.wikipedia.org/wiki/Matsumae_Domain"
+    },
+    {
+     "title": "Wikipedia: Ainu people",
+     "url": "https://en.wikipedia.org/wiki/Ainu_people"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0021",
+   "op": "add",
+   "years": [
+    1799,
+    1821
+   ],
+   "geometry": {
+    "type": "difference",
+    "base": {
+     "type": "islands",
+     "points": [
+      [
+       142.5,
+       43.5
+      ]
+     ],
+     "names": [
+      "Hokkaido"
+     ]
+    },
+    "minus": [
+     {
+      "type": "record",
+      "pid": "clio:tokugawa-shogunate",
+      "year": 1800
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:ainu-mosir",
+    "name": "Ainu Mosir",
+    "altNames": [
+     "Ezochi",
+     "Ezo",
+     "Ainu lands"
+    ],
+    "kind": "indigenous",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "Ezo"
+   },
+   "reason": "Hokkaido (Ezo, Ezochi) was the land of the Ainu; the Japanese Matsumae domain held only the Wajinchi at the southern tip of the Oshima peninsula (the Tokugawa footprint in the data) and trading posts on the coasts, while the shogunate put East Ezo under its direct rule in 1799-1821 (the shogunate footprint of Cliopatria in those years) and took over control of most of Ezochi from 1855; Japan annexed the island and renamed it Hokkaido in 1869. Cliopatria leaves the rest of the Ainu lands unclaimed. 1799-1821: outside East Ezo and the Wajinchi no state claimed the island: tier 0 indigenous extent.",
+   "sources": [
+    {
+     "title": "Wikipedia: Ezo",
+     "url": "https://en.wikipedia.org/wiki/Ezo"
+    },
+    {
+     "title": "Wikipedia: Matsumae Domain",
+     "url": "https://en.wikipedia.org/wiki/Matsumae_Domain"
+    },
+    {
+     "title": "Wikipedia: Ainu people",
+     "url": "https://en.wikipedia.org/wiki/Ainu_people"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0022",
+   "op": "add",
+   "years": [
+    1799,
+    1821
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "difference",
+      "base": {
+       "type": "islands",
+       "points": [
+        [
+         142.5,
+         43.5
+        ]
+       ],
+       "names": [
+        "Hokkaido"
+       ]
+      },
+      "minus": [
+       {
+        "type": "record",
+        "pid": "clio:tokugawa-shogunate",
+        "year": 1700
+       }
+      ]
+     },
+     {
+      "type": "record",
+      "pid": "clio:tokugawa-shogunate",
+      "year": 1800
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:ainu-mosir",
+    "name": "Ainu Mosir",
+    "altNames": [
+     "Ezochi",
+     "Ezo",
+     "Ainu lands"
+    ],
+    "kind": "indigenous",
+    "tier": 1,
+    "precision": "approximate",
+    "wikipedia": "Ezo"
+   },
+   "reason": "Hokkaido (Ezo, Ezochi) was the land of the Ainu; the Japanese Matsumae domain held only the Wajinchi at the southern tip of the Oshima peninsula (the Tokugawa footprint in the data) and trading posts on the coasts, while the shogunate put East Ezo under its direct rule in 1799-1821 (the shogunate footprint of Cliopatria in those years) and took over control of most of Ezochi from 1855; Japan annexed the island and renamed it Hokkaido in 1869. Cliopatria leaves the rest of the Ainu lands unclaimed. 1799-1821: Ainu lands of East Ezo inside the shogunate's direct-rule claim (tier-1 overlay).",
+   "sources": [
+    {
+     "title": "Wikipedia: Ezo",
+     "url": "https://en.wikipedia.org/wiki/Ezo"
+    },
+    {
+     "title": "Wikipedia: Matsumae Domain",
+     "url": "https://en.wikipedia.org/wiki/Matsumae_Domain"
+    },
+    {
+     "title": "Wikipedia: Ainu people",
+     "url": "https://en.wikipedia.org/wiki/Ainu_people"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0023",
+   "op": "add",
+   "years": [
+    1822,
+    1855
+   ],
+   "geometry": {
+    "type": "difference",
+    "base": {
+     "type": "islands",
+     "points": [
+      [
+       142.5,
+       43.5
+      ]
+     ],
+     "names": [
+      "Hokkaido"
+     ]
+    },
+    "minus": [
+     {
+      "type": "record",
+      "pid": "clio:tokugawa-shogunate",
+      "year": 1700
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:ainu-mosir",
+    "name": "Ainu Mosir",
+    "altNames": [
+     "Ezochi",
+     "Ezo",
+     "Ainu lands"
+    ],
+    "kind": "indigenous",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "Ezo"
+   },
+   "reason": "Hokkaido (Ezo, Ezochi) was the land of the Ainu; the Japanese Matsumae domain held only the Wajinchi at the southern tip of the Oshima peninsula (the Tokugawa footprint in the data) and trading posts on the coasts, while the shogunate put East Ezo under its direct rule in 1799-1821 (the shogunate footprint of Cliopatria in those years) and took over control of most of Ezochi from 1855; Japan annexed the island and renamed it Hokkaido in 1869. Cliopatria leaves the rest of the Ainu lands unclaimed. 1822-1855: Ezochi returned to the Matsumae domain, whose control remained limited to the Wajinchi and coastal posts: tier 0 indigenous extent (Cliopatria's shogunate claim begins in 1856).",
+   "sources": [
+    {
+     "title": "Wikipedia: Ezo",
+     "url": "https://en.wikipedia.org/wiki/Ezo"
+    },
+    {
+     "title": "Wikipedia: Matsumae Domain",
+     "url": "https://en.wikipedia.org/wiki/Matsumae_Domain"
+    },
+    {
+     "title": "Wikipedia: Ainu people",
+     "url": "https://en.wikipedia.org/wiki/Ainu_people"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0024",
+   "op": "add",
+   "years": [
+    1856,
+    1868
+   ],
+   "geometry": {
+    "type": "difference",
+    "base": {
+     "type": "islands",
+     "points": [
+      [
+       142.5,
+       43.5
+      ]
+     ],
+     "names": [
+      "Hokkaido"
+     ]
+    },
+    "minus": [
+     {
+      "type": "record",
+      "pid": "clio:tokugawa-shogunate",
+      "year": 1700
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:ainu-mosir",
+    "name": "Ainu Mosir",
+    "altNames": [
+     "Ezochi",
+     "Ezo",
+     "Ainu lands"
+    ],
+    "kind": "indigenous",
+    "tier": 1,
+    "precision": "approximate",
+    "wikipedia": "Ezo"
+   },
+   "reason": "Hokkaido (Ezo, Ezochi) was the land of the Ainu; the Japanese Matsumae domain held only the Wajinchi at the southern tip of the Oshima peninsula (the Tokugawa footprint in the data) and trading posts on the coasts, while the shogunate put East Ezo under its direct rule in 1799-1821 (the shogunate footprint of Cliopatria in those years) and took over control of most of Ezochi from 1855; Japan annexed the island and renamed it Hokkaido in 1869. Cliopatria leaves the rest of the Ainu lands unclaimed. 1856-1868: Ainu lands inside the shogunate's direct-rule claim (tier-1 overlay) until the Meiji annexation of 1869.",
+   "sources": [
+    {
+     "title": "Wikipedia: Ezo",
+     "url": "https://en.wikipedia.org/wiki/Ezo"
+    },
+    {
+     "title": "Wikipedia: Matsumae Domain",
+     "url": "https://en.wikipedia.org/wiki/Matsumae_Domain"
+    },
+    {
+     "title": "Wikipedia: Ainu people",
+     "url": "https://en.wikipedia.org/wiki/Ainu_people"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0025",
+   "op": "assign",
+   "years": [
+    1870,
+    1910
+   ],
+   "target": {
+    "pid": "clio:british-colonial-empire"
+   },
+   "geometry": {
+    "type": "admin1",
+    "codes": [
+     "CA-YT",
+     "CA-NT",
+     "CA-NU",
+     "CA-BC",
+     "CA-AB",
+     "CA-SK",
+     "CA-MB",
+     "CA-ON",
+     "CA-QC"
+    ]
+   },
+   "reason": "Rupert's Land and the North-Western Territory were transferred to Canada on 15 July 1870 and the British Arctic islands on 1 September 1880; Cliopatria leaves most of the Canadian north (mainland and Arctic islands) unclaimed until 1910 and draws Canada as part of the British colonial empire until 1931. The present-day provinces and territories from British Columbia to Quebec (Newfoundland and Labrador excluded: a separate colony) are assigned to that polity; the islands before 1880 were British claims, which the same pid represents.",
+   "sources": [
+    {
+     "title": "Wikipedia: Rupert's Land",
+     "url": "https://en.wikipedia.org/wiki/Rupert%27s_Land"
+    },
+    {
+     "title": "Wikipedia: North-Western Territory",
+     "url": "https://en.wikipedia.org/wiki/North-Western_Territory"
+    },
+    {
+     "title": "Wikipedia: Territorial evolution of Canada",
+     "url": "https://en.wikipedia.org/wiki/Territorial_evolution_of_Canada"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0026",
+   "op": "note",
+   "status": "known-gap",
+   "years": [
+    1700,
+    1869
+   ],
+   "reason": "Rupert's Land (Hudson's Bay Company charter of 1670, the Hudson Bay drainage basin) and the North-Western Territory are British claims that Cliopatria draws only partly before 1870 (much of the interior, e.g. present-day Saskatchewan until 1879, is unclaimed). Not redrawn here: the HBC territory boundary needs a sourced drainage-basin polygon; the indigenous nations there are covered by northern-america-indigenous.json where sources allow.",
+   "sources": [
+    {
+     "title": "Wikipedia: Rupert's Land",
+     "url": "https://en.wikipedia.org/wiki/Rupert%27s_Land"
+    }
+   ],
+   "confidence": "medium",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0027",
+   "op": "assign",
+   "years": [
+    1806,
+    1867
+   ],
+   "target": {
+    "pid": "clio:british-cape-colony"
+   },
+   "geometry": {
+    "type": "record",
+    "pid": "clio:napoleonic-batavia-republic",
+    "year": 1850
+   },
+   "reason": "Cliopatria keeps a \"Napoleonic Batavia Republic\" record over the western Cape until 1867. The Batavian Republic held the Cape only from 1803 until the British victory at Blaauwberg (January 1806); the colony was formally ceded to Britain by the Anglo-Dutch Treaty of 1814 and stayed British (Cape Colony). Its area goes to the British Cape Colony record.",
+   "sources": [
+    {
+     "title": "Wikipedia: Battle of Blaauwberg",
+     "url": "https://en.wikipedia.org/wiki/Battle_of_Blaauwberg"
+    },
+    {
+     "title": "Wikipedia: Cape Colony",
+     "url": "https://en.wikipedia.org/wiki/Cape_Colony"
+    },
+    {
+     "title": "Wikipedia: Anglo-Dutch Treaty of 1814",
+     "url": "https://en.wikipedia.org/wiki/Anglo-Dutch_Treaty_of_1814"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0028",
+   "op": "add",
+   "years": [
+    1795,
+    1796
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "record",
+      "pid": "clio:freetown-colony",
+      "year": 1796
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         10,
+         -36
+        ],
+        [
+         35,
+         -36
+        ],
+        [
+         35,
+         -20
+        ],
+        [
+         10,
+         -20
+        ],
+        [
+         10,
+         -36
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "clio:british-cape-colony",
+    "name": "British Cape Colony",
+    "kind": "dependency",
+    "power": "clio:kingdom-of-great-britain",
+    "tier": 0,
+    "precision": "approximate",
+    "wikidata": "Q370736"
+   },
+   "reason": "Britain occupied the Cape in September 1795 (Battle of Muizenberg); Cliopatria keeps the Dutch Cape record in 1795 and in 1796 labels the Cape \"Freetown Colony\" (the name of the Sierra Leone settlement, which shares that record). The Cape part of the 1796 record becomes the British Cape Colony for 1795-1796.",
+   "sources": [
+    {
+     "title": "Wikipedia: Invasion of the Cape Colony",
+     "url": "https://en.wikipedia.org/wiki/Invasion_of_the_Cape_Colony"
+    },
+    {
+     "title": "Wikipedia: Cape Colony",
+     "url": "https://en.wikipedia.org/wiki/Cape_Colony"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0029",
+   "op": "add",
+   "years": [
+    1797,
+    1819
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "record",
+      "pid": "clio:british-cape-colony",
+      "year": 1811
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         -14,
+         6
+        ],
+        [
+         -10,
+         6
+        ],
+        [
+         -10,
+         11
+        ],
+        [
+         -14,
+         11
+        ],
+        [
+         -14,
+         6
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:sierra-leone-colony",
+    "name": "Sierra Leone Colony",
+    "kind": "dependency",
+    "power": "clio:kingdom-of-great-britain",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "Sierra Leone Colony and Protectorate"
+   },
+   "reason": "Cliopatria's \"British Cape Colony\" record also contains the British settlement in Sierra Leone (Freetown peninsula, later the coastal colony): the Sierra Leone Company's colony from 1792, a Crown colony from 1 January 1808. That part is split off as its own dependency (same footprint).",
+   "sources": [
+    {
+     "title": "Wikipedia: Sierra Leone Colony and Protectorate",
+     "url": "https://en.wikipedia.org/wiki/Sierra_Leone_Colony_and_Protectorate"
+    },
+    {
+     "title": "Wikipedia: Sierra Leone Company",
+     "url": "https://en.wikipedia.org/wiki/Sierra_Leone_Company"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0030",
+   "op": "add",
+   "years": [
+    1820,
+    1827
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "record",
+      "pid": "clio:british-cape-colony",
+      "year": 1825
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         -14,
+         6
+        ],
+        [
+         -10,
+         6
+        ],
+        [
+         -10,
+         11
+        ],
+        [
+         -14,
+         11
+        ],
+        [
+         -14,
+         6
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:sierra-leone-colony",
+    "name": "Sierra Leone Colony",
+    "kind": "dependency",
+    "power": "clio:kingdom-of-great-britain",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "Sierra Leone Colony and Protectorate"
+   },
+   "reason": "Cliopatria's \"British Cape Colony\" record also contains the British settlement in Sierra Leone (Freetown peninsula, later the coastal colony): the Sierra Leone Company's colony from 1792, a Crown colony from 1 January 1808. That part is split off as its own dependency (same footprint).",
+   "sources": [
+    {
+     "title": "Wikipedia: Sierra Leone Colony and Protectorate",
+     "url": "https://en.wikipedia.org/wiki/Sierra_Leone_Colony_and_Protectorate"
+    },
+    {
+     "title": "Wikipedia: Sierra Leone Company",
+     "url": "https://en.wikipedia.org/wiki/Sierra_Leone_Company"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0031",
+   "op": "add",
+   "years": [
+    1828,
+    1884
+   ],
+   "geometry": {
+    "type": "intersection",
+    "parts": [
+     {
+      "type": "record",
+      "pid": "clio:british-cape-colony",
+      "year": 1850
+     },
+     {
+      "type": "polygon",
+      "rings": [
+       [
+        [
+         -14,
+         6
+        ],
+        [
+         -10,
+         6
+        ],
+        [
+         -10,
+         11
+        ],
+        [
+         -14,
+         11
+        ],
+        [
+         -14,
+         6
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "set": {
+    "pid": "ovr:sierra-leone-colony",
+    "name": "Sierra Leone Colony",
+    "kind": "dependency",
+    "power": "clio:kingdom-of-great-britain",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "Sierra Leone Colony and Protectorate"
+   },
+   "reason": "Cliopatria's \"British Cape Colony\" record also contains the British settlement in Sierra Leone (Freetown peninsula, later the coastal colony): the Sierra Leone Company's colony from 1792, a Crown colony from 1 January 1808. That part is split off as its own dependency (same footprint).",
+   "sources": [
+    {
+     "title": "Wikipedia: Sierra Leone Colony and Protectorate",
+     "url": "https://en.wikipedia.org/wiki/Sierra_Leone_Colony_and_Protectorate"
+    },
+    {
+     "title": "Wikipedia: Sierra Leone Company",
+     "url": "https://en.wikipedia.org/wiki/Sierra_Leone_Company"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0032",
+   "op": "update",
+   "years": [
+    1832,
+    1923
+   ],
+   "target": {
+    "pid": "clio:first-hellenic-republic"
+   },
+   "set": {
+    "name": "Kingdom of Greece",
+    "wikidata": "Q209065",
+    "wikipedia": "Kingdom of Greece"
+   },
+   "reason": "Cliopatria names Greece \"First Hellenic Republic\" until 1940 (e.g. 1913-1915). The First Hellenic Republic was the revolutionary state of 1822-1832; the London Conference made Greece a kingdom in 1832 (Otto), and it stayed one until the republic of March 1924.",
+   "sources": [
+    {
+     "title": "Wikipedia: Kingdom of Greece",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Greece"
+    },
+    {
+     "title": "Wikipedia: Second Hellenic Republic",
+     "url": "https://en.wikipedia.org/wiki/Second_Hellenic_Republic"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0033",
+   "op": "update",
+   "years": [
+    1924,
+    1934
+   ],
+   "target": {
+    "pid": "clio:first-hellenic-republic"
+   },
+   "set": {
+    "name": "Second Hellenic Republic",
+    "wikipedia": "Second Hellenic Republic"
+   },
+   "reason": "The Second Hellenic Republic was proclaimed on 25 March 1924 and ended with the restoration of the monarchy in November 1935.",
+   "sources": [
+    {
+     "title": "Wikipedia: Kingdom of Greece",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Greece"
+    },
+    {
+     "title": "Wikipedia: Second Hellenic Republic",
+     "url": "https://en.wikipedia.org/wiki/Second_Hellenic_Republic"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0034",
+   "op": "update",
+   "years": [
+    1935,
+    1940
+   ],
+   "target": {
+    "pid": "clio:first-hellenic-republic"
+   },
+   "set": {
+    "name": "Kingdom of Greece",
+    "wikidata": "Q209065",
+    "wikipedia": "Kingdom of Greece"
+   },
+   "reason": "Monarchy restored in November 1935 (King George II); Kingdom of Greece until the Axis occupation of 1941 (the data then shows the occupying powers).",
+   "sources": [
+    {
+     "title": "Wikipedia: Kingdom of Greece",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Greece"
+    },
+    {
+     "title": "Wikipedia: Second Hellenic Republic",
+     "url": "https://en.wikipedia.org/wiki/Second_Hellenic_Republic"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0035",
+   "op": "update",
+   "years": [
+    1890,
+    1907
+   ],
+   "target": {
+    "pid": "clio:belgian-congo"
+   },
+   "set": {
+    "name": "Congo Free State",
+    "kind": "state",
+    "wikipedia": "Congo Free State"
+   },
+   "reason": "Before Belgium annexed it on 15 November 1908 the territory was the Congo Free State (1885-1908), a state ruled personally by King Leopold II, not the Belgian Congo. (Cliopatria starts the record only in 1890.)",
+   "sources": [
+    {
+     "title": "Wikipedia: Congo Free State",
+     "url": "https://en.wikipedia.org/wiki/Congo_Free_State"
+    },
+    {
+     "title": "Wikipedia: Belgian Congo",
+     "url": "https://en.wikipedia.org/wiki/Belgian_Congo"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0036",
+   "op": "update",
+   "years": [
+    1908,
+    1945
+   ],
+   "target": {
+    "pid": "clio:belgian-congo"
+   },
+   "set": {
+    "kind": "dependency",
+    "power": "clio:kingdom-of-belgium"
+   },
+   "reason": "The Belgian Congo (from 15 November 1908) was a colony of Belgium, not a sovereign state; it stayed under the Belgian government in exile during the German occupation of Belgium (1940-1944).",
+   "sources": [
+    {
+     "title": "Wikipedia: Belgian Congo",
+     "url": "https://en.wikipedia.org/wiki/Belgian_Congo"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0037",
+   "op": "update",
+   "years": [
+    1792,
+    1795
+   ],
+   "target": {
+    "pid": "clio:haiti"
+   },
+   "set": {
+    "name": "Saint-Domingue",
+    "kind": "dependency",
+    "power": "clio:french-first-republic",
+    "wikipedia": "Saint-Domingue"
+   },
+   "reason": "Cliopatria labels the western third of Hispaniola \"Haiti\" (a sovereign state) from 1792. It was the French colony of Saint-Domingue until Haiti declared independence on 1 January 1804 (Toussaint Louverture governed it for France from 1798; the French expedition of 1802-1803 was defeated in November 1803). Power: the French First Republic.",
+   "sources": [
+    {
+     "title": "Wikipedia: Saint-Domingue",
+     "url": "https://en.wikipedia.org/wiki/Saint-Domingue"
+    },
+    {
+     "title": "Wikipedia: Haitian Revolution",
+     "url": "https://en.wikipedia.org/wiki/Haitian_Revolution"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0038",
+   "op": "update",
+   "years": [
+    1796,
+    1799
+   ],
+   "target": {
+    "pid": "clio:haiti"
+   },
+   "set": {
+    "name": "Saint-Domingue",
+    "kind": "dependency",
+    "power": "clio:french-directory",
+    "wikipedia": "Saint-Domingue"
+   },
+   "reason": "Cliopatria labels the western third of Hispaniola \"Haiti\" (a sovereign state) from 1792. It was the French colony of Saint-Domingue until Haiti declared independence on 1 January 1804 (Toussaint Louverture governed it for France from 1798; the French expedition of 1802-1803 was defeated in November 1803). Power: the Directory.",
+   "sources": [
+    {
+     "title": "Wikipedia: Saint-Domingue",
+     "url": "https://en.wikipedia.org/wiki/Saint-Domingue"
+    },
+    {
+     "title": "Wikipedia: Haitian Revolution",
+     "url": "https://en.wikipedia.org/wiki/Haitian_Revolution"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0039",
+   "op": "update",
+   "years": [
+    1800,
+    1802
+   ],
+   "target": {
+    "pid": "clio:haiti"
+   },
+   "set": {
+    "name": "Saint-Domingue",
+    "kind": "dependency",
+    "power": "clio:french-consulate",
+    "wikipedia": "Saint-Domingue"
+   },
+   "reason": "Cliopatria labels the western third of Hispaniola \"Haiti\" (a sovereign state) from 1792. It was the French colony of Saint-Domingue until Haiti declared independence on 1 January 1804 (Toussaint Louverture governed it for France from 1798; the French expedition of 1802-1803 was defeated in November 1803). Power: the Consulate.",
+   "sources": [
+    {
+     "title": "Wikipedia: Saint-Domingue",
+     "url": "https://en.wikipedia.org/wiki/Saint-Domingue"
+    },
+    {
+     "title": "Wikipedia: Haitian Revolution",
+     "url": "https://en.wikipedia.org/wiki/Haitian_Revolution"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0040",
+   "op": "add",
+   "years": [
+    1803,
+    1803
+   ],
+   "geometry": {
+    "type": "record",
+    "pid": "clio:haiti",
+    "year": 1802
+   },
+   "set": {
+    "pid": "clio:haiti",
+    "name": "Saint-Domingue",
+    "kind": "dependency",
+    "power": "clio:french-consulate",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "Saint-Domingue"
+   },
+   "reason": "Cliopatria labels the western third of Hispaniola \"Haiti\" (a sovereign state) from 1792. It was the French colony of Saint-Domingue until Haiti declared independence on 1 January 1804 (Toussaint Louverture governed it for France from 1798; the French expedition of 1802-1803 was defeated in November 1803). In 1803 Cliopatria gives all of Hispaniola to \"French Louisiana\"; at the end of 1803 the west was still the colony of Saint-Domingue (independence followed on 1 January 1804).",
+   "sources": [
+    {
+     "title": "Wikipedia: Saint-Domingue",
+     "url": "https://en.wikipedia.org/wiki/Saint-Domingue"
+    },
+    {
+     "title": "Wikipedia: Haitian Revolution",
+     "url": "https://en.wikipedia.org/wiki/Haitian_Revolution"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0041",
+   "op": "add",
+   "years": [
+    1804,
+    1804
+   ],
+   "geometry": {
+    "type": "record",
+    "pid": "clio:empire-of-haiti",
+    "year": 1805
+   },
+   "set": {
+    "pid": "clio:empire-of-haiti",
+    "name": "Empire of Haiti",
+    "kind": "state",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "First Empire of Haiti"
+   },
+   "reason": "Haiti declared independence on 1 January 1804 and Dessalines was proclaimed emperor in September 1804; Cliopatria starts its Empire of Haiti record in 1805 and gives the west of Hispaniola to \"French Louisiana\" in 1804.",
+   "sources": [
+    {
+     "title": "Wikipedia: First Empire of Haiti",
+     "url": "https://en.wikipedia.org/wiki/First_Empire_of_Haiti"
+    },
+    {
+     "title": "Wikipedia: Haitian Revolution",
+     "url": "https://en.wikipedia.org/wiki/Haitian_Revolution"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0042",
+   "op": "add",
+   "years": [
+    1801,
+    1804
+   ],
+   "geometry": {
+    "type": "admin0",
+    "codes": [
+     "DOM"
+    ]
+   },
+   "set": {
+    "pid": "ovr:french-santo-domingo",
+    "name": "Santo Domingo",
+    "altNames": [
+     "French Santo Domingo"
+    ],
+    "kind": "dependency",
+    "power": "clio:french-consulate",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "Era de Francia"
+   },
+   "reason": "Spain ceded Santo Domingo (the east of Hispaniola) to France in the Peace of Basel (1795); Toussaint Louverture occupied it in January 1801 and French forces held it from 1802 until the Spanish reconquest of 1808-1809. Cliopatria shows it as Spanish until 1802, as \"French Louisiana\" in 1803-1804 and as the Portuguese Empire in 1805-1808. Extent: the present Dominican Republic (approximate colonial border).",
+   "sources": [
+    {
+     "title": "Wikipedia: Era de Francia",
+     "url": "https://en.wikipedia.org/wiki/Era_de_Francia"
+    },
+    {
+     "title": "Wikipedia: Peace of Basel",
+     "url": "https://en.wikipedia.org/wiki/Peace_of_Basel"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0043",
+   "op": "add",
+   "years": [
+    1805,
+    1808
+   ],
+   "geometry": {
+    "type": "admin0",
+    "codes": [
+     "DOM"
+    ]
+   },
+   "set": {
+    "pid": "ovr:french-santo-domingo",
+    "name": "Santo Domingo",
+    "altNames": [
+     "French Santo Domingo"
+    ],
+    "kind": "dependency",
+    "power": "clio:first-french-empire",
+    "tier": 0,
+    "precision": "approximate",
+    "wikipedia": "Era de Francia"
+   },
+   "reason": "Spain ceded Santo Domingo (the east of Hispaniola) to France in the Peace of Basel (1795); Toussaint Louverture occupied it in January 1801 and French forces held it from 1802 until the Spanish reconquest of 1808-1809. Cliopatria shows it as Spanish until 1802, as \"French Louisiana\" in 1803-1804 and as the Portuguese Empire in 1805-1808. Extent: the present Dominican Republic (approximate colonial border).",
+   "sources": [
+    {
+     "title": "Wikipedia: Era de Francia",
+     "url": "https://en.wikipedia.org/wiki/Era_de_Francia"
+    },
+    {
+     "title": "Wikipedia: España Boba",
+     "url": "https://en.wikipedia.org/wiki/Espa%C3%B1a_Boba"
+    }
+   ],
+   "confidence": "medium",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0044",
+   "op": "subtract",
+   "years": [
+    1700,
+    1717
+   ],
+   "target": {
+    "pid": "clio:republic-of-venice"
+   },
+   "geometry": {
+    "type": "polygon",
+    "rings": [
+     [
+      [
+       21.55,
+       38.32
+      ],
+      [
+       22.4,
+       38.32
+      ],
+      [
+       22.4,
+       38.62
+      ],
+      [
+       21.55,
+       38.62
+      ],
+      [
+       21.55,
+       38.32
+      ]
+     ]
+    ]
+   },
+   "reason": "Venice took Lepanto (Nafpaktos) on the north shore of the Gulf of Corinth in 1687 but returned it to the Ottomans under the Treaty of Karlowitz (1699); Cliopatria keeps a Venetian strip there until 1717, overlapping the Ottoman record. The strip north of the Rio-Antirrio strait is removed from Venice (Venetian Morea south of the gulf is unchanged).",
+   "sources": [
+    {
+     "title": "Wikipedia: Nafpaktos",
+     "url": "https://en.wikipedia.org/wiki/Nafpaktos"
+    },
+    {
+     "title": "Wikipedia: Treaty of Karlowitz",
+     "url": "https://en.wikipedia.org/wiki/Treaty_of_Karlowitz"
+    }
+   ],
+   "confidence": "high",
+   "status": "active",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  },
+  {
+   "id": "h-curated-fixes-0045",
+   "op": "note",
+   "status": "known-gap",
+   "years": [
+    1700,
+    1907
+   ],
+   "reason": "Sulawesi: Cliopatria has only the Dutch posts (Makassar, Manado) and leaves the interior unclaimed until the Dutch conquest of 1905-1908. The Bugis and Makassar kingdoms (Bone, Gowa-Tallo, Wajo, Luwu) and the highland peoples are missing; their extents need sourced geometry before they can be drawn.",
+   "sources": [
+    {
+     "title": "Wikipedia: Sulawesi",
+     "url": "https://en.wikipedia.org/wiki/Sulawesi"
+    },
+    {
+     "title": "Wikipedia: Sultanate of Gowa",
+     "url": "https://en.wikipedia.org/wiki/Sultanate_of_Gowa"
+    }
+   ],
+   "confidence": "medium",
+   "author": "agent:curated-fixes",
+   "date": "2026-10-02"
+  }
+ ]
+}

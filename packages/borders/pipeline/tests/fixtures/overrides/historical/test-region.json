@@ -1,0 +1,53 @@
+{
+  "kind": "historical",
+  "region": "test-region",
+  "scope": "Fixture for the catalog tests (shapes copied from the examples in packages/borders/AGENTS.md; not real data).",
+  "entries": [
+    {
+      "id": "h-test-region-0001",
+      "op": "add",
+      "years": [1794, 1838],
+      "geometry": { "type": "polygon", "rings": [[[-85.6, 35.0], [-83.1, 35.2], [-83.0, 34.0], [-85.5, 34.2], [-85.6, 35.0]]] },
+      "set": { "pid": "ovr:cherokee-nation", "name": "Cherokee Nation", "altNames": ["Tsalagi"], "kind": "indigenous", "tier": 1, "precision": "approximate" },
+      "reason": "Fixture: an indigenous overlay with a | pipe and\na newline in the reason.",
+      "sources": [{ "title": "Royce, Indian Land Cessions in the United States (1899)", "url": "https://www.loc.gov/item/13023487/" }],
+      "confidence": "medium", "status": "active", "author": "test", "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-region-0002",
+      "op": "update",
+      "years": [1700, 1763],
+      "target": { "pid": "clio:new-france" },
+      "set": { "name": "New France", "kind": "dependency" },
+      "reason": "Fixture: an update entry that renames a polity.",
+      "sources": [{ "title": "Royce, Indian Land Cessions in the United States (1899)", "url": "https://www.loc.gov/item/13023487/" }, { "title": "Wikipedia: New France", "url": "https://en.wikipedia.org/wiki/New_France" }],
+      "confidence": "high", "status": "proposed", "author": "test", "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-region-0003",
+      "op": "assign",
+      "years": [1815, 1945],
+      "target": { "pid": "clio:kingdom-of-great-britain" },
+      "geometry": { "type": "islands", "points": [[-2.13, 49.21]], "names": ["Jersey"] },
+      "reason": "Fixture: an island assignment entry.",
+      "sources": [{ "title": "Wikipedia: Jersey", "url": "https://en.wikipedia.org/wiki/Jersey" }],
+      "confidence": "high", "status": "active", "author": "test", "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-region-0004",
+      "op": "note",
+      "years": [1700, 1945],
+      "reason": "Fixture: a known gap that cannot be drawn yet.",
+      "confidence": "low", "status": "known-gap", "author": "test", "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-region-0005",
+      "op": "delete",
+      "years": [1900, 1910],
+      "target": { "pid": "clio:ghost-colony" },
+      "reason": "Fixture: a rejected delete kept for the record.",
+      "sources": [{ "title": "Wikipedia: Ghost", "url": "https://en.wikipedia.org/wiki/Ghost" }],
+      "confidence": "low", "status": "rejected", "author": "test", "date": "2026-10-01"
+    }
+  ]
+}

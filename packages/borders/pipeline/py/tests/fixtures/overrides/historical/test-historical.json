@@ -1,0 +1,106 @@
+{
+  "$schema": "../../../../../../overrides/schema.json",
+  "kind": "historical",
+  "region": "test-historical",
+  "scope": "TEST FIXTURE for pipeline/py/tests/test_overrides.py - not dataset content. Targets are real Cliopatria v0.2.0 pids so the dry run exercises real records.",
+  "entries": [
+    {
+      "id": "h-test-0001",
+      "op": "update",
+      "years": [1791, 1894],
+      "target": { "pid": "clio:kingdom-of-hawai-i" },
+      "set": { "name": "Kingdom of Hawaiʻi" },
+      "reason": "Fixture: rename every record of a real polity inside a range (spelling with the ʻokina).",
+      "sources": [{ "title": "Test fixture", "url": "https://example.org/fixture" }],
+      "confidence": "low",
+      "status": "active",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-0002",
+      "op": "assign",
+      "years": [1709, 1800],
+      "target": { "pid": "clio:kingdom-of-great-britain" },
+      "geometry": { "type": "islands", "points": [[-2.13, 49.21]], "names": ["Jersey"] },
+      "reason": "Fixture: give a whole island (Natural Earth land part) to a polity alive for the whole range.",
+      "sources": [{ "title": "Test fixture", "url": "https://example.org/fixture" }],
+      "confidence": "low",
+      "status": "active",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-0003",
+      "op": "add",
+      "years": [1820, 1830],
+      "geometry": { "type": "admin0", "codes": ["TON"] },
+      "set": { "pid": "ovr:fixture-proposed", "name": "Fixture proposed polity", "kind": "state" },
+      "reason": "Fixture: a proposed entry is documented but never applied.",
+      "confidence": "low",
+      "status": "proposed",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-0004",
+      "op": "delete",
+      "years": [1800, 1810],
+      "target": { "pid": "clio:kingdom-of-great-britain" },
+      "reason": "Fixture: a rejected entry is kept for the record and never applied.",
+      "confidence": "low",
+      "status": "rejected",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-0005",
+      "op": "subtract",
+      "years": [1800, 1810],
+      "target": { "pid": "clio:fixture-missing-polity" },
+      "geometry": { "type": "admin0", "codes": ["TON"] },
+      "reason": "Fixture: a target that does not exist is reported stale, not applied.",
+      "sources": [{ "title": "Test fixture", "url": "https://example.org/fixture" }],
+      "confidence": "low",
+      "status": "active",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-0006",
+      "op": "note",
+      "years": [1700, 1945],
+      "reason": "Fixture: an active note documents an editorial decision and changes nothing.",
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-0007",
+      "op": "add",
+      "years": [1800, 1850],
+      "geometry": { "type": "polygon", "rings": [[[-90.0, 35.0], [-85.0, 35.0], [-85.0, 38.0], [-90.0, 38.0], [-90.0, 35.0]]] },
+      "set": { "pid": "ovr:fixture-indigenous-nation", "name": "Fixture indigenous nation", "kind": "indigenous" },
+      "reason": "Fixture: an indigenous add defaults to a tier-1 overlay with approximate precision and carves nothing.",
+      "sources": [{ "title": "Test fixture", "url": "https://example.org/fixture" }],
+      "confidence": "low",
+      "status": "active",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "h-test-0008",
+      "op": "add",
+      "years": [1900, 1910],
+      "geometry": { "type": "admin1", "codes": ["XX-NOPE"] },
+      "set": { "pid": "ovr:fixture-bad-code", "name": "Fixture with a bad code", "kind": "state" },
+      "reason": "Fixture: an unknown admin-1 code is an error that the dry run reports.",
+      "sources": [{ "title": "Test fixture", "url": "https://example.org/fixture" }],
+      "confidence": "low",
+      "status": "active",
+      "author": "agent:pg2-tests",
+      "date": "2026-10-01"
+    }
+  ]
+}

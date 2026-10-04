@@ -1,0 +1,2263 @@
+{
+  "$schema": "../schema.json",
+  "kind": "modern",
+  "region": "north-central-america",
+  "scope": "Modern unit timelines 1946–present for the Natural Earth admin-0 units of the audit regions northern-america and central-america: BLZ, CLP, CRI, GTM, HND, MEX, NIC, PAN, SLV (central-america) and BMU, CAN, GRL, SPM, USA (northern-america). Every unit was checked for decolonisation, renames, transfers, occupations and claims since 1945, and NE footprints were compared with the history (island ownership, the NIC/CRI line, Hans Island, Swan Islands, Sapodilla Cayes, uncovered minor islands). Tier-1 overlays: Guatemalan claim to Belize, Sapodilla Cayes, Swan Islands, Gulf of Fonseca islands (El Tigre, Meanguera; 1980–1991), Hans Island; indigenous comarcas of Panama. Note entries record editorial decisions, sub-granularity events and known gaps (Nicaraguan administration north of the Coco to 1961, El Salvador–Honduras bolsones, islands NE leaves outside admin-0, US reservations, Canadian, Central American and Mexican indigenous lands). Audited 2026-10-01 by agent:audit-modern-north-central-america; analysis scripts in .cache/audit/audit-modern-north-central-america.",
+  "units": [
+    {
+      "unit": "BLZ",
+      "label": "Belize (British Honduras)",
+      "timeline": [
+        {
+          "years": [1946, 1972],
+          "state": {
+            "pid": "ovr:british-honduras",
+            "name": "British Honduras",
+            "kind": "dependency",
+            "power": "ne:gbr",
+            "subjecto": "United Kingdom",
+            "partof": "British Empire",
+            "wikidata": "Q1643555",
+            "wikipedia": "British Honduras",
+            "note": "British crown colony; internal self-government from 1 January 1964. Claimed in full by Guatemala, whose 1945 constitution called it the twenty-third department of Guatemala."
+          }
+        },
+        {
+          "years": [1973, 1980],
+          "state": {
+            "pid": "ovr:british-honduras",
+            "name": "Belize",
+            "altNames": ["British Honduras"],
+            "kind": "dependency",
+            "power": "ne:gbr",
+            "subjecto": "United Kingdom",
+            "partof": "British Empire",
+            "wikidata": "Q1643555",
+            "wikipedia": "British Honduras",
+            "note": "The self-governing colony of British Honduras was renamed Belize on 1 June 1973; it remained a British colony until independence on 21 September 1981."
+          }
+        },
+        {
+          "years": [1981, "present"],
+          "state": {
+            "pid": "ne:blz",
+            "name": "Belize",
+            "kind": "state",
+            "wikidata": "Q242",
+            "wikipedia": "Belize",
+            "note": "Independent since 21 September 1981. Guatemala recognised Belize in 1991 but keeps a territorial claim, before the International Court of Justice since 2019."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "British Honduras (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/British_Honduras",
+          "note": "self-government 1 January 1964; renamed Belize 1 June 1973; independence 21 September 1981; 1945 Guatemalan constitution"
+        },
+        {
+          "title": "Belizean–Guatemalan territorial dispute (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Belizean%E2%80%93Guatemalan_territorial_dispute",
+          "note": "1999 Sibun–Sarstoon claim of 12,272 km2 (~53%); 1991 recognition; 2000 adjacency zone; 2008 Special Agreement; referendums 2018/2019"
+        },
+        {
+          "title": "Note on Belize/Guatemala Dispute (from U.S. State Department website and ASIL ILIB), IILJ",
+          "url": "https://iilj.org/wp-content/uploads/2016/08/Note-on-Belize-Guatemala-Dispute.pdf"
+        },
+        {
+          "title": "ICJ, Guatemala's Territorial, Insular and Maritime Claim (Guatemala/Belize), case 177",
+          "url": "https://www.icj-cij.org/case/177",
+          "note": "Special Agreement 8 December 2008; Court seised June 2019; no judgment"
+        }
+      ],
+      "notes": "Natural Earth's BLZ footprint (22,299 km2: mainland and cays, 10 parts) is the 1946–present territory; no land changed hands. Guatemala's claim is drawn as the tier-1 overlays m-north-central-america-guatemala-claim-belize (whole territory, 1946–1998) and m-north-central-america-guatemala-claim-sibun-sarstoon (NE disputed area B51, from 1999). The Sapodilla Cayes (NE B80) and the outer atolls (Lighthouse Reef, Glover's Reef) lie outside NE's BLZ polygon: see m-north-central-america-0013.",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "CLP",
+      "label": "Clipperton Island",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:clp",
+            "name": "Clipperton Island",
+            "altNames": ["Île de Clipperton", "Île de la Passion"],
+            "kind": "dependency",
+            "power": "ne:fra",
+            "subjecto": "France",
+            "wikidata": "Q161258",
+            "wikipedia": "Clipperton Island",
+            "note": "French possession by the arbitral award of King Victor Emmanuel III (1931), accepted by Mexico (constitution amended 18 January 1934). Administered by the High Commissioner in French Polynesia until 21 February 2007, then directly by the Minister of Overseas France. Uninhabited since the last US Navy weather-station staff left on 21 October 1945."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Clipperton Island (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Clipperton_Island",
+          "note": "1931 award; Mexican constitution amended 1934; US Navy left 21 October 1945; transferred to the Minister of Overseas France 21 February 2007"
+        }
+      ],
+      "notes": "No change 1946–present: the US wartime station (December 1944 – October 1945) ended before the modern layer starts; no dispute after 1934.",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "CRI",
+      "label": "Costa Rica",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:cri",
+            "name": "Costa Rica",
+            "kind": "state",
+            "wikidata": "Q800",
+            "wikipedia": "Costa Rica"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Costa Rica (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Costa_Rica"
+        },
+        {
+          "title": "Isla Calero (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Isla_Calero"
+        },
+        {
+          "title": "ICJ, Land Boundary in the Northern Part of Isla Portillos (Costa Rica v. Nicaragua), Judgment of 2 February 2018 (case 165)",
+          "url": "https://www.icj-cij.org/case/165"
+        }
+      ],
+      "notes": "No change of land control at any year end since 1946 (the 1948 civil war and the invasion from Nicaragua in 1955 changed no border). Natural Earth's line with Nicaragua already follows the ICJ judgments of 16 December 2015 and 2 February 2018 (Harbor Head Lagoon and its sandbar are a separate Nicaraguan part); the ~3 km2 occupied by Nicaraguan troops on Isla Portillos from late 2010 is below the dataset's granularity (m-north-central-america-0006). Cocos Island is inside NE's CRI polygon.",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "GTM",
+      "label": "Guatemala",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:gtm",
+            "name": "Guatemala",
+            "kind": "state",
+            "wikidata": "Q774",
+            "wikipedia": "Guatemala"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Guatemala (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Guatemala"
+        },
+        {
+          "title": "Belizean–Guatemalan territorial dispute (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Belizean%E2%80%93Guatemalan_territorial_dispute",
+          "note": "1999 Sibun–Sarstoon claim of 12,272 km2 (~53%); 1991 recognition; 2000 adjacency zone; 2008 Special Agreement; referendums 2018/2019"
+        }
+      ],
+      "notes": "No change of land control since 1946 (the 1954 coup and the 1960–1996 civil war were internal). Guatemala's claim to Belize is drawn as tier-1 overlays on the BLZ unit.",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "HND",
+      "label": "Honduras",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:hnd",
+            "name": "Honduras",
+            "kind": "state",
+            "wikidata": "Q783",
+            "wikipedia": "Honduras"
+          }
+        }
+      ],
+      "subunits": [
+        {
+          "id": "m-north-central-america-swan-islands",
+          "label": "Swan Islands (Great Swan Island; Islas del Cisne / Islas Santanilla)",
+          "geometry": {
+            "type": "islands",
+            "points": [
+              [-83.9273, 17.4133]
+            ],
+            "names": ["Great Swan Island"]
+          },
+          "timeline": [
+            {
+              "years": [1946, 1971],
+              "state": {
+                "pid": "ne:usa",
+                "name": "United States",
+                "kind": "state",
+                "wikidata": "Q30",
+                "wikipedia": "United States",
+                "note": "US possession claimed under the Guano Islands Act; US Weather Bureau hurricane station (from 1938), CIA-run Radio Swan in the early 1960s. Honduras claimed the islands. The United States recognised Honduran sovereignty in the Treaty on the Swan Islands (San Pedro Sula, 22 November 1971); Honduran title took effect on 1 September 1972."
+              },
+              "sources": [
+                {
+                  "title": "Swan Islands, Honduras (Wikipedia)",
+                  "url": "https://en.wikipedia.org/wiki/Swan_Islands,_Honduras",
+                  "note": "US Weather Bureau station from 1938, Radio Swan 1960s; treaty signed 22 November 1971, Honduran title effective 1 September 1972"
+                },
+                {
+                  "title": "Treaty on the Swan Islands, United States–Honduras, signed at San Pedro Sula 22 November 1971 (UN Treaty Series vol. 851, No. 12199)",
+                  "url": "https://treaties.un.org/doc/Publication/UNTS/Volume%20851/volume-851-I-12199-English.pdf"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Honduras (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Honduras"
+        },
+        {
+          "title": "Swan Islands, Honduras (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Swan_Islands,_Honduras",
+          "note": "US Weather Bureau station from 1938, Radio Swan 1960s; treaty signed 22 November 1971, Honduran title effective 1 September 1972"
+        },
+        {
+          "title": "Treaty on the Swan Islands, United States–Honduras, signed at San Pedro Sula 22 November 1971 (UN Treaty Series vol. 851, No. 12199)",
+          "url": "https://treaties.un.org/doc/Publication/UNTS/Volume%20851/volume-851-I-12199-English.pdf"
+        },
+        {
+          "title": "U.S. Department of State, International Boundary Study No. 36: Honduras – Nicaragua Boundary (12 October 1964)",
+          "url": "https://library.law.fsu.edu/Digital-Collections/LimitsinSeas/pdf/ibs036.pdf",
+          "note": "1961 Basis of Arrangement: evacuation by Nicaraguan authorities of approximately 8,700 km2 and its transfer to Honduran administration"
+        },
+        {
+          "title": "Nicaragua v. Honduras (ICJ case 120), Memorial of Nicaragua (2001), ch. III",
+          "url": "https://icj-web.leman.un-icc.cloud/sites/default/files/case-related/120/13719.pdf",
+          "note": "Cape Gracias a Dios and Teotecacinte under Nicaraguan control until 1961; withdrawal from more than 8,000 km2 by May 1961"
+        },
+        {
+          "title": "Football War (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Football_War",
+          "note": "war 14 July 1969; ceasefire 18 July; Salvadoran withdrawal 2 August 1969; 1980 Lima peace treaty; 1992 ICJ"
+        },
+        {
+          "title": "ICJ, Land, Island and Maritime Frontier Dispute (El Salvador/Honduras: Nicaragua intervening), Judgment of 11 September 1992 (case 75)",
+          "url": "https://www.icj-cij.org/case/75",
+          "note": "case overview: Special Agreement filed 11 December 1986; Honduras had occupied El Tigre since 1849 and the Chamber rejected its argument denying a real dispute over the island; Meanguera and Meanguerita Salvadoran, Honduras's 1991 protest 'too late to affect the presumption of acquiescence'"
+        },
+        {
+          "title": "ICJ, summary of the Judgment of 11 September 1992 (El Salvador/Honduras: Nicaragua intervening)",
+          "url": "https://www.icj-cij.org/node/103148",
+          "note": "El Salvador, by a diplomatic note of 12 October 1854, made a clear claim to the islands of Meanguera and Meanguerita"
+        },
+        {
+          "title": "ICJ, Territorial and Maritime Dispute between Nicaragua and Honduras in the Caribbean Sea, summary of the Judgment of 8 October 2007",
+          "url": "https://www.icj-cij.org/node/103900"
+        }
+      ],
+      "notes": "Natural Earth's HND footprint is the post-1961 / post-1992 territory. (1) Great Swan Island (1.7 km2, inside NE's HND polygon) was held by the United States until the 1971 treaty came into force in 1972 (subunit; disputed overlay m-north-central-america-swan-islands). Little Swan Island (0.49 km2) is not in NE's HND polygon; the coast step gives it to the holder of Great Swan, 2.8 km away. (2) About 8,700 km2 north of the Coco River (today's Gracias a Dios) stayed under Nicaraguan administration until 1961; its line is not described by any source found, so it is not drawn (m-north-central-america-0002). (3) The 'bolsones' disputed with El Salvador until the ICJ judgment of 11 September 1992 are not drawn (m-north-central-america-0003). El Tigre (Honduras) and Meanguera/Meanguerita (El Salvador) are already on the right sides in NE; their 1980–1991 dispute is drawn as overlays m-north-central-america-el-tigre and m-north-central-america-meanguera. (4) The cays north of 15°N found Honduran by the ICJ in 2007 and the Vivorillo cays are outside NE's polygons (m-north-central-america-0014).",
+      "confidence": "medium",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "MEX",
+      "label": "Mexico",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:mex",
+            "name": "Mexico",
+            "kind": "state",
+            "wikidata": "Q96",
+            "wikipedia": "Mexico"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Mexico (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Mexico"
+        },
+        {
+          "title": "Chamizal dispute (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Chamizal_dispute",
+          "note": "Chamizal Convention 29 August 1963; transfer 28 October 1967"
+        },
+        {
+          "title": "Clipperton Island (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Clipperton_Island",
+          "note": "1931 award; Mexican constitution amended 1934; US Navy left 21 October 1945; transferred to the Minister of Overseas France 21 February 2007"
+        },
+        {
+          "title": "Rebel Zapatista Autonomous Municipalities (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Rebel_Zapatista_Autonomous_Municipalities"
+        }
+      ],
+      "notes": "No land change above the dataset's granularity since 1946. The Chamizal tract at El Paso – Ciudad Juárez passed from the United States to Mexico on 28 October 1967 (Chamizal Convention of 29 August 1963); NE draws the post-1967 river line, so 1946–1966 show the ~2.5 km2 tract as Mexican; not corrected (m-north-central-america-0005). Clipperton was settled in France's favour in 1931/1934. Remote Gulf of California and Campeche Bank islets lie outside NE's MEX polygon (m-north-central-america-0014). Zapatista autonomous areas in Chiapas (since 1994) have no defined boundaries (m-north-central-america-0021).",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "NIC",
+      "label": "Nicaragua",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:nic",
+            "name": "Nicaragua",
+            "kind": "state",
+            "wikidata": "Q811",
+            "wikipedia": "Nicaragua"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Nicaragua (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Nicaragua"
+        },
+        {
+          "title": "U.S. Department of State, International Boundary Study No. 36: Honduras – Nicaragua Boundary (12 October 1964)",
+          "url": "https://library.law.fsu.edu/Digital-Collections/LimitsinSeas/pdf/ibs036.pdf",
+          "note": "1961 Basis of Arrangement: evacuation by Nicaraguan authorities of approximately 8,700 km2 and its transfer to Honduran administration"
+        },
+        {
+          "title": "Bryan–Chamorro Treaty (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Bryan%E2%80%93Chamorro_Treaty"
+        },
+        {
+          "title": "Isla Calero (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Isla_Calero"
+        },
+        {
+          "title": "ICJ, Land Boundary in the Northern Part of Isla Portillos (Costa Rica v. Nicaragua), Judgment of 2 February 2018 (case 165)",
+          "url": "https://www.icj-cij.org/case/165"
+        },
+        {
+          "title": "ICJ, Territorial and Maritime Dispute between Nicaragua and Honduras in the Caribbean Sea, summary of the Judgment of 8 October 2007",
+          "url": "https://www.icj-cij.org/node/103900"
+        }
+      ],
+      "notes": "Natural Earth's NIC footprint is the post-1961 territory (Coco River boundary) with the Harbor Head Lagoon enclave of the 2018 ICJ judgment. Until 1961 Nicaragua also administered ~8,700 km2 north of the Coco River, inside NE's HND unit (m-north-central-america-0002). The Corn Islands were leased to the United States by the Bryan–Chamorro Treaty (1914/1916) until its abrogation in 1970, but never occupied: no change (m-north-central-america-0007). Some Miskito Cays lie outside NE's polygon (m-north-central-america-0014).",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "PAN",
+      "label": "Panama",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:pan",
+            "name": "Panama",
+            "kind": "state",
+            "wikidata": "Q804",
+            "wikipedia": "Panama"
+          }
+        }
+      ],
+      "subunits": [
+        {
+          "id": "m-north-central-america-panama-canal-zone",
+          "label": "Panama Canal Zone (approximate boundary)",
+          "geometry": {
+            "type": "polygon",
+            "rings": [
+              [
+                [-80.0006, 9.2582],
+                [-80.0041, 9.2887],
+                [-79.9933, 9.3359],
+                [-79.9933, 9.436],
+                [-79.8467, 9.436],
+                [-79.8471, 9.3178],
+                [-79.8294, 9.3265],
+                [-79.8283, 9.3324],
+                [-79.8209, 9.3327],
+                [-79.797, 9.3175],
+                [-79.8084, 9.2965],
+                [-79.8072, 9.2633],
+                [-79.8098, 9.2558],
+                [-79.802, 9.2545],
+                [-79.7824, 9.2612],
+                [-79.7707, 9.2557],
+                [-79.7711, 9.2447],
+                [-79.7973, 9.2384],
+                [-79.7685, 9.2207],
+                [-79.7493, 9.2009],
+                [-79.7379, 9.1824],
+                [-79.6993, 9.1827],
+                [-79.6805, 9.1788],
+                [-79.6705, 9.1908],
+                [-79.6473, 9.2061],
+                [-79.6233, 9.2141],
+                [-79.6267, 9.2225],
+                [-79.6128, 9.2332],
+                [-79.6064, 9.2364],
+                [-79.6021, 9.2304],
+                [-79.5958, 9.2304],
+                [-79.5985, 9.2346],
+                [-79.5967, 9.2405],
+                [-79.6053, 9.2455],
+                [-79.6043, 9.2518],
+                [-79.6106, 9.2465],
+                [-79.6177, 9.2521],
+                [-79.6044, 9.2604],
+                [-79.6077, 9.2672],
+                [-79.6029, 9.2716],
+                [-79.5989, 9.2667],
+                [-79.6006, 9.2626],
+                [-79.5962, 9.2669],
+                [-79.6008, 9.274],
+                [-79.5876, 9.3063],
+                [-79.5885, 9.3178],
+                [-79.5844, 9.3235],
+                [-79.5876, 9.3347],
+                [-79.5832, 9.3367],
+                [-79.5791, 9.3279],
+                [-79.5609, 9.3514],
+                [-79.563, 9.3598],
+                [-79.57, 9.3622],
+                [-79.569, 9.3674],
+                [-79.5591, 9.3657],
+                [-79.5563, 9.3577],
+                [-79.5458, 9.3573],
+                [-79.5392, 9.3612],
+                [-79.5367, 9.3559],
+                [-79.5397, 9.3518],
+                [-79.548, 9.3509],
+                [-79.5532, 9.3378],
+                [-79.5597, 9.3367],
+                [-79.5658, 9.3287],
+                [-79.5578, 9.3167],
+                [-79.5644, 9.3138],
+                [-79.5701, 9.3226],
+                [-79.5805, 9.3095],
+                [-79.5838, 9.3099],
+                [-79.5804, 9.307],
+                [-79.5837, 9.3018],
+                [-79.5766, 9.3019],
+                [-79.5791, 9.2921],
+                [-79.5829, 9.2901],
+                [-79.5791, 9.286],
+                [-79.5762, 9.2884],
+                [-79.5683, 9.2866],
+                [-79.5753, 9.2827],
+                [-79.5689, 9.2718],
+                [-79.5731, 9.267],
+                [-79.5725, 9.2618],
+                [-79.5653, 9.2543],
+                [-79.5655, 9.2508],
+                [-79.5508, 9.2499],
+                [-79.5485, 9.2415],
+                [-79.5568, 9.2416],
+                [-79.5432, 9.2341],
+                [-79.5446, 9.2272],
+                [-79.5425, 9.2323],
+                [-79.5364, 9.2355],
+                [-79.5375, 9.244],
+                [-79.5301, 9.2423],
+                [-79.5312, 9.238],
+                [-79.5255, 9.2302],
+                [-79.5307, 9.2262],
+                [-79.5361, 9.23],
+                [-79.5385, 9.2294],
+                [-79.5346, 9.2278],
+                [-79.5345, 9.2225],
+                [-79.5285, 9.2204],
+                [-79.5282, 9.214],
+                [-79.5562, 9.225],
+                [-79.5602, 9.2216],
+                [-79.5582, 9.2172],
+                [-79.5624, 9.2142],
+                [-79.5622, 9.2053],
+                [-79.5581, 9.2051],
+                [-79.557, 9.1984],
+                [-79.5508, 9.1933],
+                [-79.5548, 9.19],
+                [-79.56, 9.1948],
+                [-79.5686, 9.1855],
+                [-79.5694, 9.1942],
+                [-79.575, 9.1924],
+                [-79.5769, 9.1971],
+                [-79.579, 9.1954],
+                [-79.5768, 9.1896],
+                [-79.5854, 9.1817],
+                [-79.5876, 9.1865],
+                [-79.5961, 9.1905],
+                [-79.5935, 9.1959],
+                [-79.5984, 9.1981],
+                [-79.5992, 9.2049],
+                [-79.5954, 9.2094],
+                [-79.5986, 9.2142],
+                [-79.6108, 9.2194],
+                [-79.6113, 9.2159],
+                [-79.605, 9.2095],
+                [-79.6063, 9.2065],
+                [-79.6215, 9.2006],
+                [-79.6261, 9.2086],
+                [-79.6445, 9.2014],
+                [-79.667, 9.1867],
+                [-79.6752, 9.1766],
+                [-79.6465, 9.1617],
+                [-79.6248, 9.1422],
+                [-79.5694, 9.0727],
+                [-79.5323, 9.0421],
+                [-79.5467, 9.0167],
+                [-79.5517, 9.0],
+                [-79.5633, 8.9533],
+                [-79.56, 8.94],
+                [-79.4768, 8.94],
+                [-79.4548, 8.8722],
+                [-79.5941, 8.8277],
+                [-79.6246, 8.9212],
+                [-79.6409, 8.9435],
+                [-79.6794, 8.9764],
+                [-79.7269, 9.037],
+                [-79.764, 9.037],
+                [-79.8108, 9.0493],
+                [-79.8186, 9.0413],
+                [-79.8196, 9.033],
+                [-79.8353, 9.0446],
+                [-79.8416, 9.0326],
+                [-79.8492, 9.0458],
+                [-79.8556, 9.0391],
+                [-79.8635, 9.0523],
+                [-79.876, 9.0464],
+                [-79.8752, 9.0559],
+                [-79.863, 9.072],
+                [-79.8598, 9.0712],
+                [-79.8534, 9.0598],
+                [-79.8333, 9.0664],
+                [-79.8479, 9.0824],
+                [-79.8625, 9.1059],
+                [-79.8816, 9.1105],
+                [-79.9168, 9.1265],
+                [-79.9066, 9.1113],
+                [-79.9134, 9.1027],
+                [-79.9002, 9.0748],
+                [-79.9031, 9.073],
+                [-79.9315, 9.0802],
+                [-79.9359, 9.0786],
+                [-79.9273, 9.0618],
+                [-79.9366, 9.0591],
+                [-79.9529, 9.0803],
+                [-79.9438, 9.0628],
+                [-79.9361, 9.0204],
+                [-79.9514, 9.0005],
+                [-79.9557, 9.0015],
+                [-79.9685, 9.0333],
+                [-79.974, 9.0254],
+                [-79.9691, 9.0132],
+                [-79.9754, 9.0113],
+                [-79.9764, 9.0051],
+                [-79.9801, 9.0056],
+                [-80.0039, 9.0489],
+                [-80.0075, 9.0668],
+                [-80.0114, 9.0668],
+                [-80.0188, 9.06],
+                [-80.0247, 9.0642],
+                [-80.0282, 9.0549],
+                [-80.0229, 9.0436],
+                [-80.0029, 9.0223],
+                [-80.0034, 9.0121],
+                [-80.0154, 9.0149],
+                [-80.0258, 9.0237],
+                [-80.0236, 9.016],
+                [-80.0325, 9.008],
+                [-80.0432, 9.0146],
+                [-80.0475, 9.0297],
+                [-80.0668, 9.0154],
+                [-80.0724, 9.0053],
+                [-80.0756, 9.0051],
+                [-80.0855, 9.0166],
+                [-80.0898, 9.0304],
+                [-80.0722, 9.0409],
+                [-80.0504, 9.072],
+                [-80.0371, 9.0771],
+                [-80.0423, 9.0816],
+                [-80.0417, 9.0851],
+                [-80.022, 9.1014],
+                [-80.0126, 9.1048],
+                [-80.0055, 9.0999],
+                [-79.9776, 9.1243],
+                [-79.9681, 9.1198],
+                [-79.9529, 9.1454],
+                [-79.9567, 9.159],
+                [-79.9731, 9.1832],
+                [-79.9896, 9.2352],
+                [-80.0006, 9.2582]
+              ],
+              [
+                [-79.6183, 9.2159],
+                [-79.6207, 9.2141],
+                [-79.617, 9.2147],
+                [-79.6183, 9.2159]
+              ],
+              [
+                [-79.8151, 9.0516],
+                [-79.8158, 9.052],
+                [-79.8161, 9.0516],
+                [-79.8151, 9.0516]
+              ],
+              [
+                [-79.6212, 9.2074],
+                [-79.6223, 9.2067],
+                [-79.6227, 9.2066],
+                [-79.6219, 9.2064],
+                [-79.6212, 9.2074]
+              ],
+              [
+                [-79.905, 9.35],
+                [-79.89, 9.352],
+                [-79.89, 9.3717],
+                [-79.912, 9.3717],
+                [-79.912, 9.356],
+                [-79.905, 9.35]
+              ]
+            ]
+          },
+          "timeline": [
+            {
+              "years": [1946, 1978],
+              "state": {
+                "pid": "ovr:panama-canal-zone",
+                "name": "Panama Canal Zone",
+                "altNames": ["Canal Zone"],
+                "kind": "dependency",
+                "power": "ne:usa",
+                "subjecto": "United States",
+                "wikidata": "Q498979",
+                "wikipedia": "Panama Canal Zone",
+                "note": "Administered by the United States under the 1903 Hay–Bunau-Varilla Treaty, which gave it rights \"as if it were sovereign\" (Panama kept titular sovereignty); reported to the UN as a non-self-governing territory in 1946–1947. Abolished on 1 October 1979 under the Torrijos–Carter Treaties; the canal itself passed to Panama on 31 December 1999. Approximate boundary: 5 miles each side of the canal centreline and 3 miles out to sea, Gatun Lake to the 100-ft contour and Madden Lake included, the cities of Panama and Colón excluded."
+              },
+              "sources": [
+                {
+                  "title": "Panama Canal Zone (Wikipedia)",
+                  "url": "https://en.wikipedia.org/wiki/Panama_Canal_Zone",
+                  "note": "5 miles each side of the centreline, Panama City and Colón excluded, artificial lakes included, 553 sq mi; abolished 1 October 1979"
+                },
+                {
+                  "title": "Torrijos–Carter Treaties (Wikipedia)",
+                  "url": "https://en.wikipedia.org/wiki/Torrijos%E2%80%93Carter_Treaties",
+                  "note": "signed 7 September 1977, in force 1 October 1979; canal handed over 31 December 1999"
+                },
+                {
+                  "title": "Linda Hall Library, \"The Land Divided, the World United\" – glossary (Canal Zone, Madden Dam)",
+                  "url": "https://www.lindahall.org/experience/digital-exhibitions/the-land-divided-the-world-united/15-glossary",
+                  "note": "zone: five miles each side and three miles into each ocean"
+                },
+                {
+                  "title": "The Panama Canal, \"Map of the Canal Zone, Aug. 1, 1920\" (NARA 6861830, public domain), via Wikimedia Commons",
+                  "url": "https://commons.wikimedia.org/wiki/File:Map_of_the_Panama_Canal_Zone_-_NARA_-_6861830.jpg",
+                  "note": "georeferenced on its graticule; \"Canal Zone boundary line follows 100 ft. contour around Gatun Lake\""
+                },
+                {
+                  "title": "US Army Map Service, \"Canal Zone and vicinity\" 1:100,000 (1947, public domain), via Wikimedia Commons",
+                  "url": "https://commons.wikimedia.org/wiki/File:Panama_-_Canal_Zone_and_vicinity.jpg",
+                  "note": "georeferenced on its graticule; Madden Lake and the Chagres corridor inside the zone; Madden Lake digitized from it"
+                },
+                {
+                  "title": "UN General Assembly Resolution 66 (I), 14 December 1946 (Wikisource)",
+                  "url": "https://en.wikisource.org/wiki/United_Nations_General_Assembly_Resolution_66_(1)",
+                  "note": "territories reported under Art. 73(e): US – Alaska, Hawaii, Panama Canal Zone…; Denmark – Greenland; UK – Bermuda…; France – Saint-Pierre and Miquelon"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Panama (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Panama",
+          "note": "Canal Zone returned 1979, canal 31 December 1999; US invasion 20 December 1989 – 31 January 1990"
+        },
+        {
+          "title": "Panama Canal Zone (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Panama_Canal_Zone",
+          "note": "5 miles each side of the centreline, Panama City and Colón excluded, artificial lakes included, 553 sq mi; abolished 1 October 1979"
+        },
+        {
+          "title": "Torrijos–Carter Treaties (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Torrijos%E2%80%93Carter_Treaties",
+          "note": "signed 7 September 1977, in force 1 October 1979; canal handed over 31 December 1999"
+        },
+        {
+          "title": "UN General Assembly Resolution 66 (I), 14 December 1946 (Wikisource)",
+          "url": "https://en.wikisource.org/wiki/United_Nations_General_Assembly_Resolution_66_(1)",
+          "note": "territories reported under Art. 73(e): US – Alaska, Hawaii, Panama Canal Zone…; Denmark – Greenland; UK – Bermuda…; France – Saint-Pierre and Miquelon"
+        },
+        {
+          "title": "United Nations list of non-self-governing territories (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/United_Nations_list_of_non-self-governing_territories"
+        },
+        {
+          "title": "The Panama Canal, \"Map of the Canal Zone, Aug. 1, 1920\" (NARA 6861830, public domain), via Wikimedia Commons",
+          "url": "https://commons.wikimedia.org/wiki/File:Map_of_the_Panama_Canal_Zone_-_NARA_-_6861830.jpg",
+          "note": "georeferenced on its graticule; \"Canal Zone boundary line follows 100 ft. contour around Gatun Lake\""
+        },
+        {
+          "title": "US Army Map Service, \"Canal Zone and vicinity\" 1:100,000 (1947, public domain), via Wikimedia Commons",
+          "url": "https://commons.wikimedia.org/wiki/File:Panama_-_Canal_Zone_and_vicinity.jpg",
+          "note": "georeferenced on its graticule; Madden Lake and the Chagres corridor inside the zone; Madden Lake digitized from it"
+        }
+      ],
+      "notes": "The Panama Canal Zone (US-administered 1903–1979) is a hand-drawn subunit for 1946–1978 (construction in m-north-central-america-0011). From 1 October 1979 the former zone is Panamanian; the US-operated canal areas and defence sites of 1979–1999 are not drawn (m-north-central-america-0011). The US invasion of 20 December 1989 – 31 January 1990 changed no border (m-north-central-america-0012). Indigenous comarcas are tier-1 overlays (Guna Yala, Emberá-Wounaan, Ngäbe-Buglé).",
+      "confidence": "medium",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "SLV",
+      "label": "El Salvador",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:slv",
+            "name": "El Salvador",
+            "kind": "state",
+            "wikidata": "Q792",
+            "wikipedia": "El Salvador"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "El Salvador (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/El_Salvador"
+        },
+        {
+          "title": "Football War (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Football_War",
+          "note": "war 14 July 1969; ceasefire 18 July; Salvadoran withdrawal 2 August 1969; 1980 Lima peace treaty; 1992 ICJ"
+        },
+        {
+          "title": "ICJ, Land, Island and Maritime Frontier Dispute (El Salvador/Honduras: Nicaragua intervening), Judgment of 11 September 1992 (case 75)",
+          "url": "https://www.icj-cij.org/case/75",
+          "note": "case overview: Special Agreement filed 11 December 1986; Honduras had occupied El Tigre since 1849 and the Chamber rejected its argument denying a real dispute over the island; Meanguera and Meanguerita Salvadoran, Honduras's 1991 protest 'too late to affect the presumption of acquiescence'"
+        },
+        {
+          "title": "ICJ, summary of the Judgment of 11 September 1992 (El Salvador/Honduras: Nicaragua intervening)",
+          "url": "https://www.icj-cij.org/node/103148",
+          "note": "El Salvador, by a diplomatic note of 12 October 1854, made a clear claim to the islands of Meanguera and Meanguerita"
+        },
+        {
+          "title": "Tratado General de Paz entre las Repúblicas de El Salvador y de Honduras (Lima, 30 October 1980), text (Equipo Nizkor)",
+          "url": "https://www.derechos.org/intlaw/doc/hndslv1.html",
+          "note": "art. 18.4: the Joint Boundary Commission to 'determinar la situación jurídica insular y de los espacios marítimos'; art. 31: submission to the ICJ if no agreement within five years"
+        }
+      ],
+      "notes": "Natural Earth draws the boundary as fixed by the ICJ Chamber on 11 September 1992 (six land sectors; Meanguera and Meanguerita to El Salvador, El Tigre to Honduras). The pre-1992 'bolsones' are a known gap (m-north-central-america-0003). The islands' legal situation was in dispute from the 1980 Lima peace treaty until 1992: overlays m-north-central-america-meanguera (Salvadoran-held, claimed by Honduras) and m-north-central-america-el-tigre (Honduran-held, claimed by El Salvador); Conejo Island, still disputed, is not in NE land (m-north-central-america-0022). The Salvadoran occupation of Honduran territory in the Football War (14 July – 2 August 1969) ended within the year.",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "BMU",
+      "label": "Bermuda",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:bmu",
+            "name": "Bermuda",
+            "kind": "dependency",
+            "power": "ne:gbr",
+            "subjecto": "United Kingdom",
+            "wikidata": "Q23635",
+            "wikipedia": "Bermuda",
+            "note": "British colony; officially a 'British Dependent Territory' from 1 January 1983 and a 'British Overseas Territory' since the 2002 Act. On the UN list of non-self-governing territories since 1946. Independence was rejected in the referendum of 16 August 1995 (74% no). The US military presence (from the Second World War) lasted until 1995 and was no transfer of sovereignty."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Bermuda (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Bermuda"
+        },
+        {
+          "title": "British Overseas Territories (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/British_Overseas_Territories",
+          "note": "Crown colonies renamed British Dependent Territories on 1 January 1983; British Overseas Territories Act 2002"
+        },
+        {
+          "title": "1995 Bermudian independence referendum (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/1995_Bermudian_independence_referendum"
+        },
+        {
+          "title": "UN General Assembly Resolution 66 (I), 14 December 1946 (Wikisource)",
+          "url": "https://en.wikisource.org/wiki/United_Nations_General_Assembly_Resolution_66_(1)",
+          "note": "territories reported under Art. 73(e): US – Alaska, Hawaii, Panama Canal Zone…; Denmark – Greenland; UK – Bermuda…; France – Saint-Pierre and Miquelon"
+        },
+        {
+          "title": "United Nations list of non-self-governing territories (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/United_Nations_list_of_non-self-governing_territories"
+        }
+      ],
+      "notes": "No change 1946–present.",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "CAN",
+      "label": "Canada",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:can",
+            "name": "Canada",
+            "kind": "state",
+            "wikidata": "Q16",
+            "wikipedia": "Canada"
+          }
+        }
+      ],
+      "subunits": [
+        {
+          "id": "m-north-central-america-newfoundland",
+          "label": "Newfoundland and Labrador (Dominion of Newfoundland until 31 March 1949)",
+          "geometry": {
+            "type": "admin1",
+            "codes": ["CA-NL"]
+          },
+          "timeline": [
+            {
+              "years": [1946, 1948],
+              "state": {
+                "pid": "ovr:dominion-of-newfoundland",
+                "name": "Dominion of Newfoundland",
+                "altNames": ["Newfoundland"],
+                "kind": "dependency",
+                "power": "ne:gbr",
+                "subjecto": "United Kingdom",
+                "partof": "British Empire",
+                "wikidata": "Q38610",
+                "wikipedia": "Dominion of Newfoundland",
+                "note": "A dominion whose self-government had been suspended in 1934: ruled by a Commission of Government appointed by the United Kingdom, the governor reporting to London. It comprised the island of Newfoundland and Labrador (boundary of the 1927 Privy Council decision). After the referendums of 3 June and 22 July 1948 it joined Canada in the last hours of 31 March 1949."
+              },
+              "sources": [
+                {
+                  "title": "Dominion of Newfoundland (Wikipedia)",
+                  "url": "https://en.wikipedia.org/wiki/Dominion_of_Newfoundland",
+                  "note": "Commission of Government 1934–1949; referendums 3 June and 22 July 1948; joined Canada 31 March 1949"
+                },
+                {
+                  "title": "Labrador (Wikipedia)",
+                  "url": "https://en.wikipedia.org/wiki/Labrador",
+                  "note": "1927 Privy Council boundary; not formally recognised by Quebec"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "History of Canada (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/History_of_Canada"
+        },
+        {
+          "title": "Dominion of Newfoundland (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Dominion_of_Newfoundland",
+          "note": "Commission of Government 1934–1949; referendums 3 June and 22 July 1948; joined Canada 31 March 1949"
+        },
+        {
+          "title": "Labrador (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Labrador",
+          "note": "1927 Privy Council boundary; not formally recognised by Quebec"
+        },
+        {
+          "title": "Nunavut (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Nunavut",
+          "note": "created 1 April 1999; Nunavut Act and Nunavut Land Claims Agreement Act 1993; public government"
+        }
+      ],
+      "notes": "Newfoundland and Labrador (NE admin-1 CA-NL) was the Dominion of Newfoundland, under a UK-appointed Commission of Government, until it joined Canada on 31 March 1949 (subunit). Labrador's boundary is the 1927 Privy Council line, never formally recognised by Quebec; control unchanged. Internal changes are not drawn: Nunavut was separated from the Northwest Territories on 1 April 1999 (m-north-central-america-0016). Hans Island lies in NE's GRL unit. Machias Seal Island is not in NE land (m-north-central-america-0008). Canadian Arctic islets beyond 30 km from NE's CAN polygon: m-north-central-america-0014.",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "GRL",
+      "label": "Greenland",
+      "timeline": [
+        {
+          "years": [1946, 1952],
+          "state": {
+            "pid": "ne:grl",
+            "name": "Greenland",
+            "altNames": ["Kalaallit Nunaat", "Grønland"],
+            "kind": "dependency",
+            "power": "ne:dnk",
+            "subjecto": "Denmark",
+            "wikidata": "Q223",
+            "wikipedia": "Greenland",
+            "note": "Danish colony, reported by Denmark to the UN as a non-self-governing territory (on the list 1946–1954). The 1941 US–Danish defence agreement was replaced in 1951 (Thule Air Base, now Pituffik)."
+          }
+        },
+        {
+          "years": [1953, 1978],
+          "state": {
+            "pid": "ne:grl",
+            "name": "Greenland",
+            "altNames": ["Kalaallit Nunaat", "Grønland"],
+            "kind": "dependency",
+            "power": "ne:dnk",
+            "subjecto": "Denmark",
+            "partof": "Kingdom of Denmark",
+            "wikidata": "Q223",
+            "wikipedia": "Greenland",
+            "note": "The Danish constitution of 1953 ended the colonial status: Greenland became an integral part of the Danish realm as a county (amt). In 1953 Inuit families at Thule were forced by Denmark to move to make room for the US base."
+          }
+        },
+        {
+          "years": [1979, 2008],
+          "state": {
+            "pid": "ne:grl",
+            "name": "Greenland",
+            "altNames": ["Kalaallit Nunaat", "Grønland"],
+            "kind": "dependency",
+            "power": "ne:dnk",
+            "subjecto": "Denmark",
+            "partof": "Kingdom of Denmark",
+            "wikidata": "Q223",
+            "wikipedia": "Greenland",
+            "note": "Home Rule from 1 May 1979 (the Inatsisartut); Greenland left the European Economic Community in 1985."
+          }
+        },
+        {
+          "years": [2009, "present"],
+          "state": {
+            "pid": "ne:grl",
+            "name": "Greenland",
+            "altNames": ["Kalaallit Nunaat", "Grønland"],
+            "kind": "dependency",
+            "power": "ne:dnk",
+            "subjecto": "Denmark",
+            "partof": "Kingdom of Denmark",
+            "wikidata": "Q223",
+            "wikipedia": "Greenland",
+            "note": "Self-government from 21 June 2009 (self-rule over judicial affairs, policing and natural resources)."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Greenland (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Greenland",
+          "note": "colonial status ended with the 1953 constitution (amt); Home Rule 1 May 1979; self-rule 21 June 2009"
+        },
+        {
+          "title": "History of Greenland (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/History_of_Greenland",
+          "note": "1951 defence agreement; 1953 relocation of Inuit families at Thule"
+        },
+        {
+          "title": "United Nations list of non-self-governing territories (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/United_Nations_list_of_non-self-governing_territories"
+        },
+        {
+          "title": "UN General Assembly Resolution 66 (I), 14 December 1946 (Wikisource)",
+          "url": "https://en.wikisource.org/wiki/United_Nations_General_Assembly_Resolution_66_(1)",
+          "note": "territories reported under Art. 73(e): US – Alaska, Hawaii, Panama Canal Zone…; Denmark – Greenland; UK – Bermuda…; France – Saint-Pierre and Miquelon"
+        },
+        {
+          "title": "Hans Island (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Hans_Island",
+          "note": "dispute from 1973; 14 June 2022 agreement; ~40% west to Canada, ~60% east to Denmark/Greenland; Folketing ratification 19 December 2023"
+        }
+      ],
+      "notes": "Shown as a Danish dependency throughout (power ne:dnk) so that its status changes appear as periods; for 1953–1978 it was legally a county of Denmark, see m-north-central-america-0001. Hans Island (NE disputed area B21, wholly inside NE's GRL polygon): overlay m-north-central-america-hans-island and the proposed 2022 division m-north-central-america-0009.",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "SPM",
+      "label": "Saint Pierre and Miquelon",
+      "timeline": [
+        {
+          "years": [1946, 1975],
+          "state": {
+            "pid": "ne:spm",
+            "name": "Saint Pierre and Miquelon",
+            "altNames": ["Saint-Pierre-et-Miquelon"],
+            "kind": "dependency",
+            "power": "ne:fra",
+            "subjecto": "France",
+            "wikidata": "Q34617",
+            "wikipedia": "Saint Pierre and Miquelon",
+            "note": "The colony became a French overseas territory (territoire d'outre-mer) in 1946; France reported it to the UN as a non-self-governing territory in 1946."
+          }
+        },
+        {
+          "years": [1976, 1984],
+          "state": {
+            "pid": "ne:spm",
+            "name": "Saint Pierre and Miquelon",
+            "altNames": ["Saint-Pierre-et-Miquelon"],
+            "kind": "dependency",
+            "power": "ne:fra",
+            "subjecto": "France",
+            "wikidata": "Q34617",
+            "wikipedia": "Saint Pierre and Miquelon",
+            "note": "An overseas department of France (département d'outre-mer), and so part of the European Communities, from 19 July 1976."
+          }
+        },
+        {
+          "years": [1985, 2002],
+          "state": {
+            "pid": "ne:spm",
+            "name": "Saint Pierre and Miquelon",
+            "altNames": ["Saint-Pierre-et-Miquelon"],
+            "kind": "dependency",
+            "power": "ne:fra",
+            "subjecto": "France",
+            "wikidata": "Q34617",
+            "wikipedia": "Saint Pierre and Miquelon",
+            "note": "A French territorial collectivity (collectivité territoriale) from 11 June 1985, leaving the European Communities. The 1992 Canada–France arbitration concerned maritime zones only."
+          }
+        },
+        {
+          "years": [2003, "present"],
+          "state": {
+            "pid": "ne:spm",
+            "name": "Saint Pierre and Miquelon",
+            "altNames": ["Saint-Pierre-et-Miquelon"],
+            "kind": "dependency",
+            "power": "ne:fra",
+            "subjecto": "France",
+            "wikidata": "Q34617",
+            "wikipedia": "Saint Pierre and Miquelon",
+            "note": "A French overseas collectivity (collectivité d'outre-mer) with a special status since March 2003."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Saint Pierre and Miquelon (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Saint_Pierre_and_Miquelon",
+          "note": "overseas territory 1946; department 19 July 1976; territorial collectivity 11 June 1985; overseas collectivity March 2003"
+        },
+        {
+          "title": "UN General Assembly Resolution 66 (I), 14 December 1946 (Wikisource)",
+          "url": "https://en.wikisource.org/wiki/United_Nations_General_Assembly_Resolution_66_(1)",
+          "note": "territories reported under Art. 73(e): US – Alaska, Hawaii, Panama Canal Zone…; Denmark – Greenland; UK – Bermuda…; France – Saint-Pierre and Miquelon"
+        },
+        {
+          "title": "United Nations list of non-self-governing territories (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/United_Nations_list_of_non-self-governing_territories"
+        }
+      ],
+      "notes": "No change of land control 1946–present; the timeline is split only at the status changes of 1946, 1976, 1985 and 2003. Shown as a French dependency throughout (power ne:fra), including its years as an overseas department (1976–1984), as Greenland is for its years as a Danish county (m-north-central-america-0001).",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "unit": "USA",
+      "label": "United States",
+      "timeline": [
+        {
+          "years": [1946, "present"],
+          "state": {
+            "pid": "ne:usa",
+            "name": "United States",
+            "kind": "state",
+            "wikidata": "Q30",
+            "wikipedia": "United States"
+          }
+        }
+      ],
+      "subunits": [
+        {
+          "id": "m-north-central-america-alaska",
+          "label": "Alaska (Territory of Alaska until 3 January 1959)",
+          "geometry": {
+            "type": "admin1",
+            "codes": ["US-AK"]
+          },
+          "timeline": [
+            {
+              "years": [1946, 1958],
+              "state": {
+                "pid": "ovr:territory-of-alaska",
+                "name": "Territory of Alaska",
+                "kind": "dependency",
+                "power": "ne:usa",
+                "subjecto": "United States",
+                "wikidata": "Q1811372",
+                "wikipedia": "Territory of Alaska",
+                "note": "Organised incorporated territory of the United States (24 August 1912 – 3 January 1959), reported to the UN as a non-self-governing territory 1946–1959; admitted as the 49th state on 3 January 1959."
+              },
+              "sources": [
+                {
+                  "title": "Territory of Alaska (Wikipedia)",
+                  "url": "https://en.wikipedia.org/wiki/Territory_of_Alaska",
+                  "note": "24 August 1912 – 3 January 1959"
+                },
+                {
+                  "title": "UN General Assembly Resolution 66 (I), 14 December 1946 (Wikisource)",
+                  "url": "https://en.wikisource.org/wiki/United_Nations_General_Assembly_Resolution_66_(1)",
+                  "note": "territories reported under Art. 73(e): US – Alaska, Hawaii, Panama Canal Zone…; Denmark – Greenland; UK – Bermuda…; France – Saint-Pierre and Miquelon"
+                },
+                {
+                  "title": "United Nations list of non-self-governing territories (Wikipedia)",
+                  "url": "https://en.wikipedia.org/wiki/United_Nations_list_of_non-self-governing_territories"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "m-north-central-america-hawaii",
+          "label": "Hawaii (Territory of Hawaii until 21 August 1959)",
+          "geometry": {
+            "type": "admin1",
+            "codes": ["US-HI"]
+          },
+          "timeline": [
+            {
+              "years": [1946, 1958],
+              "state": {
+                "pid": "ovr:territory-of-hawaii",
+                "name": "Territory of Hawaii",
+                "kind": "dependency",
+                "power": "ne:usa",
+                "subjecto": "United States",
+                "wikidata": "Q547795",
+                "wikipedia": "Territory of Hawaii",
+                "note": "Organised incorporated territory of the United States (1900 – 21 August 1959), reported to the UN as a non-self-governing territory 1946–1959; admitted as the 50th state on 21 August 1959. Palmyra, Midway, Kingman Reef, Johnston Atoll and Sand Island were excluded from the state (NE unit UMI)."
+              },
+              "sources": [
+                {
+                  "title": "Territory of Hawaii (Wikipedia)",
+                  "url": "https://en.wikipedia.org/wiki/Territory_of_Hawaii",
+                  "note": "to 21 August 1959; Palmyra, Midway, Kingman, Johnston and Sand Island excluded from the state"
+                },
+                {
+                  "title": "UN General Assembly Resolution 66 (I), 14 December 1946 (Wikisource)",
+                  "url": "https://en.wikisource.org/wiki/United_Nations_General_Assembly_Resolution_66_(1)",
+                  "note": "territories reported under Art. 73(e): US – Alaska, Hawaii, Panama Canal Zone…; Denmark – Greenland; UK – Bermuda…; France – Saint-Pierre and Miquelon"
+                },
+                {
+                  "title": "United Nations list of non-self-governing territories (Wikipedia)",
+                  "url": "https://en.wikipedia.org/wiki/United_Nations_list_of_non-self-governing_territories"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Territory of Alaska (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Territory_of_Alaska",
+          "note": "24 August 1912 – 3 January 1959"
+        },
+        {
+          "title": "Territory of Hawaii (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Territory_of_Hawaii",
+          "note": "to 21 August 1959; Palmyra, Midway, Kingman, Johnston and Sand Island excluded from the state"
+        },
+        {
+          "title": "UN General Assembly Resolution 66 (I), 14 December 1946 (Wikisource)",
+          "url": "https://en.wikisource.org/wiki/United_Nations_General_Assembly_Resolution_66_(1)",
+          "note": "territories reported under Art. 73(e): US – Alaska, Hawaii, Panama Canal Zone…; Denmark – Greenland; UK – Bermuda…; France – Saint-Pierre and Miquelon"
+        },
+        {
+          "title": "United Nations list of non-self-governing territories (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/United_Nations_list_of_non-self-governing_territories"
+        },
+        {
+          "title": "Chamizal dispute (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Chamizal_dispute",
+          "note": "Chamizal Convention 29 August 1963; transfer 28 October 1967"
+        }
+      ],
+      "notes": "Alaska and Hawaii (NE admin-1 US-AK, US-HI) were organised territories reported to the UN as non-self-governing until statehood in 1959 (subunits). The Swan Islands (1946–1971) and the Panama Canal Zone (1946–1978) are drawn in the HND and PAN units; the Chamizal transfer (1967) in m-north-central-america-0005. Several US islands lie outside NE's USA polygon and would stay unclaimed under the coast rules (Stuart, Waldron and Sucia islands in the San Juans; Santa Barbara Island; the Farallones; Bogoslof; the Dry Tortugas; French Frigate Shoals and Pearl and Hermes Atoll): m-north-central-america-0014. Indian reservations: m-north-central-america-0017.",
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    }
+  ],
+  "overlays": [
+    {
+      "id": "m-north-central-america-guatemala-claim-belize",
+      "label": "Guatemalan claim to the whole of British Honduras / Belize (1946–1998)",
+      "geometry": {
+        "type": "admin0",
+        "codes": ["BLZ"]
+      },
+      "timeline": [
+        {
+          "years": [1946, 1972],
+          "set": {
+            "pid": "ovr:guatemalan-claim-to-belize",
+            "name": "Guatemalan claim to British Honduras",
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "exact",
+            "controller": "ovr:british-honduras",
+            "claimants": ["ne:gtm"],
+            "note": "Guatemala claimed the whole colony: its 1945 constitution called British Honduras its twenty-third department, holding the 1859 boundary treaty void."
+          }
+        },
+        {
+          "years": [1973, 1980],
+          "set": {
+            "pid": "ovr:guatemalan-claim-to-belize",
+            "name": "Guatemalan claim to Belize",
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "exact",
+            "controller": "ovr:british-honduras",
+            "claimants": ["ne:gtm"],
+            "note": "Claim to the whole colony (renamed Belize in 1973); the 1981 Heads of Agreement were never implemented."
+          }
+        },
+        {
+          "years": [1981, 1998],
+          "set": {
+            "pid": "ovr:guatemalan-claim-to-belize",
+            "name": "Guatemalan claim to Belize",
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "exact",
+            "controller": "ne:blz",
+            "claimants": ["ne:gtm"],
+            "note": "Belize became independent in 1981 with the claim unresolved. Guatemala recognised Belize and established relations in 1991 without dropping its claim (restated 1994); the claim was not formally narrowed until 1999, so the whole country stays hatched to 1998."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "British Honduras (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/British_Honduras",
+          "note": "self-government 1 January 1964; renamed Belize 1 June 1973; independence 21 September 1981; 1945 Guatemalan constitution"
+        },
+        {
+          "title": "Belizean–Guatemalan territorial dispute (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Belizean%E2%80%93Guatemalan_territorial_dispute",
+          "note": "1999 Sibun–Sarstoon claim of 12,272 km2 (~53%); 1991 recognition; 2000 adjacency zone; 2008 Special Agreement; referendums 2018/2019"
+        },
+        {
+          "title": "Note on Belize/Guatemala Dispute (from U.S. State Department website and ASIL ILIB), IILJ",
+          "url": "https://iilj.org/wp-content/uploads/2016/08/Note-on-Belize-Guatemala-Dispute.pdf"
+        }
+      ],
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-guatemala-claim-sibun-sarstoon",
+      "label": "Guatemalan claim south of the Sibun River (1999–present; NE disputed area B51)",
+      "geometry": {
+        "type": "ne-disputed",
+        "codes": ["B51"]
+      },
+      "timeline": [
+        {
+          "years": [1999, "present"],
+          "set": {
+            "pid": "ovr:guatemalan-claim-to-belize",
+            "name": "Guatemalan claim to southern Belize",
+            "altNames": ["Sibun–Sarstoon claim"],
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "approximate",
+            "controller": "ne:blz",
+            "claimants": ["ne:gtm"],
+            "note": "Since its letter of 18 October 1999 Guatemala claims the land between the Sibun and Sarstoon rivers (12,272 km2, about 53% of Belize) together with cays and maritime areas. Natural Earth's disputed area B51 (about 7,960 km2) is narrower: it leaves out most of the Maya Mountains and the cays. Adjacency zone agreed 8 November 2000; Special Agreement 8 December 2008; ICJ seised in June 2019 after referendums in Guatemala (15 April 2018) and Belize (8 May 2019); oral hearings set for February 2027."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Belizean–Guatemalan territorial dispute (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Belizean%E2%80%93Guatemalan_territorial_dispute",
+          "note": "1999 Sibun–Sarstoon claim of 12,272 km2 (~53%); 1991 recognition; 2000 adjacency zone; 2008 Special Agreement; referendums 2018/2019"
+        },
+        {
+          "title": "Note on Belize/Guatemala Dispute (from U.S. State Department website and ASIL ILIB), IILJ",
+          "url": "https://iilj.org/wp-content/uploads/2016/08/Note-on-Belize-Guatemala-Dispute.pdf"
+        },
+        {
+          "title": "ICJ, Guatemala's Territorial, Insular and Maritime Claim (Guatemala/Belize), case 177",
+          "url": "https://www.icj-cij.org/case/177",
+          "note": "Special Agreement 8 December 2008; Court seised June 2019; no judgment"
+        },
+        {
+          "title": "San Pedro Sun, \"ICJ sets dates for oral hearings in Belize disputes with Guatemala and Honduras\" (24 September 2026)",
+          "url": "https://www.sanpedrosun.com/government/2026/09/24/icj-sets-dates-for-oral-hearings-in-belize-disputes-with-guatemala-and-honduras/",
+          "note": "hearings February–March 2027"
+        }
+      ],
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-sapodilla-cayes",
+      "label": "Sapodilla Cayes (NE disputed area B80)",
+      "geometry": {
+        "type": "ne-disputed",
+        "codes": ["B80"]
+      },
+      "timeline": [
+        {
+          "years": [1946, 1980],
+          "set": {
+            "pid": "ovr:sapodilla-cayes",
+            "name": "Sapodilla Cayes",
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "exact",
+            "controller": "ovr:british-honduras",
+            "claimants": ["ne:gtm"],
+            "wikidata": "Q766270",
+            "wikipedia": "Sapodilla Cayes",
+            "note": "Part of British Honduras (Belize from 1973), covered by Guatemala's claim to the whole colony."
+          }
+        },
+        {
+          "years": [1981, 1981],
+          "set": {
+            "pid": "ovr:sapodilla-cayes",
+            "name": "Sapodilla Cayes",
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "exact",
+            "controller": "ne:blz",
+            "claimants": ["ne:gtm"],
+            "wikidata": "Q766270",
+            "wikipedia": "Sapodilla Cayes",
+            "note": "Belize independent; Guatemala's claim unresolved."
+          }
+        },
+        {
+          "years": [1982, "present"],
+          "set": {
+            "pid": "ovr:sapodilla-cayes",
+            "name": "Sapodilla Cayes",
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "exact",
+            "controller": "ne:blz",
+            "claimants": ["ne:gtm", "ne:hnd"],
+            "wikidata": "Q766270",
+            "wikipedia": "Sapodilla Cayes",
+            "note": "Administered by Belize; claimed by Honduras in its 1982 constitution and by Guatemala. Belize v. Honduras is before the ICJ since 16 November 2022, with Guatemala admitted as an intervener on 19 March 2026."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Sapodilla Cayes (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Sapodilla_Cayes",
+          "note": "administered by Belize; claimed by Honduras in its 1982 constitution and by Guatemala"
+        },
+        {
+          "title": "ICJ, Sovereignty over the Sapodilla Cayes/Cayos Zapotillos (Belize v. Honduras: Guatemala intervening), case 185",
+          "url": "https://www.icj-cij.org/case/185",
+          "note": "application 16 November 2022; Guatemala admitted as intervener 19 March 2026"
+        },
+        {
+          "title": "San Pedro Sun, \"ICJ sets dates for oral hearings in Belize disputes with Guatemala and Honduras\" (24 September 2026)",
+          "url": "https://www.sanpedrosun.com/government/2026/09/24/icj-sets-dates-for-oral-hearings-in-belize-disputes-with-guatemala-and-honduras/",
+          "note": "hearings February–March 2027"
+        }
+      ],
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-swan-islands",
+      "label": "Swan Islands, US-held and claimed by Honduras (1946–1971)",
+      "geometry": {
+        "type": "islands",
+        "points": [
+          [-83.9273, 17.4133],
+          [-83.9008, 17.4075]
+        ],
+        "names": ["Great Swan Island", "Little Swan Island"]
+      },
+      "timeline": [
+        {
+          "years": [1946, 1971],
+          "set": {
+            "pid": "ovr:swan-islands",
+            "name": "Swan Islands",
+            "altNames": ["Islas del Cisne", "Islas Santanilla"],
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "exact",
+            "controller": "ne:usa",
+            "claimants": ["ne:hnd"],
+            "wikidata": "Q1547671",
+            "wikipedia": "Swan Islands, Honduras",
+            "note": "Held by the United States (Guano Islands Act claim; weather station; Radio Swan), claimed by Honduras; the 1971 Treaty on the Swan Islands gave Honduras clear title from 1 September 1972."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Swan Islands, Honduras (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Swan_Islands,_Honduras",
+          "note": "US Weather Bureau station from 1938, Radio Swan 1960s; treaty signed 22 November 1971, Honduran title effective 1 September 1972"
+        },
+        {
+          "title": "Treaty on the Swan Islands, United States–Honduras, signed at San Pedro Sula 22 November 1971 (UN Treaty Series vol. 851, No. 12199)",
+          "url": "https://treaties.un.org/doc/Publication/UNTS/Volume%20851/volume-851-I-12199-English.pdf"
+        }
+      ],
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-el-tigre",
+      "label": "El Tigre (Tiger Island), Gulf of Fonseca: held by Honduras, claimed by El Salvador (1980–1991)",
+      "geometry": {
+        "type": "islands",
+        "points": [
+          [-87.6401, 13.273]
+        ],
+        "names": ["El Tigre"]
+      },
+      "timeline": [
+        {
+          "years": [1980, 1991],
+          "set": {
+            "pid": "ovr:tiger-island",
+            "name": "Tiger Island",
+            "altNames": ["El Tigre", "Isla del Tigre"],
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "exact",
+            "controller": "ne:hnd",
+            "claimants": ["ne:slv"],
+            "wikidata": "Q1324660",
+            "wikipedia": "Tiger Island",
+            "note": "The General Peace Treaty of Lima (30 October 1980) left the legal situation of the islands ('la situación jurídica insular') to the El Salvador–Honduras Joint Boundary Commission (art. 18.4) and, failing agreement within five years, to the ICJ (art. 31); the Special Agreement was filed with the Court on 11 December 1986, and its Chamber decided the Gulf of Fonseca islands on 11 September 1992. El Tigre (municipality of Amapala) had been occupied by Honduras since 1849. El Salvador claimed it before the Court; the Chamber rejected Honduras's argument that there was no real dispute over the island and held it Honduran."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "ICJ, Land, Island and Maritime Frontier Dispute (El Salvador/Honduras: Nicaragua intervening), Judgment of 11 September 1992 (case 75)",
+          "url": "https://www.icj-cij.org/case/75",
+          "note": "case overview: Special Agreement filed 11 December 1986; Honduras had occupied El Tigre since 1849 and the Chamber rejected its argument denying a real dispute over the island; Meanguera and Meanguerita Salvadoran, Honduras's 1991 protest 'too late to affect the presumption of acquiescence'"
+        },
+        {
+          "title": "ICJ, summary of the Judgment of 11 September 1992 (El Salvador/Honduras: Nicaragua intervening)",
+          "url": "https://www.icj-cij.org/node/103148",
+          "note": "El Salvador, by a diplomatic note of 12 October 1854, made a clear claim to the islands of Meanguera and Meanguerita"
+        },
+        {
+          "title": "Tratado General de Paz entre las Repúblicas de El Salvador y de Honduras (Lima, 30 October 1980), text (Equipo Nizkor)",
+          "url": "https://www.derechos.org/intlaw/doc/hndslv1.html",
+          "note": "art. 18.4: the Joint Boundary Commission to 'determinar la situación jurídica insular y de los espacios marítimos'; art. 31: submission to the ICJ if no agreement within five years"
+        },
+        {
+          "title": "Tiger Island (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Tiger_Island"
+        }
+      ],
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-meanguera",
+      "label": "Meanguera (and Meanguerita), Gulf of Fonseca: held by El Salvador, claimed by Honduras (1980–1991)",
+      "geometry": {
+        "type": "islands",
+        "points": [
+          [-87.7126, 13.1895]
+        ],
+        "names": ["Meanguera"]
+      },
+      "timeline": [
+        {
+          "years": [1980, 1991],
+          "set": {
+            "pid": "ovr:meanguera",
+            "name": "Meanguera",
+            "altNames": ["Meanguera del Golfo", "Isla de Meanguera"],
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "exact",
+            "controller": "ne:slv",
+            "claimants": ["ne:hnd"],
+            "wikidata": "Q1915478",
+            "wikipedia": "Meanguera del Golfo",
+            "note": "The General Peace Treaty of Lima (30 October 1980) left the legal situation of the islands ('la situación jurídica insular') to the El Salvador–Honduras Joint Boundary Commission (art. 18.4) and, failing agreement within five years, to the ICJ (art. 31); the Special Agreement was filed with the Court on 11 December 1986, and its Chamber decided the Gulf of Fonseca islands on 11 September 1992. El Salvador had claimed Meanguera and Meanguerita in a diplomatic note of 12 October 1854 and its presence there grew from the late 19th century. Honduras claimed both before the Court, but its protest of 1991 came too late to affect the presumption of acquiescence, and the Chamber held them Salvadoran (Meanguerita as a dependency of Meanguera). The small islet of Meanguerita is not in Natural Earth's land."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "ICJ, Land, Island and Maritime Frontier Dispute (El Salvador/Honduras: Nicaragua intervening), Judgment of 11 September 1992 (case 75)",
+          "url": "https://www.icj-cij.org/case/75",
+          "note": "case overview: Special Agreement filed 11 December 1986; Honduras had occupied El Tigre since 1849 and the Chamber rejected its argument denying a real dispute over the island; Meanguera and Meanguerita Salvadoran, Honduras's 1991 protest 'too late to affect the presumption of acquiescence'"
+        },
+        {
+          "title": "ICJ, summary of the Judgment of 11 September 1992 (El Salvador/Honduras: Nicaragua intervening)",
+          "url": "https://www.icj-cij.org/node/103148",
+          "note": "El Salvador, by a diplomatic note of 12 October 1854, made a clear claim to the islands of Meanguera and Meanguerita"
+        },
+        {
+          "title": "Tratado General de Paz entre las Repúblicas de El Salvador y de Honduras (Lima, 30 October 1980), text (Equipo Nizkor)",
+          "url": "https://www.derechos.org/intlaw/doc/hndslv1.html",
+          "note": "art. 18.4: the Joint Boundary Commission to 'determinar la situación jurídica insular y de los espacios marítimos'; art. 31: submission to the ICJ if no agreement within five years"
+        },
+        {
+          "title": "Meanguera del Golfo (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Meanguera_del_Golfo"
+        }
+      ],
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-hans-island",
+      "label": "Hans Island / Tartupaluk (NE disputed area B21)",
+      "geometry": {
+        "type": "ne-disputed",
+        "codes": ["B21"]
+      },
+      "timeline": [
+        {
+          "years": [1973, 2021],
+          "set": {
+            "pid": "ovr:hans-island",
+            "name": "Hans Island",
+            "altNames": ["Tartupaluk", "Hans Ø", "Île Hans"],
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "approximate",
+            "claimants": ["ne:can", "ne:dnk"],
+            "wikidata": "Q681389",
+            "wikipedia": "Hans Island",
+            "note": "Claimed by both Canada and Denmark since the 1973 continental-shelf negotiations; no permanent presence (the 'Whisky War' flag visits). Natural Earth gives it to Greenland and draws it about 2 km east of its true position."
+          }
+        },
+        {
+          "years": [2022, "present"],
+          "set": {
+            "pid": "ovr:hans-island",
+            "name": "Hans Island",
+            "altNames": ["Tartupaluk", "Hans Ø", "Île Hans"],
+            "kind": "disputed",
+            "tier": 1,
+            "precision": "approximate",
+            "claimants": ["ne:can", "ne:dnk"],
+            "wikidata": "Q681389",
+            "wikipedia": "Hans Island",
+            "note": "Divided by the agreement signed in Ottawa on 14 June 2022 along a north–south ravine (western ~40% to Canada, eastern ~60% to Denmark/Greenland). Denmark ratified on 19 December 2023; Canada had not yet ratified in February 2025 (its Arctic Foreign Policy of 6 December 2024 promised to finalize the agreement) and no entry into force was found, so the base layer still follows Natural Earth (see m-north-central-america-0009)."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Hans Island (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Hans_Island",
+          "note": "dispute from 1973; 14 June 2022 agreement; ~40% west to Canada, ~60% east to Denmark/Greenland; Folketing ratification 19 December 2023"
+        },
+        {
+          "title": "Global Affairs Canada, \"Boundary dispute\" backgrounder (14 June 2022)",
+          "url": "https://www.canada.ca/en/global-affairs/news/2022/06/boundary-dispute.html",
+          "note": "land boundary follows the natural ravine running north–south"
+        },
+        {
+          "title": "Whisky War (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Whisky_War"
+        },
+        {
+          "title": "Legion Magazine, \"Canada announces Arctic foreign policy overhaul\" (S. J. Thorne, 19 February 2025)",
+          "url": "https://legionmagazine.com/canada-announces-arctic-foreign-policy-overhaul/",
+          "note": "Denmark's parliament ratified in December 2023, Canada's had not yet; the Arctic Foreign Policy of 6 December 2024 promises to finalize the implementation of the Tartupaluk boundary agreement"
+        }
+      ],
+      "confidence": "medium",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-guna-yala",
+      "label": "Guna Yala indigenous comarca (San Blas; NE admin-1 PA-KY)",
+      "geometry": {
+        "type": "admin1",
+        "codes": ["PA-KY"]
+      },
+      "timeline": [
+        {
+          "years": [1946, 1997],
+          "set": {
+            "pid": "ovr:guna-yala",
+            "name": "San Blas Comarca",
+            "altNames": ["Comarca de San Blas", "Kuna Yala", "Guna Yala"],
+            "kind": "indigenous",
+            "tier": 1,
+            "precision": "approximate",
+            "wikidata": "Q919017",
+            "wikipedia": "Guna Yala",
+            "note": "Indigenous territory (comarca) of the Guna: created as the Comarca de San Blas by Law 2 of 16 September 1938 and organised by Law 16 of 19 February 1953; the Guna General Congress is its highest authority. Extent from Natural Earth's current comarca polygon (2,544 km2 against the official 2,340.7 km2)."
+          }
+        },
+        {
+          "years": [1998, 2010],
+          "set": {
+            "pid": "ovr:guna-yala",
+            "name": "Kuna Yala",
+            "altNames": ["Comarca de San Blas", "Guna Yala"],
+            "kind": "indigenous",
+            "tier": 1,
+            "precision": "approximate",
+            "wikidata": "Q919017",
+            "wikipedia": "Guna Yala",
+            "note": "Renamed Comarca Kuna Yala by Law 99 of 23 December 1998."
+          }
+        },
+        {
+          "years": [2011, "present"],
+          "set": {
+            "pid": "ovr:guna-yala",
+            "name": "Guna Yala",
+            "altNames": ["Kuna Yala", "San Blas"],
+            "kind": "indigenous",
+            "tier": 1,
+            "precision": "approximate",
+            "wikidata": "Q919017",
+            "wikipedia": "Guna Yala",
+            "note": "Name Guna Yala recognised by the Government of Panama in October 2011."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Comarca Guna Yala (Wikipedia, Spanish)",
+          "url": "https://es.wikipedia.org/wiki/Guna_Yala",
+          "note": "Ley 2 of 16 September 1938; Ley 16 of 19 February 1953; Ley 99 of 23 December 1998 (Kuna Yala); 2,340.7 km2"
+        },
+        {
+          "title": "Guna Yala (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Guna_Yala",
+          "note": "name changed to Guna Yala in October 2011"
+        }
+      ],
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-embera-wounaan",
+      "label": "Emberá-Wounaan indigenous comarca (NE admin-1 PA-EM)",
+      "geometry": {
+        "type": "admin1",
+        "codes": ["PA-EM"]
+      },
+      "timeline": [
+        {
+          "years": [1983, "present"],
+          "set": {
+            "pid": "ovr:embera-wounaan",
+            "name": "Emberá-Wounaan",
+            "altNames": ["Comarca Emberá-Wounaan"],
+            "kind": "indigenous",
+            "tier": 1,
+            "precision": "approximate",
+            "wikidata": "Q1141041",
+            "wikipedia": "Emberá-Wounaan Comarca",
+            "note": "Indigenous territory of the Emberá and Wounaan peoples, created by Law 22 of 8 November 1983 from Darién in two separate districts (Cémaco and Sambú); governed by its General Congress. Natural Earth's polygon: 4,014 km2 against the official 4,383.5 km2."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Comarca Emberá-Wounaan (Wikipedia, Spanish)",
+          "url": "https://es.wikipedia.org/wiki/Comarca_Ember%C3%A1-Wounaan",
+          "note": "Law 22 of 8 November 1983; districts Cémaco and Sambú; 4,383.5 km2"
+        }
+      ],
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-ngabe-bugle",
+      "label": "Ngäbe-Buglé indigenous comarca (NE admin-1 PA-NB)",
+      "geometry": {
+        "type": "admin1",
+        "codes": ["PA-NB"]
+      },
+      "timeline": [
+        {
+          "years": [1997, "present"],
+          "set": {
+            "pid": "ovr:ngabe-bugle",
+            "name": "Ngäbe-Buglé",
+            "altNames": ["Ngöbe-Buglé", "Comarca Ngäbe-Buglé"],
+            "kind": "indigenous",
+            "tier": 1,
+            "precision": "approximate",
+            "wikidata": "Q1129783",
+            "wikipedia": "Ngäbe-Buglé Comarca",
+            "note": "Collective territory of the Ngäbe and Buglé peoples, created by Law 10 of 7 March 1997 from parts of Bocas del Toro, Chiriquí and Veraguas; governed by its General Congress and Cacique General. Natural Earth's polygon: 6,133 km2 against about 6,968 km2."
+          }
+        }
+      ],
+      "sources": [
+        {
+          "title": "Comarca Ngäbe-Buglé (Wikipedia, Spanish)",
+          "url": "https://es.wikipedia.org/wiki/Comarca_Ng%C3%A4be-Bugl%C3%A9",
+          "note": "Law 10 of 7 March 1997; from Bocas del Toro, Chiriquí and Veraguas; ~6,968 km2"
+        }
+      ],
+      "confidence": "high",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    }
+  ],
+  "entries": [
+    {
+      "id": "m-north-central-america-0001",
+      "op": "note",
+      "years": [1946, "present"],
+      "reason": "Editorial decisions for this file. (a) pids: ne:<code> for every unit that exists today, including dependencies (ne:bmu, ne:grl, ne:spm, ne:clp, with kind 'dependency' and power = the administering state); ovr: pids for former dependencies (ovr:british-honduras – one pid across the 1973 rename to Belize –, ovr:dominion-of-newfoundland, ovr:territory-of-alaska, ovr:territory-of-hawaii, ovr:panama-canal-zone). (b) The territories of Alaska and Hawaii (1946–1958) and the Panama Canal Zone are 'dependency' because the United States reported them to the UN as non-self-governing territories (GA res. 66 (I), 1946). (c) Greenland stays 'dependency' of Denmark for 1953–1978 although the 1953 constitution made it an integral county (amt) of Denmark: kept as one Danish-coloured unit so the 1953, 1979 and 2009 status changes show as periods; the period notes say what each status was. Likewise Saint Pierre and Miquelon stays a French 'dependency' (ne:spm) in its years as an overseas department (1976–1984), with periods at its 1976, 1985 and 2003 status changes. (d) Great Swan Island (1946–1971) is given to the United States itself (ne:usa) in tier 0 with a tier-1 'disputed' overlay, because it had no separate government. (e) Tier-1 'disputed' overlays: controller = the tier-0 holder, claimants = the states contesting it.",
+      "sources": [
+        {
+          "title": "UN General Assembly Resolution 66 (I), 14 December 1946 (Wikisource)",
+          "url": "https://en.wikisource.org/wiki/United_Nations_General_Assembly_Resolution_66_(1)",
+          "note": "territories reported under Art. 73(e): US – Alaska, Hawaii, Panama Canal Zone…; Denmark – Greenland; UK – Bermuda…; France – Saint-Pierre and Miquelon"
+        },
+        {
+          "title": "United Nations list of non-self-governing territories (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/United_Nations_list_of_non-self-governing_territories"
+        },
+        {
+          "title": "Greenland (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Greenland",
+          "note": "colonial status ended with the 1953 constitution (amt); Home Rule 1 May 1979; self-rule 21 June 2009"
+        },
+        {
+          "title": "Saint Pierre and Miquelon (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Saint_Pierre_and_Miquelon",
+          "note": "overseas territory 1946; department 19 July 1976; territorial collectivity 11 June 1985; overseas collectivity March 2003"
+        },
+        {
+          "title": "Swan Islands, Honduras (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Swan_Islands,_Honduras",
+          "note": "US Weather Bureau station from 1938, Radio Swan 1960s; treaty signed 22 November 1971, Honduran title effective 1 September 1972"
+        }
+      ],
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0002",
+      "op": "note",
+      "years": [1946, 1960],
+      "reason": "KNOWN GAP – Nicaraguan administration north of the Coco River until 1961. The 1906 award of the King of Spain made the Coco (Segovia, Wanks) the boundary, but Nicaragua rejected it and kept administering land north of the river. Honduras created the department of Gracias a Dios there in February 1957, which led to the Mocorón clashes (May 1957). The ICJ upheld the award on 18 November 1960. Under the OAS Basis of Arrangement of March 1961, Nicaraguan authorities evacuated about 8,700 km2 (IBS 36; 'more than eight thousand square kilometres' in Nicaragua's 2001 memorial), which Honduras took over by May 1961; a further 17.5 km2 at Teotecacinte was settled on 5 August 1961. Natural Earth's HND unit therefore shows Honduras in 1946–1960 on land Nicaragua held. Not drawn because no source found describes the line of Nicaraguan administration. The 1931 Irías–Ulloa protocol (approved by Nicaragua, never in force) described Nicaragua's claim as the whole left-bank basin of the Coco plus a straight line from the headwaters of the Awawas to the mouth of the Cruta; that is a claim, not proof of administration. To fix it, find a map of the 1957–1961 situation (the OAS Inter-American Peace Committee report of 16 July 1963, OEA/Ser.L/III/II.9, has the Basis of Arrangement and the Mixed Commission minutes), then add an HND subunit for 1946–1960 held by ne:nic.",
+      "sources": [
+        {
+          "title": "U.S. Department of State, International Boundary Study No. 36: Honduras – Nicaragua Boundary (12 October 1964)",
+          "url": "https://library.law.fsu.edu/Digital-Collections/LimitsinSeas/pdf/ibs036.pdf",
+          "note": "1961 Basis of Arrangement: evacuation by Nicaraguan authorities of approximately 8,700 km2 and its transfer to Honduran administration"
+        },
+        {
+          "title": "Nicaragua v. Honduras (ICJ case 120), Memorial of Nicaragua (2001), ch. III",
+          "url": "https://icj-web.leman.un-icc.cloud/sites/default/files/case-related/120/13719.pdf",
+          "note": "Cape Gracias a Dios and Teotecacinte under Nicaraguan control until 1961; withdrawal from more than 8,000 km2 by May 1961"
+        },
+        {
+          "title": "ICJ, Territorial and Maritime Dispute between Nicaragua and Honduras in the Caribbean Sea, summary of the Judgment of 8 October 2007",
+          "url": "https://www.icj-cij.org/node/103900"
+        },
+        {
+          "title": "FRUS 1955–1957 vol. VII, doc. 81 (Honduras–Nicaragua dispute, May 1957)",
+          "url": "https://history.state.gov/historicaldocuments/frus1955-57v07/d81"
+        },
+        {
+          "title": "Guerra de Mocorón (Wikipedia, Spanish)",
+          "url": "https://es.wikipedia.org/wiki/Guerra_de_Mocor%C3%B3n"
+        },
+        {
+          "title": "Protocolo de arreglo de la cuestión de límites con Honduras (Irías–Ulloa), 1931",
+          "url": "http://nicaragua.justia.com/nacionales/instrumentos-internacionales/protocolo-de-arreglo-de-la-cuestion-de-limites-con-honduras-aug-3-1931/gdoc/"
+        }
+      ],
+      "confidence": "medium",
+      "status": "known-gap",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0003",
+      "op": "note",
+      "years": [1946, 1991],
+      "reason": "KNOWN GAP – El Salvador–Honduras 'bolsones'. Six land sectors of the boundary stayed undemarcated after the colonial period; El Salvador's troops occupied Honduran territory during the Football War (14 July – 2 August 1969, ended within the year, no year-end change). The 1980 Lima peace treaty demarcated part of the line and sent the rest to the ICJ, whose Chamber decided all six sectors and the islands on 11 September 1992 (El Tigre to Honduras; Meanguera and Meanguerita to El Salvador; most of the disputed land to Honduras). Natural Earth draws the post-1992 line. Before 1992 control of the pockets was mixed and not mapped by any open source found; not drawn. Islands: NE already puts Meanguera (15.7 km2) in SLV and El Tigre (23.8 km2) in HND, matching the control of 1946–present; their formal dispute (1980 Lima treaty, art. 18.4, to the 1992 judgment) is drawn as the overlays m-north-central-america-meanguera and m-north-central-america-el-tigre.",
+      "sources": [
+        {
+          "title": "ICJ, Land, Island and Maritime Frontier Dispute (El Salvador/Honduras: Nicaragua intervening), Judgment of 11 September 1992 (case 75)",
+          "url": "https://www.icj-cij.org/case/75",
+          "note": "case overview: Special Agreement filed 11 December 1986; Honduras had occupied El Tigre since 1849 and the Chamber rejected its argument denying a real dispute over the island; Meanguera and Meanguerita Salvadoran, Honduras's 1991 protest 'too late to affect the presumption of acquiescence'"
+        },
+        {
+          "title": "ICJ, summary of the Judgment of 11 September 1992 (El Salvador/Honduras: Nicaragua intervening)",
+          "url": "https://www.icj-cij.org/node/103148",
+          "note": "El Salvador, by a diplomatic note of 12 October 1854, made a clear claim to the islands of Meanguera and Meanguerita"
+        },
+        {
+          "title": "Tratado General de Paz entre las Repúblicas de El Salvador y de Honduras (Lima, 30 October 1980), text (Equipo Nizkor)",
+          "url": "https://www.derechos.org/intlaw/doc/hndslv1.html",
+          "note": "art. 18.4: the Joint Boundary Commission to 'determinar la situación jurídica insular y de los espacios marítimos'; art. 31: submission to the ICJ if no agreement within five years"
+        },
+        {
+          "title": "Football War (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Football_War",
+          "note": "war 14 July 1969; ceasefire 18 July; Salvadoran withdrawal 2 August 1969; 1980 Lima peace treaty; 1992 ICJ"
+        },
+        {
+          "title": "El Salvador (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/El_Salvador"
+        }
+      ],
+      "confidence": "medium",
+      "status": "known-gap",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0005",
+      "op": "note",
+      "years": [1946, 1966],
+      "reason": "Chamizal (El Paso – Ciudad Juárez): the tract the 1911 arbitration had largely given to Mexico was transferred by the Chamizal Convention (29 August 1963) and handed over on 28 October 1967 (366 acres of the Chamizal and 264 acres east of Cordova Island to Mexico; 193 acres of Cordova Island to the United States), with the Rio Grande moved into a new channel. Natural Earth draws the present line, so 1946–1966 show the ~2.5 km2 as Mexican. Deliberately not corrected: far below the dataset's 1,000 km2 granularity and below Natural Earth's ~1 km precision. The later minor exchanges under the 1970 Boundary Treaty are also not drawn.",
+      "sources": [
+        {
+          "title": "Chamizal dispute (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Chamizal_dispute",
+          "note": "Chamizal Convention 29 August 1963; transfer 28 October 1967"
+        }
+      ],
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0006",
+      "op": "note",
+      "years": [2010, 2018],
+      "reason": "Isla Portillos (Costa Rica–Nicaragua): Nicaraguan troops occupied about 3 km2 at the northern tip of Isla Portillos in late 2010. The ICJ ordered provisional measures in March 2011, found on 16 December 2015 that the disputed territory is Costa Rican, and on 2 February 2018 that Costa Rica holds the whole northern part of Isla Portillos except Harbor Head Lagoon and its sandbar (Nicaraguan), ordering a Nicaraguan military camp removed. Natural Earth's NIC/CRI line already matches the 2018 judgment, with the lagoon as a separate 1.2 km2 NIC part. The 2010–2013 occupation is below the dataset's granularity; not drawn.",
+      "sources": [
+        {
+          "title": "Isla Calero (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Isla_Calero"
+        },
+        {
+          "title": "ICJ, Land Boundary in the Northern Part of Isla Portillos (Costa Rica v. Nicaragua), Judgment of 2 February 2018 (case 165)",
+          "url": "https://www.icj-cij.org/case/165"
+        },
+        {
+          "title": "Costa Rica (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Costa_Rica"
+        }
+      ],
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0007",
+      "op": "note",
+      "years": [1946, 1970],
+      "reason": "Corn Islands (Nicaragua): leased to the United States for 99 years by the Bryan–Chamorro Treaty (signed 5 August 1914, ratified 1916), which also gave an option for a naval base in the Gulf of Fonseca. The treaty was abolished by a 1970 convention. No source shows US occupation or administration, so the islands stay Nicaraguan throughout.",
+      "sources": [
+        {
+          "title": "Bryan–Chamorro Treaty (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Bryan%E2%80%93Chamorro_Treaty"
+        }
+      ],
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0008",
+      "op": "note",
+      "years": [1946, "present"],
+      "reason": "Machias Seal Island and North Rock (Gulf of Maine): Canadian lighthouse and permanent presence since 1832, claimed by the United States; left in the 'grey zone' by the 1984 ICJ Gulf of Maine judgment. Not drawn because the 8 ha island is not in Natural Earth's land or minor-islands layers (nearest NE land 17.8 km away). If a future land layer includes it, give it to Canada with a 'disputed' overlay (claimant ne:usa).",
+      "sources": [
+        {
+          "title": "Machias Seal Island (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Machias_Seal_Island"
+        }
+      ],
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0009",
+      "op": "note",
+      "years": [2022, "present"],
+      "reason": "PROPOSED – Hans Island (Tartupaluk) land boundary of the 14 June 2022 agreement: the line follows the ravine running north–south across the island; the western ~40% goes to Canada (Nunavut), the eastern ~60% to Denmark/Greenland. Not applied because the sources consulted confirm Denmark's ratification (19 December 2023) but not Canada's (still pending in February 2025; the Arctic Foreign Policy of 6 December 2024 promised to finalize it) nor the entry into force, and because Natural Earth's islet (1.44 km2, NE disputed area B21) lies about 2.1 km east of the true island. Wikidata gives (unreferenced) land-boundary points (-66.4507, 80.8214) T1, (-66.4645, 80.8259) T2, (-66.4567, 80.8318) T3 (lon, lat). Shifted by +0.1191 deg longitude onto NE's islet they would cut it about 51/49 rather than 40/60, so NE's island shape is too rough for an exact split. When entry into force is confirmed, add a GRL subunit 'Hans Island west' held by ne:can from that year, using a polygon west of the shifted line (verify against the treaty annex coordinates and the official datum), or wait for a land layer that draws the island correctly.",
+      "sources": [
+        {
+          "title": "Hans Island (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Hans_Island",
+          "note": "dispute from 1973; 14 June 2022 agreement; ~40% west to Canada, ~60% east to Denmark/Greenland; Folketing ratification 19 December 2023"
+        },
+        {
+          "title": "Global Affairs Canada, \"Boundary dispute\" backgrounder (14 June 2022)",
+          "url": "https://www.canada.ca/en/global-affairs/news/2022/06/boundary-dispute.html",
+          "note": "land boundary follows the natural ravine running north–south"
+        },
+        {
+          "title": "Whisky War (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Whisky_War"
+        },
+        {
+          "title": "Wikidata, Hans Island Point T1/T2/T3 (Q139677269, Q139677272, Q139677274)",
+          "url": "https://www.wikidata.org/wiki/Q139677272",
+          "note": "unreferenced coordinates of the 2022 land-boundary points"
+        },
+        {
+          "title": "Legion Magazine, \"Canada announces Arctic foreign policy overhaul\" (S. J. Thorne, 19 February 2025)",
+          "url": "https://legionmagazine.com/canada-announces-arctic-foreign-policy-overhaul/",
+          "note": "Denmark's parliament ratified in December 2023, Canada's had not yet; the Arctic Foreign Policy of 6 December 2024 promises to finalize the implementation of the Tartupaluk boundary agreement"
+        }
+      ],
+      "confidence": "medium",
+      "status": "proposed",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0011",
+      "op": "note",
+      "years": [1946, "present"],
+      "reason": "Panama Canal Zone polygon (PAN subunit, 1946–1978): approximate construction from the treaty definition, checked against two georeferenced US government maps. (1) Canal centreline = Natural Earth 'Panama Canal' centrelines (ne_10m_rivers_lake_centerlines), extended along the dredged approach channels to the Limón Bay breakwater (79.920 W) and the Pacific channel past Flamenco Island (to 8.898 N 79.540 W), then 3 marine miles out to sea. (2) A band 5 statute miles (8,046.72 m) each side with square ends. (3) Plus Natural Earth's Gatun Lake widened by 300 m for the 100-ft contour ('Canal Zone boundary line follows 100 ft. contour around Gatun Lake' – 1920 map). (4) Plus Madden Lake (Alhajuela, 1935), digitized from the 1947 Army Map Service sheet (59 km2) and widened by 150 m for the ~260-ft contour named on that sheet, and the Chagres River corridor from the band to Madden Dam (300 m buffer). (5) Minus the city of Colón (north part of Manzanillo Island) and the city of Panama east of the Curundú line (79°32.2'W 9°02.2'N to 79°33.8'W 8°57.2'N, read off the 1920 map). Result: 1,370 km2 on NE land (official total 1,432 km2 including water). Compared with the 1920 map the band edges lie within about 1 km of the drawn boundary (west edge on 80°00'W, east edge near 79°51'W at the Atlantic; Arraiján just outside). Not drawn: the Colón corridor (1950) and the small 1955 Remón–Eisenhower land returns. After 1 October 1979 the zone ceased to exist and Panama took jurisdiction; until 31 December 1999 the United States kept canal operating areas and defence sites under the treaties. These were scattered parcels without an open map, so they are not drawn and the land shows as Panama from 1979. Sources are public-domain US government maps (1920 Panama Canal map signed by Governor Chester Harding; 1947 US Army Map Service), georeferenced on their printed graticules; scripts in .cache/audit/audit-modern-north-central-america (a05–a08).",
+      "sources": [
+        {
+          "title": "Panama Canal Zone (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Panama_Canal_Zone",
+          "note": "5 miles each side of the centreline, Panama City and Colón excluded, artificial lakes included, 553 sq mi; abolished 1 October 1979"
+        },
+        {
+          "title": "Zona del Canal de Panamá (Wikipedia, Spanish)",
+          "url": "https://es.wikipedia.org/wiki/Zona_del_Canal_de_Panam%C3%A1"
+        },
+        {
+          "title": "Linda Hall Library, \"The Land Divided, the World United\" – glossary (Canal Zone, Madden Dam)",
+          "url": "https://www.lindahall.org/experience/digital-exhibitions/the-land-divided-the-world-united/15-glossary",
+          "note": "zone: five miles each side and three miles into each ocean"
+        },
+        {
+          "title": "The Panama Canal, \"Map of the Canal Zone, Aug. 1, 1920\" (NARA 6861830, public domain), via Wikimedia Commons",
+          "url": "https://commons.wikimedia.org/wiki/File:Map_of_the_Panama_Canal_Zone_-_NARA_-_6861830.jpg",
+          "note": "georeferenced on its graticule; \"Canal Zone boundary line follows 100 ft. contour around Gatun Lake\""
+        },
+        {
+          "title": "US Army Map Service, \"Canal Zone and vicinity\" 1:100,000 (1947, public domain), via Wikimedia Commons",
+          "url": "https://commons.wikimedia.org/wiki/File:Panama_-_Canal_Zone_and_vicinity.jpg",
+          "note": "georeferenced on its graticule; Madden Lake and the Chagres corridor inside the zone; Madden Lake digitized from it"
+        },
+        {
+          "title": "\"Panama Canal Zone\" (US government map, 1947, public domain), via Wikimedia Commons",
+          "url": "https://commons.wikimedia.org/wiki/File:Panama_Canal_Zone.jpg"
+        },
+        {
+          "title": "Madden Dam (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Madden_Dam"
+        },
+        {
+          "title": "Torrijos–Carter Treaties (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Torrijos%E2%80%93Carter_Treaties",
+          "note": "signed 7 September 1977, in force 1 October 1979; canal handed over 31 December 1999"
+        }
+      ],
+      "confidence": "medium",
+      "status": "active",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0012",
+      "op": "note",
+      "years": [1989, 1990],
+      "reason": "United States invasion of Panama (Operation Just Cause, 20 December 1989 – 31 January 1990): the Endara government was installed and Noriega captured; no border change and no occupation regime, so Panama keeps its own colour in 1989.",
+      "sources": [
+        {
+          "title": "Panama (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Panama",
+          "note": "Canal Zone returned 1979, canal 31 December 1999; US invasion 20 December 1989 – 31 January 1990"
+        }
+      ],
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0013",
+      "op": "note",
+      "years": [1946, "present"],
+      "reason": "KNOWN GAP (pipeline) – Belize's cays outside Natural Earth's admin-0 polygon. The Sapodilla Cayes (NE B80; land parts at -88.2564,16.1054 and -88.3254,16.1571), the Lighthouse Reef cays (-87.4961,17.4441, 3.6 km2; -87.5114,17.1810), Glover's Reef (-87.7920,16.7305) and an unnamed 1.3 ha cay at -88.1908,16.2200 are NE minor-island parts not covered by BLZ, and lie 26–49 km from it.Coast rule (b) only reaches 30 km, and at the Sapodilla Cayes Guatemala is at about the same distance, so they would stay unclaimed. All are held by Belize (British Honduras to 1980). A modern file cannot assign them, because subunits are clipped to their unit and modern files may hold only notes. They need a pipeline option that lets a modern unit claim listed uncovered islands, e.g. a unit-level 'islands' geometry not clipped to the unit.",
+      "sources": [
+        {
+          "title": "Sapodilla Cayes (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Sapodilla_Cayes",
+          "note": "administered by Belize; claimed by Honduras in its 1982 constitution and by Guatemala"
+        },
+        {
+          "title": "British Honduras (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/British_Honduras",
+          "note": "self-government 1 January 1964; renamed Belize 1 June 1973; independence 21 September 1981; 1945 Guatemalan constitution"
+        }
+      ],
+      "confidence": "medium",
+      "status": "known-gap",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0014",
+      "op": "note",
+      "years": [1946, "present"],
+      "reason": "KNOWN GAP (pipeline) – islands of these units that Natural Earth leaves outside every admin-0 polygon and that coast rule (b) (single polity within 10 km, or nearest within 30 km and 3x closer than the next) would leave UNCLAIMED in every modern year. Simulated on NE units, then the islands identified by position: UNITED STATES – Stuart Island WA (-123.1959,48.6743; 7.1 km2; Canada is nearer than the US in NE!), Waldron Island WA (-123.0344,48.6989; 12.2 km2) and Sucia Island WA (-122.9152,48.7593; 3.5 km2) in the San Juan Islands; Santa Barbara Island CA (-119.0356,33.4768; 2.8 km2); Farallon Islands (-123.0054,37.6952); Bogoslof Island AK (-168.0362,53.9301; Territory of Alaska to 1958); Dry Tortugas FL (around -82.90,24.63); French Frigate Shoals (around -166.22,23.82) and Pearl and Hermes Atoll (around -175.85,27.78) in the Northwestern Hawaiian Islands (State of Hawaii; Territory of Hawaii to 1958). Pearl and Hermes is nearer to Midway (UMI) than to NE's Hawaii polygon, so a plain wider radius would mis-assign it. CANADA – Hudson Bay and James Bay islets (-79.1645,52.5433, 4.5 km2; -79.6508,57.9048; -80.7943,58.4140). MEXICO – San Pedro Mártir Island, Gulf of California (-112.3072,28.3800; 2.4 km2); Campeche Bank cays: Cayo Arenas (-91.3995,22.1176), Cayo Arcas (around -91.97,20.21) and Arrecife Triángulos (around -92.27,20.94). HONDURAS – the Vivorillo cays and neighbours (15.84–16.04 N, 83.25–83.33 W), and the cays north of 15 N between 82.53 and 82.70 W (Honduran per the ICJ judgment of 8 October 2007, which named Bobel, Savanna, Port Royal and South Cay; match each NE islet before assigning). NICARAGUA – outlying Miskito Cays (14.50–14.65 N, 82.64–83.02 W; Nicaragua is 21–27 km away, Honduras 50–67 km), and an islet at -82.6936,14.8065 (probably Nicaraguan; check). Belize's cays: m-north-central-america-0013. These need the same pipeline option (a modern unit claiming listed uncovered islands); check the result in qa-report.json's unassigned land.",
+      "sources": [
+        {
+          "title": "ICJ, Territorial and Maritime Dispute between Nicaragua and Honduras in the Caribbean Sea, summary of the Judgment of 8 October 2007",
+          "url": "https://www.icj-cij.org/node/103900"
+        },
+        {
+          "title": "Territory of Hawaii (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Territory_of_Hawaii",
+          "note": "to 21 August 1959; Palmyra, Midway, Kingman, Johnston and Sand Island excluded from the state"
+        },
+        {
+          "title": "Territory of Alaska (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Territory_of_Alaska",
+          "note": "24 August 1912 – 3 January 1959"
+        }
+      ],
+      "confidence": "medium",
+      "status": "known-gap",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0016",
+      "op": "note",
+      "years": [1999, "present"],
+      "reason": "Nunavut and Inuit self-government in Canada: Nunavut was split from the Northwest Territories on 1 April 1999 under the Nunavut Act and the Nunavut Land Claims Agreement Act (both 1993). It has a public territorial government for all residents, not an Inuit government, so it is neither a separate polity nor an indigenous overlay here: internal provincial and territorial boundaries are not drawn in the modern layer. The Inuit regional governments and settlement lands (Nunatsiavut, Inuvialuit, Nunavik, Inuit Owned Lands) are covered by the known gap on Canadian indigenous lands.",
+      "sources": [
+        {
+          "title": "Nunavut (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Nunavut",
+          "note": "created 1 April 1999; Nunavut Act and Nunavut Land Claims Agreement Act 1993; public government"
+        },
+        {
+          "title": "Crown-Indigenous Relations and Northern Affairs Canada, \"Modern treaties\"",
+          "url": "https://www.rcaanc-cirnac.gc.ca/eng/1677073191939/1677073214344"
+        }
+      ],
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0017",
+      "op": "note",
+      "years": [1946, "present"],
+      "reason": "KNOWN GAP – American Indian reservations (tribal nations' lands) are not drawn in the modern layer. Public-domain geometry exists (US Census TIGER/Line AIANNH, also served by TIGERweb), but current boundaries cannot simply be back-dated to 1946. Each reservation needs a legal history first: Navajo–Hopi (the 1882 Executive Order Hopi reservation of 16 December 1882, the Joint Use Area, the 1974 and 1996 partition acts); diminishment and disestablishment rulings (e.g. Rosebud, Lake Traverse, Yankton, Uintah and Ouray, Osage); terminations (Menominee 1961–1973; Klamath, terminated 1954 and restored as a tribe in 1986 without land, so its reservation of 1946–1960 is missing from current data); and McGirt v. Oklahoma (2020), after which the Muscogee and other eastern Oklahoma reservations are recognised as never disestablished. The 46 federal reservations of 1,000 km2 or more in the Census 2020 layer (GEOID, land km2): Navajo Nation 2430R 58,370; Uintah and Ouray 4390R 17,540; Tohono O'odham Nation 4200R 11,535; Pine Ridge 2810R 11,248; Cheyenne River 0605R 11,031; Standing Rock 3970R 9,242; Crow 0845R 9,233; Wind River 4610R 8,978; Fort Peck 1250R 8,517; San Carlos 3355R 7,517; Fort Apache 1140R 6,799; Hopi 1505R 6,558; Blackfeet 0305R 6,143; Osage 2595R 5,819; Yakama Nation 4690R 5,576; Colville 0760R 5,480; Flathead 1110R 5,014; Hualapai 1545R 4,121; Lake Traverse 1860R 3,753; Rosebud 3235R 3,596; Fort Berthold 1160R 3,417; Jicarilla Apache Nation 1700R 3,409; Nez Perce 2445R 3,094; White Earth 4595R 2,833; Southern Ute 3925R 2,744; Warm Springs 4545R 2,617; Leech Lake 1940R 2,521; Fort Belknap 1150R 2,511; Ute Mountain 4470R 2,303; Red Lake 3100R 2,288; Fort Hall 1185R 2,108; Laguna Pueblo 1840R 1,987; Mescalero 2205R 1,863; Northern Cheyenne 2490R 1,805; Yankton 4700R 1,723; Zuni 4785R 1,706; Gila River 1310R 1,511; Pyramid Lake Paiute 3010R 1,439; Walker River 4515R 1,368; Coeur d'Alene 0705R 1,357; Colorado River 0735R 1,185; Duck Valley 0965R 1,166; Oneida Nation (NY) 2555R 1,096; Crow Creek 0855R 1,094; Acoma Pueblo 0010R 1,070; Spirit Lake 3935R 1,009. Recommended: a dedicated modern indigenous-overlay pass, coordinated with the 1945 extents the historical northern-america file uses, with one tier-1 'indigenous' overlay per reservation (approximate, period breaks at the legal changes above). Not polities and not to be drawn as such: the Alaska Native regional corporations of 1971 (Metlakatla's Annette Islands Reserve, ~350 km2, is Alaska's only reservation) and the Hawaiian Home Lands.",
+      "sources": [
+        {
+          "title": "U.S. Census Bureau, TIGERweb AIANNHA map service (Federal American Indian Reservations, Census 2020 layer; public domain)",
+          "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/AIANNHA/MapServer"
+        },
+        {
+          "title": "Indian termination policy (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Indian_termination_policy",
+          "note": "HCR 108 (1953); Menominee terminated 1961, restored 1973; Klamath terminated 1954, restored 1986 without land"
+        },
+        {
+          "title": "McGirt v. Oklahoma (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/McGirt_v._Oklahoma"
+        },
+        {
+          "title": "Hopi Reservation (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Hopi_Reservation",
+          "note": "established 16 December 1882; partition by acts of 1974 and 1996; 6,557 km2"
+        }
+      ],
+      "confidence": "medium",
+      "status": "known-gap",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0018",
+      "op": "note",
+      "years": [1975, "present"],
+      "reason": "KNOWN GAP – First Nations, Inuit and Métis lands in Canada are not drawn. Modern treaties with defined settlement areas (effective dates per CIRNAC): James Bay and Northern Quebec Agreement 1977, Northeastern Quebec 1978, Inuvialuit 1984, Gwich'in 1992, Nunavut 1993, Sahtu 1994, Yukon First Nations 1995–2006, Nisga'a 2000, Tłı̨chǫ 2005, Labrador Inuit 2005 (Nunatsiavut Government from 1 December 2005; 72,520 km2 settlement area, 15,800 km2 Labrador Inuit Lands), Nunavik Inuit 2008, Eeyou Marine Region 2012. Most Indian Act reserves are far below the 1,000 km2 granularity. Geometry: Natural Resources Canada's 'Aboriginal Lands of Canada Legislative Boundaries' (reserves and land-claim settlement lands), under the Open Government Licence – Canada. Its attribution must first be added to the manifest, ATTRIBUTION.md and the site credits; the build's licence gate accepts attribution licences.",
+      "sources": [
+        {
+          "title": "Crown-Indigenous Relations and Northern Affairs Canada, \"Modern treaties\"",
+          "url": "https://www.rcaanc-cirnac.gc.ca/eng/1677073191939/1677073214344"
+        },
+        {
+          "title": "Natural Resources Canada, \"Aboriginal Lands of Canada Legislative Boundaries\" (Open Government Licence – Canada)",
+          "url": "https://open.canada.ca/data/en/dataset/522b07b9-78e2-4819-b736-ad9208eb1067"
+        },
+        {
+          "title": "Nunatsiavut (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Nunatsiavut",
+          "note": "Labrador Inuit Land Claims Agreement 2005; 72,520 km2 settlement area; 15,800 km2 Labrador Inuit Lands"
+        }
+      ],
+      "confidence": "medium",
+      "status": "known-gap",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0019",
+      "op": "note",
+      "years": [1987, "present"],
+      "reason": "KNOWN GAP – Nicaragua's Caribbean coast. (a) The Autonomy Statute (Law 28, approved September 1987) created the North and South Atlantic (Caribbean Coast) Autonomous Regions for the coast's peoples (Miskitu, Mayangna, Rama, Garifuna, Creole, mestizo). They are NE admin-1 units NI-AN and NI-AS, but they are multi-ethnic regional governments, not indigenous polities, so they are not drawn as indigenous overlays. (b) Under Law 445 (2003) the Miskitu, Mayangna, Rama and Afro-descendant communities received titles to 23 territories, about a third of the country. That is the real indigenous land map, but no open geometry was found; not drawn.",
+      "sources": [
+        {
+          "title": "North Caribbean Coast Autonomous Region (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/North_Caribbean_Coast_Autonomous_Region"
+        },
+        {
+          "title": "Miskito people (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Miskito_people",
+          "note": "September 1987 autonomy statute; 23 territories; Honduran titles from 2013"
+        }
+      ],
+      "confidence": "medium",
+      "status": "known-gap",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0020",
+      "op": "note",
+      "years": [2012, "present"],
+      "reason": "KNOWN GAP – Honduran Muskitia: from 2012/2013 the Honduran state issued intercommunity titles to the Miskitu territorial councils (organised since 1998 under MASTA). Per CONPAH and Forest Trends, more than one million hectares had been titled, possibly 1.5 million at the end of the process, in Gracias a Dios. No open geometry was found; not drawn.",
+      "sources": [
+        {
+          "title": "CONPAH / Forest Trends, \"The Titling Process in Honduran Muskitia and its Implications for the Country\" (information brief)",
+          "url": "https://www.forest-trends.org/wp-content/uploads/imported/honduras-brief_english_a4_final-pdf.pdf",
+          "note": "more than one million hectares titled to Miskitu territorial councils"
+        },
+        {
+          "title": "Miskito people (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Miskito_people",
+          "note": "September 1987 autonomy statute; 23 territories; Honduran titles from 2013"
+        }
+      ],
+      "confidence": "medium",
+      "status": "known-gap",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0021",
+      "op": "note",
+      "years": [1977, "present"],
+      "reason": "KNOWN GAP – other indigenous territories of Central America and Mexico not drawn (no open geometry, or below granularity). Costa Rica: 24 indigenous territories under the Indigenous Law of 1977 (Bribri, Cabécar, Ngäbe, Boruca, Térraba, Maleku, Huetar, Chorotega), 3,344 km2 (5.9%) in total. Panama, beyond the three NE-admin-1 comarcas drawn here: Madungandí (Law 24 of 12 January 1996, ~2,076 km2, above granularity), Wargandí (Law 34 of 25 July 2000, 956 km2), Naso Tjër Di (Law 188 of 4 December 2020, 1,606 km2). Belize: Maya customary land tenure in the Toledo District, upheld by the Caribbean Court of Justice (consent order of 22 April 2015; judgment of 30 October 2015), not yet demarcated. Mexico: the Zapatista autonomous municipalities and caracoles in Chiapas (since the 1994 uprising, reorganised in 2023) are de facto self-governing communities without fixed boundaries; ejidos and agrarian communities are tenure, not polities.",
+      "sources": [
+        {
+          "title": "Indigenous peoples in Costa Rica (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Indigenous_peoples_in_Costa_Rica",
+          "note": "24 indigenous territories, 3,344 km2 (5.9%); Indigenous Law 1977"
+        },
+        {
+          "title": "Madungandí (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Madungand%C3%AD",
+          "note": "Law 24 of 12 January 1996; ~2,076 km2; corregimiento-level comarca"
+        },
+        {
+          "title": "Guna de Wargandí (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Guna_de_Wargand%C3%AD",
+          "note": "Law 34 of 25 July 2000; 956 km2"
+        },
+        {
+          "title": "Naso Tjër Di Comarca (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Naso_Tj%C3%ABr_Di_Comarca",
+          "note": "Law 188 sanctioned 4 December 2020; 1,606 km2"
+        },
+        {
+          "title": "CARICOM, \"CCJ grants historic constitutional relief to Maya people\" – Maya Leaders Alliance v. Attorney General of Belize [2015] CCJ 15 (AJ), 30 October 2015",
+          "url": "https://caricom.org/ccj-grants-historic-constitutional-relief-to-maya-people/"
+        },
+        {
+          "title": "Rebel Zapatista Autonomous Municipalities (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Rebel_Zapatista_Autonomous_Municipalities"
+        }
+      ],
+      "confidence": "medium",
+      "status": "known-gap",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    },
+    {
+      "id": "m-north-central-america-0022",
+      "op": "note",
+      "years": [1992, "present"],
+      "reason": "Conejo Island (Isla Conejo, Gulf of Fonseca, 13°20′52″N 87°44′34″W): a small islet administered by Honduras (department of Valle) with a military post and claimed by El Salvador (La Unión). El Salvador had asked the ICJ Chamber to settle every island of the Gulf, but the 1992 judgment ruled only on El Tigre, Meanguera and Meanguerita, and the dispute over Conejo continues. Not drawn because the islet is not in Natural Earth's land (nearest NE land, the Honduran coast, is 1.7 km away). If a future land layer includes it, leave it to Honduras with a 'disputed' overlay (claimant ne:slv).",
+      "sources": [
+        {
+          "title": "Conejo Island (Wikipedia)",
+          "url": "https://en.wikipedia.org/wiki/Conejo_Island",
+          "note": "13°20′52″N 87°44′34″W; administered by Honduras (Valle), temporary military personnel only; claimed by El Salvador (La Unión); not addressed by the 1992 judgment"
+        },
+        {
+          "title": "ICJ, Land, Island and Maritime Frontier Dispute (El Salvador/Honduras: Nicaragua intervening), Judgment of 11 September 1992 (case 75)",
+          "url": "https://www.icj-cij.org/case/75",
+          "note": "case overview: Special Agreement filed 11 December 1986; Honduras had occupied El Tigre since 1849 and the Chamber rejected its argument denying a real dispute over the island; Meanguera and Meanguerita Salvadoran, Honduras's 1991 protest 'too late to affect the presumption of acquiescence'"
+        }
+      ],
+      "confidence": "high",
+      "status": "active",
+      "author": "agent:audit-modern-north-central-america",
+      "date": "2026-10-01"
+    }
+  ]
+}
