@@ -1,7 +1,8 @@
 import type { PolityProps } from '@alexs-atlas/borders';
 
 /**
- * Paste period-specific colour data here.
+ * Retained period-specific colour data. Enable USE_PASTED_COLOR_SCHEMES in
+ * map-colors.ts to use it instead of the original Atlas palette.
  *
  * `fixed` accepts either current Alex's Atlas ids (`ne:fra`, `clio:…`) or the
  * display names used by the old palette (`France`, `Ottoman Empire`, …).
@@ -16,7 +17,7 @@ export interface PastedColorScheme {
 }
 
 /**
- * Tune the pasted schemes without changing their stored base colours.
+ * Tune the active map palette without changing its stored base colours.
  * Values are proportional percentages: -60 removes 60% of the existing
  * saturation, while -10 makes the existing lightness 10% darker.
  */
@@ -87,7 +88,7 @@ export function adjustHexColor(
   return `#${toHex(adjustedRed)}${toHex(adjustedGreen)}${toHex(adjustedBlue)}${alpha}`;
 }
 
-const adjustSchemeColor = (color: string): string =>
+export const adjustSchemeColor = (color: string): string =>
   adjustHexColor(color, SCHEME_SATURATION_ADJUSTMENT, SCHEME_LIGHTNESS_ADJUSTMENT);
 
 // ---- Paste the pre-1900 scheme from the previous commit here ----------------------

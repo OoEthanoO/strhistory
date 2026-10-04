@@ -19,7 +19,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { createBorders, type BordersClient, type Manifest } from '@alexs-atlas/borders';
 import { ChronoGlobe, type GlobeView, type SelectInfo } from '@alexs-atlas/globe';
 import { formatRange } from './era';
-import { MAP_THEME, mapColor } from './map-colors';
+import { MAP_THEME, USE_PASTED_COLOR_SCHEMES, mapColor } from './map-colors';
 import type { GlobeTopic } from './types';
 import { pinOffsets } from './pin-layout';
 
@@ -173,7 +173,7 @@ export class GlobeController {
     // Palette functions are baked into each frame's feature properties. Trigger a
     // recolour before loading the next frame so a period boundary takes effect even
     // when the border geometry itself has not changed.
-    this.globe.layers?.setPalette((p) => mapColor(p, year));
+    if (USE_PASTED_COLOR_SCHEMES) this.globe.layers?.setPalette((p) => mapColor(p, year));
     this.globe.setYear(year);
   }
 
