@@ -1,0 +1,62 @@
+<!doctype html>
+<!--
+  Recipe: plain HTML + ES modules, no bundler (packages/globe/AGENTS.md §8.1).
+  Copy these files to your static host (scripts/recipes.mjs serves them the same way):
+    /vendor/maplibre-gl/          ← node_modules/maplibre-gl/dist/
+    /vendor/topojson-client/      ← node_modules/topojson-client/src/
+    /vendor/alexs-atlas-borders/  ← node_modules/@alexs-atlas/borders/dist/
+    /vendor/alexs-atlas-globe/    ← node_modules/@alexs-atlas/globe/dist/
+    /data/alexs-atlas/            ← node_modules/@alexs-atlas/borders/data/
+  MapLibre finds its worker (maplibre-gl-worker.mjs) next to maplibre-gl.mjs by itself.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChronoGlobe — plain HTML</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/vendor/maplibre-gl/maplibre-gl.css" />
+    <link rel="stylesheet" href="/vendor/alexs-atlas-globe/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "maplibre-gl": "/vendor/maplibre-gl/maplibre-gl.mjs",
+          "topojson-client": "/vendor/topojson-client/index.js",
+          "@alexs-atlas/borders": "/vendor/alexs-atlas-borders/index.js",
+          "@alexs-atlas/globe": "/vendor/alexs-atlas-globe/index.js"
+        }
+      }
+    </script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #070b14;
+      }
+      #globe {
+        position: absolute;
+        inset: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="globe"></div>
+    <script type="module">
+      import { ChronoGlobe } from '@alexs-atlas/globe';
+
+      const year = Number(new URLSearchParams(location.search).get('year') ?? 1453);
+      const globe = new ChronoGlobe(
+        document.getElementById('globe'),
+        {
+          data: { manifestUrl: '/data/alexs-atlas/manifest.json' },
+          year,
+          view: { center: [30, 38], scale: 1.1 },
+          fontFamily: 'system-ui, sans-serif',
+          exposeAs: '__globe', // optional dev handle (window.__globe)
+        },
+        { onYearApplied: (y) => (document.title = `Borders of ${y}`) },
+      );
+    </script>
+  </body>
+</html>

@@ -1,0 +1,99 @@
+/* @alexs-atlas/globe — the package's only stylesheet (dist/style.css).
+ * Rules: every selector starts with a .ca- class; no :root writes; no element
+ * selectors outside our own roots; components fill their container.
+ * Theme with --ca-* custom properties on any ancestor (see AGENTS.md "Theming").
+ * Hosts also import maplibre-gl/dist/maplibre-gl.css. */
+@import './timeline/timeline.css';
+
+/* ---- globe ------------------------------------------------------------------ */
+
+.ca-globe {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--ca-space, #070b14);
+  color: var(--ca-text, #e6edf6);
+  font-family: var(--ca-font, 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif);
+}
+
+/* Star field (sky.ts): a canvas under the map's transparent canvas, stars fixed in space
+ * and drawn with the camera's orientation, so they move as in a 3D scene; they fade out
+ * towards the globe's rim. Shown while the theme's `stars` is on (.ca-globe--stars). */
+.ca-globe__sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.ca-globe:not(.ca-globe--stars) .ca-globe__sky {
+  display: none;
+}
+
+@media (prefers-contrast: more), (forced-colors: active) {
+  .ca-globe__sky {
+    display: none;
+  }
+}
+
+.ca-globe__map {
+  position: absolute;
+  inset: 0;
+}
+
+.ca-globe .maplibregl-canvas:focus-visible {
+  outline: 2px solid var(--ca-focus, #7cc4ff);
+  outline-offset: -2px;
+}
+
+.ca-globe__tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  max-width: min(320px, 70%);
+  padding: 6px 10px;
+  border: 1px solid var(--ca-stroke, rgba(148, 163, 184, 0.18));
+  border-radius: 8px;
+  background: var(--ca-surface, rgba(14, 20, 32, 0.9));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  color: var(--ca-text, #e6edf6);
+  font-size: 13px;
+  line-height: 1.35;
+  pointer-events: none;
+  white-space: normal;
+  backdrop-filter: blur(8px);
+}
+
+.ca-globe__tooltip[hidden] {
+  display: none;
+}
+
+/* MapLibre's attribution on the dark globe. */
+.ca-globe .maplibregl-ctrl-attrib {
+  background: var(--ca-surface, rgba(14, 20, 32, 0.78));
+  color: var(--ca-text-muted, #9aa7b8);
+  font-size: 11px;
+}
+
+.ca-globe .maplibregl-ctrl-attrib a {
+  color: var(--ca-text, #e6edf6);
+}
+
+.ca-globe .maplibregl-ctrl-attrib.maplibregl-compact {
+  background: var(--ca-surface, rgba(14, 20, 32, 0.78));
+}
+
+.ca-globe .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+
+/* <chrono-globe> host (defineChronoGlobeElement). */
+.ca-globe-host {
+  display: block;
+  position: relative;
+  min-height: 200px;
+}

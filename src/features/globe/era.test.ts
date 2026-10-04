@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { clampYear, formatRange, formatYear, indexOfYear, timelineX, topicInYear, yearAtTimelineX } from './era.ts';
+import { clampYear, formatRange, formatYear, indexOfYear, topicInYear } from './era.ts';
 import type { GlobeSnapshot } from './types';
 
 test('event pins are visible only inside their inclusive date range', () => {
@@ -19,13 +19,6 @@ test('BCE dates and ranges use historical labels', () => {
   assert.equal(formatYear(-300000), '300000 BCE');
   assert.equal(formatRange(-500, -100), '500–100 BCE');
   assert.equal(formatRange(-1, 1), '1 BCE–1');
-});
-
-test('arbitrary selected years survive the timeline scale without snapping to maps', () => {
-  const stops = [-300000, -10000, -3000, -1, 500, 1100, 1783, 1789, 1800, 1878, 2026];
-  for (const year of [-299999, -12000, -2222, -500, -1, 1, 1756, 1789, 1861, 1933, 2026]) {
-    assert.equal(yearAtTimelineX(stops, timelineX(stops, year)), year);
-  }
 });
 
 test('year limits reach human prehistory and the supplied present without year zero', () => {

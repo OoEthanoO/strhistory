@@ -1,0 +1,1206 @@
+/*
+ * @alexs-atlas/globe — Timeline (root AGENTS.md §5.4, §7.2, visual identity §7.5).
+ *
+ * Every selector starts at .ca-timeline; no :root writes. Theme with custom
+ * properties on any ancestor (shared with the rest of @alexs-atlas/globe;
+ * fallbacks = the navy/brass defaults of root AGENTS.md §7.5):
+ *   --ca-surface          timeline background (glassy navy)
+ *   --ca-surface-2        raised surfaces (hover readout, error bubble, thumb ring)
+ *   --ca-stroke           hairline borders
+ *   --ca-text, --ca-text-muted, --ca-text-faint
+ *   --ca-accent           brass: thumb, play button, lifespan band   (#e9b45f)
+ *   --ca-accent-ink       icons on the accent
+ *   --ca-focus            focus rings                                  (#7cc4ff)
+ *   --ca-danger           invalid typed year
+ *   --ca-font             UI font (Inter); --ca-font-display: the year field (Newsreader)
+ *   --ca-color-scheme     dark (default) | light — native controls (speed menu)
+ *   --ca-timeline-inset   side padding of the track (default 20px, 14px compact)
+ *   --ca-timeline-density colour of the border-change strip
+ *   --ca-timeline-blur    backdrop blur (default 14px; 0px to disable)
+ *   --ca-timeline-safe-area  extra bottom padding; set it to env(safe-area-inset-bottom)
+ *                         when the timeline is docked at the bottom of the viewport
+ * Rails, ticks, hover fills and the era band are tints of --ca-text, so a light
+ * theme only needs light surfaces and a dark text colour.
+ *
+ * Height 105 px (controls row 34, scale 58, padding and top border); compact
+ * (container < 640 px) 117 px; plus --ca-timeline-safe-area. Compact rows give the
+ * typed year a 16 px font and a 44 px speed pill; below 380 px the step buttons drop
+ * their numbers and the row tightens; below 360 px the speed menu is hidden, so
+ * "3400 BCE" fits from 320 px up. The typed-year error
+ * floats above the timeline's top edge, so hosts should not clip it (overflow: hidden).
+ */
+
+.ca-timeline {
+  --ca-tl-surface: var(--ca-surface, rgba(14, 20, 32, 0.78));
+  --ca-tl-surface-2: var(--ca-surface-2, #162033);
+  --ca-tl-border: var(--ca-stroke, rgba(148, 163, 184, 0.18));
+  --ca-tl-text: var(--ca-text, #e6edf6);
+  --ca-tl-muted: var(--ca-text-muted, #9aa7b8);
+  --ca-tl-faint: var(--ca-text-faint, #6c788e);
+  --ca-tl-accent: var(--ca-accent, #e9b45f);
+  --ca-tl-accent-ink: var(--ca-accent-ink, #1d1406);
+  --ca-tl-focus: var(--ca-focus, #7cc4ff);
+  --ca-tl-danger: var(--ca-danger, #ff8f80);
+  --ca-tl-inset: var(--ca-timeline-inset, 20px);
+  --ca-tl-density: var(--ca-timeline-density, #9fc0e6);
+  /* Ring separating the thumb from the rail. */
+  --ca-tl-ring: var(--ca-tl-surface-2);
+  --ca-tl-control: 30px;
+  --ca-tl-thumb: 16px;
+
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+  padding: 5px 0 calc(5px + var(--ca-timeline-safe-area, 0px));
+  color: var(--ca-tl-text);
+  background: var(--ca-tl-surface);
+  border-top: 1px solid var(--ca-tl-border);
+  -webkit-backdrop-filter: blur(var(--ca-timeline-blur, 14px)) saturate(1.25);
+  backdrop-filter: blur(var(--ca-timeline-blur, 14px)) saturate(1.25);
+  font-family: var(--ca-font, 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  font-size: 12px;
+  line-height: 1.2;
+  color-scheme: var(--ca-color-scheme, dark);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ca-timeline *,
+.ca-timeline *::before,
+.ca-timeline *::after {
+  box-sizing: border-box;
+}
+
+.ca-timeline .ca-timeline__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------- controls row */
+
+/* Transport left, year centred, speed right. */
+.ca-timeline__controls {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: 12px;
+  min-height: 34px;
+  padding: 0 var(--ca-tl-inset);
+}
+
+.ca-timeline__transport {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  justify-self: start;
+}
+
+.ca-timeline__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: var(--ca-tl-control);
+  height: var(--ca-tl-control);
+  margin: 0;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ca-tl-text);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, opacity 120ms ease;
+}
+
+.ca-timeline__btn:hover {
+  background: color-mix(in srgb, var(--ca-tl-text) 8%, transparent);
+}
+
+.ca-timeline__btn:active {
+  background: color-mix(in srgb, var(--ca-tl-text) 14%, transparent);
+}
+
+.ca-timeline__btn:focus-visible,
+.ca-timeline__speed-select:focus-visible {
+  outline: 2px solid var(--ca-tl-focus);
+  outline-offset: 2px;
+}
+
+.ca-timeline__btn[aria-disabled='true'] {
+  opacity: 0.32;
+  cursor: default;
+  background: transparent;
+}
+
+.ca-timeline__icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.ca-timeline__btn--play {
+  width: calc(var(--ca-tl-control) + 4px);
+  height: calc(var(--ca-tl-control) + 4px);
+  margin: 0 4px;
+  padding: 0;
+  background: var(--ca-tl-accent);
+  color: var(--ca-tl-accent-ink);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ca-tl-accent) 22%, transparent);
+}
+
+.ca-timeline__btn--play:hover {
+  background: color-mix(in srgb, var(--ca-tl-accent) 86%, white);
+}
+
+.ca-timeline__btn--play:active {
+  background: color-mix(in srgb, var(--ca-tl-accent) 80%, black);
+}
+
+.ca-timeline__btn--play .ca-timeline__icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ca-timeline__btn--step {
+  color: var(--ca-tl-muted);
+}
+
+.ca-timeline__btn--back {
+  padding: 0 7px 0 4px;
+}
+
+.ca-timeline__btn--fwd {
+  padding: 0 4px 0 7px;
+}
+
+.ca-timeline__btn--step:hover {
+  color: var(--ca-tl-text);
+}
+
+.ca-timeline__btn--step .ca-timeline__icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ca-timeline__step-n {
+  min-width: 2ch;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.ca-timeline[data-ca-no-frames] .ca-timeline__btn--change {
+  display: none;
+}
+
+/* Typed year */
+
+.ca-timeline__year {
+  position: relative;
+  justify-self: center;
+}
+
+.ca-timeline__year-input {
+  display: block;
+  width: 7.2em;
+  height: 32px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--ca-tl-text) 10%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ca-tl-text) 4.5%, transparent);
+  color: var(--ca-tl-text);
+  font-family: var(--ca-font-display, 'Newsreader Variable', Newsreader, Georgia, serif);
+  font-size: 19px;
+  font-weight: 500;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: 0.01em;
+  text-align: center;
+  user-select: text;
+  -webkit-user-select: text;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.ca-timeline__year-input:hover {
+  border-color: color-mix(in srgb, var(--ca-tl-text) 18%, transparent);
+}
+
+.ca-timeline__year-input:focus {
+  outline: none;
+  border-color: var(--ca-tl-focus);
+  background: color-mix(in srgb, var(--ca-tl-text) 7%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ca-tl-focus) 28%, transparent);
+}
+
+.ca-timeline__year[data-ca-invalid] .ca-timeline__year-input {
+  border-color: var(--ca-tl-danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ca-tl-danger) 26%, transparent);
+}
+
+.ca-timeline__year-error {
+  position: absolute;
+  z-index: 3;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  width: max-content;
+  max-width: min(300px, 80vw);
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--ca-tl-danger) 60%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ca-tl-danger) 12%, var(--ca-tl-surface-2));
+  color: var(--ca-tl-text);
+  font-size: 12px;
+  line-height: 1.35;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%);
+}
+
+.ca-timeline__year-error[hidden] {
+  display: none;
+}
+
+/* Speed */
+
+.ca-timeline__speed {
+  position: relative;
+  justify-self: end;
+  color: var(--ca-tl-muted);
+}
+
+.ca-timeline__speed:hover {
+  color: var(--ca-tl-text);
+}
+
+/* The menu's chevron, drawn with borders in the text colour so it follows the theme
+   (and forced colours) without an image. */
+.ca-timeline__speed::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  width: 5px;
+  height: 5px;
+  margin-top: -4px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.ca-timeline__speed-select {
+  height: 28px;
+  margin: 0;
+  padding: 0 25px 0 10px;
+  border: 1px solid color-mix(in srgb, var(--ca-tl-text) 12%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.ca-timeline__speed-select:hover {
+  border-color: color-mix(in srgb, var(--ca-tl-text) 22%, transparent);
+}
+
+.ca-timeline__speed-option {
+  background: var(--ca-tl-surface-2);
+  color: var(--ca-tl-text);
+}
+
+/* ------------------------------------------------------------------- scale */
+
+.ca-timeline__scale {
+  padding: 0 var(--ca-tl-inset);
+  touch-action: none;
+  cursor: pointer;
+}
+
+.ca-timeline[data-ca-dragging] .ca-timeline__scale {
+  cursor: grabbing;
+}
+
+/* Vertical layout of the scale (px from its top):
+ *   0–8 density strip · 10–26 track (rail centre 18) · 27–32 ticks · 33–45 labels · 47–58 eras */
+.ca-timeline__inner {
+  position: relative;
+  height: 58px;
+}
+
+/* Change-density strip: one bar per 2 px bin, taller where borders change more often. */
+.ca-timeline__density {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ca-timeline__density-bars {
+  fill: var(--ca-tl-density);
+  shape-rendering: crispEdges;
+}
+
+.ca-timeline__density-bars--1 {
+  opacity: 0.4;
+}
+
+.ca-timeline__density-bars--2 {
+  opacity: 0.65;
+}
+
+.ca-timeline__density-bars--3 {
+  opacity: 0.92;
+}
+
+.ca-timeline__track {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  height: 16px;
+  pointer-events: none;
+}
+
+.ca-timeline__rail {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ca-tl-text) 16%, transparent);
+}
+
+.ca-timeline__highlights {
+  position: absolute;
+  inset: 0;
+}
+
+/* Lifespan band of the selected polity. */
+.ca-timeline__highlight {
+  position: absolute;
+  top: 2px;
+  height: 12px;
+  min-width: 3px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ca-tl-accent) 30%, transparent);
+  box-shadow:
+    inset 2px 0 0 var(--ca-tl-accent),
+    inset -2px 0 0 var(--ca-tl-accent);
+}
+
+/* The native range: invisible but focusable and placed over the track, so assistive
+   technology finds it where the track is. Pointer input goes to the custom track. */
+.ca-timeline__range {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+.ca-timeline__playhead {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 26px;
+  margin-left: -0.5px;
+  background: color-mix(in srgb, var(--ca-tl-accent) 70%, transparent);
+  pointer-events: none;
+  transition: left 140ms ease-out;
+}
+
+.ca-timeline__thumb {
+  position: absolute;
+  top: 18px;
+  width: var(--ca-tl-thumb);
+  height: var(--ca-tl-thumb);
+  margin: calc(var(--ca-tl-thumb) / -2) 0 0 calc(var(--ca-tl-thumb) / -2);
+  border-radius: 50%;
+  background: var(--ca-tl-accent);
+  box-shadow:
+    0 0 0 2.5px var(--ca-tl-ring),
+    0 1px 6px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  transition: left 140ms ease-out, transform 120ms ease;
+}
+
+/* The thumb takes no pointer input itself: the whole scale area (58 px tall) is the
+   pointer target, and a touch within 22 px of the thumb's centre grabs it, so its
+   touch target is 44 px wide by the full height of the scale. */
+
+.ca-timeline__range:focus-visible ~ .ca-timeline__thumb {
+  box-shadow:
+    0 0 0 2.5px var(--ca-tl-ring),
+    0 0 0 5px var(--ca-tl-focus),
+    0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+.ca-timeline[data-ca-dragging] .ca-timeline__thumb {
+  transform: scale(1.12);
+}
+
+.ca-timeline[data-ca-dragging] .ca-timeline__thumb,
+.ca-timeline[data-ca-dragging] .ca-timeline__playhead,
+.ca-timeline[data-ca-playing='true'] .ca-timeline__thumb,
+.ca-timeline[data-ca-playing='true'] .ca-timeline__playhead {
+  transition: none;
+}
+
+/* Hover / drag readout */
+.ca-timeline__hover {
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 26px;
+  pointer-events: none;
+  display: none;
+}
+
+.ca-timeline__hover[data-ca-visible] {
+  display: block;
+}
+
+.ca-timeline__hover[data-ca-visible='hover']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -0.5px;
+  width: 1px;
+  height: 100%;
+  background: color-mix(in srgb, var(--ca-tl-text) 45%, transparent);
+}
+
+.ca-timeline__bubble {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + 5px);
+  left: 0;
+  padding: 3px 7px 4px;
+  border: 1px solid color-mix(in srgb, var(--ca-tl-text) 14%, transparent);
+  border-radius: 6px;
+  background: var(--ca-tl-surface-2);
+  color: var(--ca-tl-text);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%);
+}
+
+.ca-timeline__hover[data-ca-visible='drag'] .ca-timeline__bubble {
+  border-color: color-mix(in srgb, var(--ca-tl-accent) 55%, transparent);
+}
+
+.ca-timeline__hover[data-ca-edge='start'] .ca-timeline__bubble {
+  transform: translateX(-12px);
+}
+
+.ca-timeline__hover[data-ca-edge='end'] .ca-timeline__bubble {
+  transform: translateX(calc(-100% + 12px));
+}
+
+/* Ticks */
+.ca-timeline__ticks {
+  position: absolute;
+  top: 27px;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ca-timeline__ticks-minor,
+.ca-timeline__ticks-major {
+  fill: none;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: crispEdges;
+}
+
+.ca-timeline__ticks-minor {
+  stroke: color-mix(in srgb, var(--ca-tl-text) 20%, transparent);
+}
+
+.ca-timeline__ticks-major {
+  stroke: color-mix(in srgb, var(--ca-tl-text) 50%, transparent);
+}
+
+.ca-timeline__labels {
+  position: absolute;
+  top: 33px;
+  left: 0;
+  right: 0;
+  height: 12px;
+  pointer-events: none;
+}
+
+.ca-timeline__tick-label {
+  position: absolute;
+  top: 0;
+  color: var(--ca-tl-muted);
+  font-size: 11px;
+  line-height: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+/* Font sizes of tick labels are mirrored in timeline.ts (TICK_FONT), which estimates
+   label widths to drop crowded labels. */
+.ca-timeline__tick-era {
+  margin-left: 2.5px;
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+/* Era band */
+.ca-timeline__eras {
+  position: absolute;
+  top: 47px;
+  left: 0;
+  right: 0;
+  height: 11px;
+  pointer-events: none;
+}
+
+.ca-timeline__era {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--ca-tl-text) 4%, transparent);
+  transition: background-color 160ms ease;
+}
+
+.ca-timeline__era[data-ca-alt] {
+  background: color-mix(in srgb, var(--ca-tl-text) 7.5%, transparent);
+}
+
+.ca-timeline__era[data-ca-current] {
+  background: color-mix(in srgb, var(--ca-tl-accent) 16%, transparent);
+}
+
+.ca-timeline__era-label,
+.ca-timeline__era-now {
+  padding: 0 7px;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ca-timeline__era-label {
+  overflow: hidden;
+  color: var(--ca-tl-faint);
+  text-overflow: ellipsis;
+}
+
+.ca-timeline__era[data-ca-current] .ca-timeline__era-label,
+.ca-timeline__era-now {
+  color: color-mix(in srgb, var(--ca-tl-accent) 75%, var(--ca-tl-text));
+}
+
+/* The current era's name when it does not fit its own segment. */
+.ca-timeline__era-now {
+  position: absolute;
+  top: 0;
+  display: none;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ca-tl-accent) 16%, var(--ca-tl-surface-2));
+  transform: translateX(-50%);
+}
+
+.ca-timeline__era-now[data-ca-visible] {
+  display: block;
+}
+
+.ca-timeline[data-ca-no-eras] .ca-timeline__inner {
+  height: 46px;
+}
+
+/* ---------------------------------------------------- compact (container < 640 px) */
+
+.ca-timeline[data-ca-compact] {
+  --ca-tl-inset: var(--ca-timeline-inset, 14px);
+  --ca-tl-control: 38px;
+  --ca-tl-thumb: 20px;
+  gap: 4px;
+  padding: 6px 0 calc(6px + var(--ca-timeline-safe-area, 0px));
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__controls {
+  display: flex;
+  column-gap: 6px;
+  min-height: 42px;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__transport {
+  flex: none;
+  gap: 0;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__btn {
+  min-width: 36px;
+  padding: 0 4px;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__btn--play {
+  width: 42px;
+  height: 42px;
+  margin: 0 2px;
+  padding: 0;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__btn--back {
+  padding: 0 4px 0 2px;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__btn--fwd {
+  padding: 0 2px 0 4px;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__step-n {
+  min-width: 0;
+  font-size: 10.5px;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__year {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__year-input {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 6px;
+  font-size: 16px;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__speed {
+  flex: none;
+}
+
+/* A 44 px pill without the chevron: the typed year needs the room more. */
+.ca-timeline[data-ca-compact] .ca-timeline__speed-select {
+  width: 44px;
+  height: 34px;
+  padding: 0;
+  text-align: center;
+  text-align-last: center;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__speed::after {
+  display: none;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__tick-label {
+  font-size: 10px;
+}
+
+.ca-timeline[data-ca-compact] .ca-timeline__tick-era {
+  font-size: 8px;
+}
+
+/* Small phones (container < 380 px): step sizes stay in the buttons' labels. */
+.ca-timeline[data-ca-narrow] .ca-timeline__step-n {
+  display: none;
+}
+
+.ca-timeline[data-ca-narrow] .ca-timeline__btn--back,
+.ca-timeline[data-ca-narrow] .ca-timeline__btn--fwd {
+  padding: 0 4px;
+}
+
+.ca-timeline[data-ca-narrow] .ca-timeline__controls {
+  column-gap: 4px;
+  padding: 0 min(var(--ca-tl-inset), 10px);
+}
+
+/* Tiny phones (container < 360 px): the speed menu gives way so the typed year keeps
+   room for "3400 BCE" (playback keeps its speed; setSpeed() still works). */
+.ca-timeline[data-ca-tiny] .ca-timeline__speed {
+  display: none;
+}
+
+/* Touch screens: larger thumb. */
+@media (pointer: coarse) {
+  .ca-timeline {
+    --ca-tl-thumb: 20px;
+  }
+}
+
+/* ------------------------------------------------------- bar layout (layout: 'bar') */
+
+/*
+ * One row of separate controls on a transparent root — transport, year, a thick track
+ * with its tick lines inside, speed — and in compact containers the track on a row of
+ * its own above the others. Every control is the same surface, themed with:
+ *   --ca-control-size        height of every control and width of the buttons (40px)
+ *   --ca-control-radius      corner radius (12px)
+ *   --ca-control-gap         space between controls (8px)
+ *   --ca-control-bg, --ca-control-bg-hover
+ *   --ca-control-border      hairline border
+ *   --ca-control-text, --ca-control-text-hover   icon and text colour
+ *   --ca-control-shadow, --ca-control-blur       drop shadow, backdrop-filter value
+ * A host that draws its own buttons from the same properties gets identical controls.
+ * This block comes after the compact rules so it overrides them where both apply.
+ */
+.ca-timeline[data-ca-layout='bar'] {
+  --ca-tl-control: var(--ca-control-size, 40px);
+  --ca-tl-radius: var(--ca-control-radius, 12px);
+  --ca-tl-gap: var(--ca-control-gap, 8px);
+  --ca-tl-ctl-bg: var(--ca-control-bg, var(--ca-tl-surface));
+  --ca-tl-ctl-bg-hover: var(--ca-control-bg-hover, color-mix(in srgb, var(--ca-tl-text) 12%, var(--ca-tl-surface)));
+  --ca-tl-ctl-border: var(--ca-control-border, var(--ca-tl-border));
+  --ca-tl-ctl-text: var(--ca-control-text, var(--ca-tl-muted));
+  --ca-tl-ctl-text-hover: var(--ca-control-text-hover, var(--ca-tl-text));
+  --ca-tl-ctl-shadow: var(--ca-control-shadow, 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 22px rgba(0, 0, 0, 0.3));
+  --ca-tl-ctl-blur: var(--ca-control-blur, blur(var(--ca-timeline-blur, 14px)) saturate(1.3));
+  --ca-tl-thumb-w: 6px;
+
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: 'transport year scale speed';
+  align-items: center;
+  gap: var(--ca-tl-gap);
+  padding: 0 0 var(--ca-timeline-safe-area, 0px);
+  background: none;
+  border: 0;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__controls {
+  display: contents;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__transport {
+  grid-area: transport;
+  gap: var(--ca-tl-gap);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__year {
+  grid-area: year;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__scale {
+  grid-area: scale;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__speed {
+  grid-area: speed;
+  justify-self: end;
+  color: var(--ca-tl-ctl-text);
+}
+
+/* The shared control surface. */
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__btn,
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__year-label,
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__year-input,
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__speed-select,
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__scale {
+  height: var(--ca-tl-control);
+  border: 1px solid var(--ca-tl-ctl-border);
+  border-radius: var(--ca-tl-radius);
+  background: var(--ca-tl-ctl-bg);
+  -webkit-backdrop-filter: var(--ca-tl-ctl-blur);
+  backdrop-filter: var(--ca-tl-ctl-blur);
+  box-shadow: var(--ca-tl-ctl-shadow);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__btn {
+  width: var(--ca-tl-control);
+  min-width: var(--ca-tl-control);
+  margin: 0;
+  padding: 0;
+  color: var(--ca-tl-ctl-text);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__btn:hover,
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__speed-select:hover {
+  background: var(--ca-tl-ctl-bg-hover);
+  color: var(--ca-tl-ctl-text-hover);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__btn:active {
+  background: color-mix(in srgb, var(--ca-tl-text) 18%, var(--ca-tl-surface));
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__btn[aria-disabled='true'] {
+  opacity: 0.45;
+  background: var(--ca-tl-ctl-bg);
+  color: var(--ca-tl-ctl-text);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Play is a control like the others; playing tints its icon. */
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__btn--play .ca-timeline__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.ca-timeline[data-ca-layout='bar'][data-ca-playing='true'] .ca-timeline__btn--play {
+  color: var(--ca-tl-accent);
+}
+
+/* A fixed step is in the buttons' names and titles; an adaptive one is shown. */
+.ca-timeline[data-ca-layout='bar'][data-ca-step='fixed'] .ca-timeline__step-n {
+  display: none;
+}
+
+.ca-timeline[data-ca-layout='bar'][data-ca-step='adaptive'] .ca-timeline__btn--step {
+  width: auto;
+  padding: 0 10px;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__year-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 7em; /* "3400 BCE" (6.8em with its padding) fits, so the track does not move as the year changes */
+  padding: 0 12px;
+  color: var(--ca-tl-text);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* The typed year (yearField 'input'): the same surface; type a year, Enter goes there. */
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__year-input {
+  width: 6.4em; /* "3400 BCE" fits, so the track does not move as the year changes */
+  padding: 0 10px;
+  color: var(--ca-tl-text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__year-input:hover {
+  background: var(--ca-tl-ctl-bg-hover);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__year-input:focus {
+  border-color: var(--ca-tl-focus);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ca-tl-focus) 28%, transparent),
+    var(--ca-tl-ctl-shadow);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__year[data-ca-invalid] .ca-timeline__year-input {
+  border-color: var(--ca-tl-danger);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ca-tl-danger) 26%, transparent),
+    var(--ca-tl-ctl-shadow);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__speed-select {
+  width: auto;
+  padding: 0 28px 0 13px;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  text-align-last: auto;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__speed::after {
+  display: block;
+  right: 13px;
+}
+
+/* The thick track: the whole bar is the rail; tick lines, the lifespan band and the
+   thumb sit inside it. */
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__scale {
+  min-width: 0;
+  padding: 0 var(--ca-timeline-inset, 14px);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__scale:hover {
+  border-color: color-mix(in srgb, var(--ca-tl-text) 24%, transparent);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__inner {
+  height: 100%;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__track,
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__range,
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__ticks,
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__hover {
+  top: 0;
+  height: 100%;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__rail,
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__playhead {
+  display: none;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__ticks-major {
+  stroke: color-mix(in srgb, var(--ca-tl-text) 36%, transparent);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__ticks-minor {
+  stroke: color-mix(in srgb, var(--ca-tl-text) 17%, transparent);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__highlight {
+  top: 5px;
+  bottom: 5px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__thumb {
+  top: 5px;
+  bottom: 5px;
+  width: var(--ca-tl-thumb-w);
+  height: auto;
+  margin: 0 0 0 calc(var(--ca-tl-thumb-w) / -2);
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 1.5px var(--ca-tl-ring),
+    0 0 12px color-mix(in srgb, var(--ca-tl-accent) 45%, transparent);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__range:focus-visible ~ .ca-timeline__thumb {
+  box-shadow:
+    0 0 0 1.5px var(--ca-tl-ring),
+    0 0 0 4px var(--ca-tl-focus);
+}
+
+.ca-timeline[data-ca-layout='bar'][data-ca-dragging] .ca-timeline__thumb {
+  transform: scaleX(1.3);
+}
+
+.ca-timeline[data-ca-layout='bar'] .ca-timeline__bubble {
+  bottom: calc(100% + 10px);
+}
+
+/* Compact containers: the track gets a row of its own above the other controls. */
+.ca-timeline[data-ca-layout='bar'][data-ca-compact] {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'scale scale scale scale'
+    'transport year . speed';
+}
+
+/* 16 px keeps phones from zooming into the field when it takes focus. */
+.ca-timeline[data-ca-layout='bar'][data-ca-compact] .ca-timeline__year-input {
+  font-size: 16px;
+}
+
+/* The typed-year error floats centred above the whole bar (not just the field), so it
+   never runs off a narrow screen. */
+.ca-timeline[data-ca-layout='bar'][data-ca-compact] .ca-timeline__year {
+  position: static;
+}
+
+/* Tiny containers (< 360 px): tighter gaps, and the speed menu stays as a square pill
+   without its chevron, so every control fits from 320 px up (even at 44 px). */
+.ca-timeline[data-ca-layout='bar'][data-ca-tiny] {
+  --ca-tl-gap: 5px;
+}
+
+.ca-timeline[data-ca-layout='bar'][data-ca-tiny] .ca-timeline__year-input {
+  width: 5.6em;
+  padding: 0 4px;
+}
+
+.ca-timeline[data-ca-layout='bar'][data-ca-tiny] .ca-timeline__speed {
+  display: block;
+}
+
+.ca-timeline[data-ca-layout='bar'][data-ca-tiny] .ca-timeline__speed::after {
+  display: none;
+}
+
+.ca-timeline[data-ca-layout='bar'][data-ca-tiny] .ca-timeline__speed-select {
+  width: var(--ca-tl-control);
+  padding: 0;
+  text-align: center;
+  text-align-last: center;
+}
+
+.ca-timeline[data-ca-layout='bar'][data-ca-tiny] .ca-timeline__year-label {
+  min-width: 0;
+  padding: 0 10px;
+}
+
+@media (pointer: coarse) {
+  .ca-timeline[data-ca-layout='bar'] {
+    --ca-tl-thumb-w: 8px;
+  }
+}
+
+/* ------------------------------------------ forced colours (Windows high contrast) */
+
+/* The track is drawn with backgrounds, shadows and SVG, which forced colours would
+   flatten into the page background: draw it with system colours instead. */
+@media (forced-colors: active) {
+  .ca-timeline__scale {
+    forced-color-adjust: none;
+    color: CanvasText;
+  }
+
+  .ca-timeline__rail {
+    background: GrayText;
+  }
+
+  .ca-timeline__highlight {
+    border: 2px solid Highlight;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .ca-timeline__thumb {
+    background: Highlight;
+    box-shadow: 0 0 0 2px Canvas;
+  }
+
+  .ca-timeline__range:focus-visible ~ .ca-timeline__thumb {
+    box-shadow:
+      0 0 0 2px Canvas,
+      0 0 0 4px CanvasText;
+  }
+
+  .ca-timeline__playhead,
+  .ca-timeline__hover[data-ca-visible='hover']::before {
+    background: CanvasText;
+  }
+
+  .ca-timeline__bubble,
+  .ca-timeline__era-now {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+
+  .ca-timeline__density-bars {
+    fill: CanvasText;
+  }
+
+  .ca-timeline__ticks-minor {
+    stroke: GrayText;
+  }
+
+  .ca-timeline__ticks-major {
+    stroke: CanvasText;
+  }
+
+  .ca-timeline__tick-label {
+    color: CanvasText;
+  }
+
+  .ca-timeline__era,
+  .ca-timeline__era[data-ca-alt] {
+    background: Canvas;
+    box-shadow: inset 1px 0 0 GrayText;
+  }
+
+  .ca-timeline__era-label {
+    color: GrayText;
+  }
+
+  .ca-timeline__era[data-ca-current] {
+    background: Highlight;
+  }
+
+  .ca-timeline__era[data-ca-current] .ca-timeline__era-label {
+    color: HighlightText;
+  }
+
+  .ca-timeline__btn--play {
+    border: 1px solid ButtonText;
+  }
+
+  .ca-timeline__btn[aria-disabled='true'] {
+    color: GrayText;
+    opacity: 1;
+  }
+
+  /* The bar's track paints a surface, but the scale opts out of forced colours (above):
+     give it system colours, or a light high-contrast theme keeps a dark navy track on
+     which the Highlight thumb and lifespan band vanish. */
+  .ca-timeline[data-ca-layout='bar'] .ca-timeline__scale {
+    border-color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .ca-timeline[data-ca-layout='bar'] .ca-timeline__ticks-minor {
+    stroke: GrayText;
+  }
+
+  .ca-timeline[data-ca-layout='bar'] .ca-timeline__ticks-major {
+    stroke: CanvasText;
+  }
+
+  /* Box shadows are dropped in forced colours: the focused field needs an outline. */
+  .ca-timeline .ca-timeline__year-input:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+}
+
+/* -------------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .ca-timeline *,
+  .ca-timeline *::before,
+  .ca-timeline *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

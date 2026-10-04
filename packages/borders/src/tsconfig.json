@@ -1,0 +1,18 @@
+{
+  // Type-checks the whole of src/ including tests and test helpers (no output):
+  //   npx tsc -p packages/borders/src/tsconfig.json
+  // It is also the closest tsconfig for Vite/Vitest when transforming test files, which
+  // the build config (../tsconfig.json) excludes. The build config stays the contract.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": ["./**/*.ts"],
+  "exclude": []
+}

@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Timeline demo · Alex’s Atlas</title>
+    <link rel="icon" href="data:," />
+    <!-- Standalone demo of the Timeline component. Run:
+         npx vite --config packages/globe/src/timeline/demo.vite.config.mjs  → /demo.html
+         (stacked layout) and /demo.html?layout=bar (the bar layout as the site uses it). -->
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        background: #070b14;
+        color: #e6edf6;
+        font: 14px/1.45 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        overflow: hidden;
+        /* The bar layout's control surface, as the reference site sets it
+           (apps/site/src/styles/tokens.css); the stacked layout does not read these. */
+        --ca-control-size: 40px;
+        --ca-control-radius: 12px;
+        --ca-control-gap: 8px;
+        --ca-control-bg: rgba(11, 17, 30, 0.74);
+        --ca-control-bg-hover: rgba(34, 48, 74, 0.86);
+        --ca-control-border: rgba(160, 178, 204, 0.2);
+        --ca-control-text: #c4cedb;
+        --ca-control-text-hover: #f2f6fb;
+        --ca-control-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.28);
+        --ca-control-blur: saturate(1.4) blur(14px);
+        --demo-gutter: 16px;
+      }
+      body.demo-light {
+        background: #e8edf4;
+        color: #1c2433;
+        --ca-surface: rgba(250, 251, 253, 0.86);
+        --ca-surface-2: #ffffff;
+        --ca-stroke: rgba(30, 41, 59, 0.14);
+        --ca-text: #1c2433;
+        --ca-text-muted: #556074;
+        --ca-text-faint: #7d8798;
+        --ca-accent: #b7791f;
+        --ca-accent-ink: #ffffff;
+        --ca-focus: #1d6fd6;
+        --ca-color-scheme: light;
+        --ca-timeline-density: #3d6ea6;
+        --ca-control-bg: rgba(250, 251, 253, 0.86);
+        --ca-control-bg-hover: #ffffff;
+        --ca-control-border: rgba(30, 41, 59, 0.16);
+        --ca-control-text: #3b4658;
+        --ca-control-text-hover: #111827;
+        --ca-control-shadow: 0 1px 2px rgba(15, 23, 42, 0.12), 0 6px 18px rgba(15, 23, 42, 0.12);
+      }
+      /* Touch screens: 44 px targets, as on the site. */
+      @media (pointer: coarse) {
+        body {
+          --ca-control-size: 44px;
+        }
+      }
+      .demo {
+        position: absolute;
+        inset: 0 0 112px 0;
+        overflow: auto;
+        padding: 28px 32px;
+        box-sizing: border-box;
+      }
+      .demo-globe {
+        position: fixed;
+        z-index: -1;
+        right: -8vmin;
+        bottom: 60px;
+        width: 78vmin;
+        height: 78vmin;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 35% 30%, rgba(120, 160, 210, 0.22), transparent 55%),
+          radial-gradient(circle at 50% 50%, #12233a 0%, #0c1829 62%, #0a1322 100%);
+        box-shadow:
+          0 0 60px 8px rgba(110, 160, 230, 0.12),
+          inset -30px -40px 80px rgba(0, 0, 0, 0.45);
+        pointer-events: none;
+      }
+      .demo-light .demo-globe {
+        background: radial-gradient(circle at 50% 50%, #cfdbea 0%, #c3d1e3 70%, #b9c9de 100%);
+        box-shadow: 0 0 60px 8px rgba(40, 80, 140, 0.12);
+      }
+      .demo-kicker {
+        margin: 0;
+        color: #9aa7b8;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .demo-light .demo-kicker,
+      .demo-light .demo-note,
+      .demo-light .demo-log {
+        color: #556074;
+      }
+      .demo-year {
+        margin: 6px 0 0;
+        font: 500 64px/1 'Newsreader Variable', Georgia, serif;
+        letter-spacing: -0.01em;
+      }
+      .demo-era {
+        margin: 6px 0 22px;
+        color: #e9b45f;
+        font-size: 15px;
+      }
+      .demo-light .demo-era {
+        color: #9a6416;
+      }
+      .demo-panel {
+        display: grid;
+        gap: 14px;
+        max-width: 560px;
+      }
+      .demo-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .demo-label {
+        min-width: 86px;
+        color: #9aa7b8;
+        font-size: 12px;
+      }
+      .demo-button,
+      .demo-input {
+        height: 30px;
+        padding: 0 12px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        color: inherit;
+        font: inherit;
+        font-size: 13px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .demo-button {
+        cursor: pointer;
+      }
+      .demo-link {
+        display: inline-flex;
+        align-items: center;
+        box-sizing: border-box;
+        text-decoration: none;
+      }
+      .demo-button:hover {
+        background: rgba(255, 255, 255, 0.09);
+      }
+      .demo-button[aria-pressed='true'] {
+        border-color: #e9b45f;
+        background: rgba(233, 180, 95, 0.14);
+      }
+      .demo-input {
+        width: 200px;
+        border-radius: 8px;
+      }
+      .demo-button:focus-visible,
+      .demo-input:focus-visible {
+        outline: 2px solid #7cc4ff;
+        outline-offset: 2px;
+      }
+      .demo-note {
+        margin: 0;
+        color: #9aa7b8;
+        font-size: 12px;
+      }
+      .demo-log {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        color: #9aa7b8;
+        font: 12px/1.6 ui-monospace, 'Cascadia Mono', Consolas, monospace;
+      }
+      .demo-dock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      /* ?layout=bar: two bars docked like the site's (apps/site .timeline-dock): the
+         site's (typed year) at the bottom, the one with the year as a label above it. */
+      .demo-bars {
+        position: fixed;
+        left: max(var(--demo-gutter), env(safe-area-inset-left, 0px));
+        right: max(var(--demo-gutter), env(safe-area-inset-right, 0px));
+        bottom: calc(var(--demo-gutter) + env(safe-area-inset-bottom, 0px));
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .demo-bars[hidden] {
+        display: none;
+      }
+      body.demo-bar .demo {
+        inset: 0 0 128px 0;
+      }
+      @media (max-width: 639.98px) {
+        body {
+          --demo-gutter: 12px;
+        }
+        body.demo-bar .demo {
+          inset: 0 0 236px 0;
+        }
+      }
+      @media (max-width: 640px) {
+        .demo {
+          inset: 0 0 128px 0;
+          padding: 18px 16px;
+        }
+        .demo-year {
+          font-size: 48px;
+        }
+        .demo-globe {
+          width: 120vw;
+          height: 120vw;
+          right: -40vw;
+          bottom: 100px;
+        }
+        .demo-label {
+          min-width: 0;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo">
+      <p class="demo-kicker">@alexs-atlas/globe · Timeline demo</p>
+      <h1 class="demo-year" id="demo-year" aria-live="off">1453</h1>
+      <p class="demo-era" id="demo-era">&nbsp;</p>
+      <section class="demo-panel" aria-label="Demo controls">
+        <div class="demo-row" id="demo-highlights">
+          <span class="demo-label">Highlight</span>
+        </div>
+        <div class="demo-row">
+          <span class="demo-label">Find polity</span>
+          <input class="demo-input" id="demo-search" type="search" placeholder="e.g. Mali Empire" autocomplete="off" />
+          <button class="demo-button" id="demo-search-go" type="button">Highlight</button>
+        </div>
+        <div class="demo-row">
+          <span class="demo-label">Options</span>
+          <button class="demo-button" id="demo-frames" type="button" aria-pressed="true">Border changes</button>
+          <button class="demo-button" id="demo-theme" type="button" aria-pressed="false">Light theme</button>
+          <a class="demo-button demo-link" id="demo-layout" href="?layout=bar">Bar layout (site)</a>
+        </div>
+        <p class="demo-note" id="demo-source"></p>
+        <ol class="demo-log" id="demo-log" aria-label="Event log"></ol>
+      </section>
+    </main>
+    <div class="demo-globe" aria-hidden="true"></div>
+    <div class="demo-dock" id="demo-timeline"></div>
+    <div class="demo-bars" id="demo-bars" hidden>
+      <div id="demo-timeline-label"></div>
+      <div id="demo-timeline-bar"></div>
+    </div>
+    <script type="module" src="./demo.js"></script>
+  </body>
+</html>

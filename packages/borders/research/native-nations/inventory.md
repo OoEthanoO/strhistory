@@ -1,0 +1,14 @@
+inventory lens — progress notes (2026-10-02)
+- built data: 1777 polities, 15 kind=indigenous (12 override, 3 NE Panama comarcas); 84 indigenous records at l0
+- N. America (US/Canada): 7 nations (Cherokee, W. Cherokee, Chickasaw, Choctaw, Muscogee, Seminole, Haudenosaunee); Canada only via Haudenosaunee Grand River tract
+- pre-1700: only clio:haudenosaunee 1450-1699, tier 0, kind 'state', precision 'exact' (override kind fix starts 1700)
+- unclaimed share northern-america: 1.00 until 1600, 0.95 1700-1750, 0.89 1800, 0.76 1840, 0.67 1860, 0.16 1870, 0.10 1890-1920, 0 1930
+- override file northern-america-indigenous.json: 63 entries (57 add), geometry = union of USFS-digitised Royce 1899 cession areas, simplified ~2 km, inline polygons
+- known gaps: 907 auto notes; indigenous NA only 3 (Navajo Nation, Cherokee Nation Q14708404, Choctaw Nation of Oklahoma); gap tool checks Cliopatria only, not overrides
+- Wikidata (live SPARQL 2026-10-02): ethnic-group items P17=US 361 (60 coords, 3 start, 2 end, 0 geoshape); Canada 217 (8/0/0/0); 'tribe' US 89, CA 33 (~0 dates); fed. recognised tribes 451 (163 coords, 45 inception, 0 end, 0 geoshape); P9716 Native Land territory ID on 10 items only
+- licences verified: Cliopatria v0.2.0 LICENSE.md CC BY 4.0; Wikidata CC0; NE public domain; USFS ceded lands data.gov 'Access & Use License https://creativecommons.org/licenses/by/4.0/' (ArcGIS item licenseInfo = disclaimer only); Royce 1899 IA NOT_IN_COPYRIGHT; NRCan ALC + CIRNAC Historic treaties OGL-Canada; Native Land Digital: no storing/distributing w/o permission (not usable)
+- no licence-gate code found in pipeline (AGENTS.md §2.2 claims one); USFS not credited in manifest/ATTRIBUTION.md
+- this Mac: no .cache/sources, venv, reference, build, factcheck, wikidata
+- USFS cession table (MapServer/2): 725 rows, cessdate1 1784-1893, ~457 schedule tribe-name tokens, 275 present-day tribe entries, 37 states (CA 58, WA 40, NM 38, AZ 31, MT 26, SD 25 ...); polygons layer 0: 718 features; join on cessnum
+- open issue 1 looks stale: replica of pid-attribute rule over modern files = 0 conflicts, 258 units, no dups; qa-report overrides.problems = []
+- Mac: M1 Pro 8 cores 16 GB, 130 GB free; Python 3.12.1 w/o shapely; Node 26.5; sources ~142 MB (HEAD)

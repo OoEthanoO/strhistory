@@ -8,7 +8,19 @@
 # Caddy obtains and renews the HTTPS certificate itself once DNS for the domain
 # points at the server.
 
-history.ethanyanxu.com {
+# Keep existing bookmarks and the www spelling on the canonical domain.
+history.ethanyanxu.com, www.strhistory.ca {
+	# A form left open on an old host must be filled again on the new origin;
+	# do not forward its access code in a cross-origin POST.
+	@accessPost {
+		method POST
+		path /access/unlock /access/logout
+	}
+	redir @accessPost https://strhistory.ca/access 303
+	redir https://strhistory.ca{uri} 308
+}
+
+strhistory.ca {
 	encode zstd gzip
 
 	# `current` is a junction to the live release (releases\<commit>).
@@ -22,8 +34,20 @@ history.ethanyanxu.com {
 	# Fingerprinted build assets never change; data files change rarely.
 	@hashed path /_astro/*
 	header @hashed Cache-Control "public, max-age=31536000, immutable"
-	@data path /data/* /glyphs/*
+	@data {
+		path /data/* /glyphs/*
+		not path /data/alexs-atlas/*
+	}
 	header @data Cache-Control "public, max-age=86400"
+	# The Alex's Atlas borders dataset: manifest.json names every other file by
+	# content hash, so the manifest is revalidated and the hashed files never change.
+	@atlasUnhashed {
+		path /data/alexs-atlas/*
+		not path_regexp ^/data/alexs-atlas/.+\.[0-9a-f]{8}(\.topo)?\.json$
+	}
+	header @atlasUnhashed Cache-Control "no-cache"
+	@atlasHashed path_regexp atlasHashed ^/data/alexs-atlas/.+\.[0-9a-f]{8}(\.topo)?\.json$
+	header @atlasHashed Cache-Control "public, max-age=31536000, immutable"
 	@version path /version.json
 	header @version Cache-Control "no-store"
 
@@ -38,7 +62,7 @@ history.ethanyanxu.com {
 	# Explicit public surface. Everything else (including / and direct .html
 	# URLs) requires a signed session before Caddy reads the file.
 	@publicPage path /globe /globe/ /globe/index.html /access /access/ /access/index.html /favicon.svg /robots.txt /sitemap-index.xml /sitemap-0.xml /version.json
-	@publicAsset path_regexp publicAsset ^(/_astro/[^/]+\.(js|css|woff2|woff|svg|png|jpg|jpeg|webp|avif)|/data/land\.geojson|/data/snapshots/world_-?[0-9]+\.geojson|/data/snapshots/LICENSE\.md|/glyphs/noto-sans/[0-9]+-[0-9]+\.pbf)$
+	@publicAsset path_regexp publicAsset ^(/_astro/[^/]+\.(js|css|woff2|woff|svg|png|jpg|jpeg|webp|avif)|/data/land\.geojson|/data/snapshots/world_-?[0-9]+\.geojson|/data/snapshots/LICENSE\.md|/glyphs/noto-sans/[0-9]+-[0-9]+\.pbf|/data/alexs-atlas/(?:(?:chunks/l[0-9]+|base)/)?[a-z0-9_-]+(?:\.[a-z0-9_-]+)*\.json|/data/alexs-atlas/(?:ATTRIBUTION|LICENSE)\.md)$
 	@accessAction path /access/unlock /access/logout /access/session
 	route {
 		handle @accessAction {
@@ -66,6 +90,8 @@ history.ethanyanxu.com {
 	handle_errors {
 		@notfound expression {err.status_code} == 404
 		handle @notfound {
+			# Never let a missing hashed file inherit its path's year-long cache.
+			header Cache-Control "no-store"
 			rewrite * /404.html
 			file_server
 		}

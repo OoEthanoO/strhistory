@@ -6,7 +6,7 @@
     `??`, `?.` or `&&`.
 #>
 
-$script:Domain = 'history.ethanyanxu.com'
+$script:Domain = 'strhistory.ca'
 $script:RepoUrl = 'https://github.com/OoEthanoO/strhistory.git'
 $script:Branch = 'main'
 $script:TaskName = 'strhistory-deploy'
