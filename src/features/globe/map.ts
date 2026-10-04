@@ -78,10 +78,12 @@ export class GlobeController {
   private pinEntries: Array<{ topic: GlobeTopic; marker: Marker; element: HTMLAnchorElement }> = [];
   private readonly ready: Promise<void>;
   private readonly reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private paletteYear: number;
 
   constructor(container: HTMLElement, cb: GlobeCallbacks, options: GlobeOptions) {
     this.cb = cb;
     this.container = container;
+    this.paletteYear = options.year;
     this.borders = options.borders ?? createBorders({ manifestUrl: MANIFEST_URL });
     const compact = options.compact ?? false;
     this.globe = new ChronoGlobe(
@@ -96,7 +98,7 @@ export class GlobeController {
         labelMode: 'curved',
         // Map colours in the manner of a grand-strategy game (map-colors.ts).
         theme: MAP_THEME,
-        palette: mapColor,
+        palette: (p) => mapColor(p, this.paletteYear),
         hover: !compact,
         workerUrl,
         // The site credits the data itself, one click from every view (CC BY 4.0
@@ -167,6 +169,11 @@ export class GlobeController {
 
   /** Shows the borders of `year` (coalesced, latest wins; the old borders stay until the new ones rendered). */
   setYear(year: number) {
+    this.paletteYear = year;
+    // Palette functions are baked into each frame's feature properties. Trigger a
+    // recolour before loading the next frame so a period boundary takes effect even
+    // when the border geometry itself has not changed.
+    this.globe.layers?.setPalette((p) => mapColor(p, year));
     this.globe.setYear(year);
   }
 

@@ -46,7 +46,7 @@ const alive = feature(topo, topo.objects.polities).features.filter(
 const source = {
   type: 'FeatureCollection',
   features: alive.map(({ geometry, properties: p }) => {
-    const fill = colors.fillColor(p);
+    const fill = colors.fillColor(p, BAKED_YEAR);
     return { type: 'Feature', geometry, properties: { fill, edge: globe.shade(fill, theme.edge) } };
   }),
 };
