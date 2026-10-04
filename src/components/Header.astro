@@ -25,9 +25,16 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
         {
           nav.map((item) => (
             <li>
-              <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+              {'children' in item ? (
+                <details class:list={['nav-group', { active: item.children.some(child => isActive(child.href)) }]} data-nav-group>
+                  <summary>{item.label}<span class="chevron" aria-hidden="true"></span></summary>
+                  <ul class="dropdown">
+                    {item.children.map(child => <li><a href={child.href} aria-current={isActive(child.href) ? 'page' : undefined}>{child.label}</a></li>)}
+                  </ul>
+                </details>
+              ) : <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
                 {item.label}
-              </a>
+              </a>}
             </li>
           ))
         }
@@ -57,9 +64,16 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
       {
         nav.map((item) => (
           <li>
-            <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+            {'children' in item ? (
+              <details class:list={['nav-group', { active: item.children.some(child => isActive(child.href)) }]} data-nav-group>
+                <summary>{item.label}<span class="chevron" aria-hidden="true"></span></summary>
+                <ul class="dropdown">
+                  {item.children.map(child => <li><a href={child.href} aria-current={isActive(child.href) ? 'page' : undefined}>{child.label}</a></li>)}
+                </ul>
+              </details>
+            ) : <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
               {item.label}
-            </a>
+            </a>}
           </li>
         ))
       }
@@ -71,14 +85,31 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 <script>
   const btn = document.querySelector<HTMLButtonElement>('[data-menu-btn]');
   const panel = document.querySelector<HTMLElement>('[data-mobile-nav]');
+  const groups = [...document.querySelectorAll<HTMLDetailsElement>('[data-nav-group]')];
+  document.addEventListener('click', (event) => {
+    for (const group of groups) {
+      if (event.target instanceof Node && !group.contains(event.target)) group.open = false;
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const openGroup = groups.find(group => group.open);
+    if (openGroup) {
+      openGroup.open = false;
+      openGroup.querySelector('summary')?.focus();
+    } else if (btn?.getAttribute('aria-expanded') === 'true') {
+      btn.click();
+      btn.focus();
+    }
+  });
   if (btn && panel) {
     const set = (open: boolean) => {
       btn.setAttribute('aria-expanded', String(open));
       btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
       panel.hidden = !open;
+      if (!open) for (const group of groups) group.open = false;
     };
     btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
-    document.addEventListener('keydown', (e) => e.key === 'Escape' && set(false));
     matchMedia('(min-width: 961px)').addEventListener('change', (e) => e.matches && set(false));
   }
 </script>
@@ -124,12 +155,13 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     margin: 0;
     padding: 0;
   }
-  .primary ul {
+  .primary > ul {
     display: flex;
     gap: 4px;
   }
   .primary a,
-  .mobile-nav a {
+  .mobile-nav a,
+  .nav-group summary {
     display: block;
     padding: 8px 12px;
     border-radius: 999px;
@@ -143,6 +175,17 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     background: var(--paper-2);
     color: var(--ink);
   }
+  .nav-group { position: relative; }
+  .nav-group summary { display: flex; align-items: center; gap: 10px; list-style: none; cursor: pointer; }
+  .nav-group summary::-webkit-details-marker { display: none; }
+  .nav-group summary:hover { background: var(--paper-2); color: var(--ink); }
+  .nav-group.active > summary { background: var(--ink); color: var(--paper); }
+  .chevron { width: 6px; height: 6px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: translateY(-2px) rotate(45deg); }
+  .nav-group[open] .chevron { transform: translateY(2px) rotate(225deg); }
+  .primary .dropdown { position: absolute; top: calc(100% + 8px); left: 0; min-width: 170px; padding: 6px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow); }
+  .dropdown a { border-radius: var(--radius-s); }
+  .mobile-nav .nav-group summary { padding: 12px; font-size: 1.05rem; border-radius: var(--radius-s); }
+  .mobile-nav .dropdown { padding-left: 16px; }
   .primary a[aria-current='page'] {
     color: var(--paper);
     background: var(--ink);
@@ -224,7 +267,8 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     --paper: #0b1220;
   }
   .immersive .brand,
-  .immersive .primary a {
+  .immersive .primary a,
+  .immersive .nav-group summary {
     color: rgb(233 228 216 / 0.86);
   }
   .immersive .primary a:hover {
@@ -246,4 +290,6 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
   .immersive .mobile-nav a {
     color: rgb(233 228 216 / 0.9);
   }
+  .immersive .nav-group { --card: var(--night-2); --paper-2: var(--night-2); --ink: var(--night-ink); --ink-3: var(--night-ink); --rule: color-mix(in srgb, var(--night-ink) 20%, transparent); }
+  .immersive .nav-group.active > summary { background: var(--night-2); color: var(--night-ink); }
 </style>

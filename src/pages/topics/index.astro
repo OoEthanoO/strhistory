@@ -189,19 +189,22 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
   .paper summary::-webkit-details-marker { display: none; }
   .paper summary::after { content: ''; align-self: center; flex-shrink: 0; width: 8px; height: 8px; margin-left: 4px; border: solid var(--ink-3); border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); transition: transform 0.15s; }
   .paper:not([open]) summary::after { transform: rotate(-45deg); }
-  .paper h2 { margin: 0; font: 500 var(--step-1) var(--font-sans); }
-  .paper-divider { flex: 1; align-self: center; min-width: 16px; border-top: 1px solid var(--ink-3); opacity: 0.35; }
+  .paper h2 { margin: 0; font: 550 calc(var(--step-2) * 0.92) var(--font-serif); }
+  .paper-divider { flex: 1; align-self: center; min-width: 16px; border-top: 2px solid var(--ink-3); opacity: 0.35; }
+  .paper summary:hover .paper-divider { opacity: 0.75; }
+  .paper summary { user-select: none; }
   .paper-level { flex-shrink: 0; font-size: 0.875rem; color: var(--ink-3); }
-  .unit { padding: 0 0 8px 28px; }
-  .unit h3 { margin: 4px 12px 4px; font: 600 0.875rem var(--font-sans); letter-spacing: 0; color: var(--ink-3); }
+  .unit { padding: 0 0 8px; }
+  .unit h3 { margin: 4px 0; font: 550 calc(var(--step-1) * 0.92) var(--font-serif); letter-spacing: 0; color: var(--ink-3); }
   .topic-list { list-style: none; margin: 0; padding: 0; }
   .note-link { display: flex; align-items: baseline; gap: 12px; padding: 12px; border-radius: var(--radius-s); text-decoration: none; color: var(--ink); }
   .note-link:hover { background: var(--paper-2); color: var(--ink); }
-  .t-title { font-size: 1.05rem; }
+  .t-title { position: relative; padding-left: 24px; font-size: 1.05rem; }
+  .t-title::before { content: ''; position: absolute; left: 0; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: currentColor; transform: translateY(-50%); }
   .t-meta { margin-left: auto; flex-shrink: 0; font-size: 0.85rem; color: var(--ink-3); text-align: right; }
-  .empty { margin: 0; padding: 10px 12px; color: var(--ink-3); font-size: 0.92rem; }
+  .empty { margin: 0 0 0 28px; padding: 10px 12px; color: var(--ink-3); font-size: 0.92rem; }
   .no-results { margin-top: 32px; padding: 48px 24px; border-radius: var(--radius-l); background: var(--paper-2); text-align: center; color: var(--ink-3); }
   .no-results h2 { color: var(--ink); }
   [hidden] { display: none !important; }
-  @media (max-width: 760px) { .collection-filter { flex: 1; } .note-link { flex-direction: column; gap: 2px; } .t-meta { margin-left: 0; text-align: left; } }
+  @media (max-width: 760px) { .collection-filter { flex: 1; } .note-link { flex-direction: column; gap: 2px; } .t-meta { margin-left: 24px; text-align: left; } }
 </style>
