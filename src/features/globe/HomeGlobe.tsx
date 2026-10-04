@@ -68,7 +68,7 @@ export default function HomeGlobe({ topics }: GlobeData) {
   }, [ready, level]);
   const finishSoon = () => { clearTimeout(timer.current); timer.current = setTimeout(enter, 60); };
   return <div className="home-globe" data-ready={ready || undefined}>
-    <div className="home-globe__caption"><span>THE WORLD IN</span><strong>1789</strong><span>Borders: 1783</span></div>
+    <div className="home-globe__caption"><span>The world in</span><strong>1789</strong><span>Borders: 1783</span></div>
     <div className="home-globe__surface">
       {!ready && <PrebakedGlobe topics={current} borderYear={1783} onViewChange={next => { view.current = next; setHandoffHref(href()); controller.current?.setView(next.center, next.scale); }} onInteractionEnd={enter} pinHref={() => handoffHref} />}
       <div ref={container} className="home-globe__map" aria-hidden={!ready} inert={!ready}

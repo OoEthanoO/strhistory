@@ -110,10 +110,10 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     flex-shrink: 0;
   }
   .brand-name {
-    font-family: var(--font-serif);
-    font-size: 1.3rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
   }
   .primary {
     margin-left: auto;
@@ -133,7 +133,7 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     display: block;
     padding: 8px 12px;
     border-radius: 999px;
-    color: var(--ink-2);
+    color: var(--ink-3);
     text-decoration: none;
     font-size: 0.94rem;
     font-weight: 500;
@@ -144,24 +144,24 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     color: var(--ink);
   }
   .primary a[aria-current='page'] {
-    color: var(--accent);
-    background: var(--accent-soft);
+    color: var(--paper);
+    background: var(--ink);
   }
   .actions {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  .access-link { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 999px; color: inherit; border: 1px solid var(--rule); }
-  .immersive .access-link { color: inherit; border-color: currentColor; }
+  .access-link { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 999px; color: inherit; background: var(--paper-2); }
+  .immersive .access-link { background: rgb(255 255 255 / 0.1); }
 
   .menu-btn {
     display: none;
     width: 40px;
     height: 40px;
-    border: 1px solid var(--rule);
+    border: 0;
     border-radius: 999px;
-    background: transparent;
+    background: var(--paper-2);
     cursor: pointer;
     padding: 0;
     flex-direction: column;
@@ -197,7 +197,8 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     font-size: 1.05rem;
   }
   .mobile-nav a[aria-current='page'] {
-    color: var(--accent);
+    color: var(--ink);
+    background: var(--paper-2);
   }
 
   @media (max-width: 960px) {
@@ -235,7 +236,7 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     color: #fff;
   }
   .immersive .menu-btn {
-    border-color: rgb(255 255 255 / 0.2);
+    background: rgb(255 255 255 / 0.1);
     color: #fff;
   }
   .immersive .mobile-nav {

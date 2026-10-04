@@ -10,6 +10,8 @@ const terms = (await getCollection('glossary')).sort((a, b) =>
 const usage = await getTermUsage();
 const letterOf = (term: string) => term.normalize('NFKD')[0].toUpperCase();
 const letters = [...new Set(terms.map((t) => letterOf(t.data.term)))];
+const PAGE_SIZE = 20;
+const pages = Math.ceil(terms.length / PAGE_SIZE);
 const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: await getEntries(t.data.related) })));
 ---
 
@@ -17,11 +19,7 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
   title="Glossary"
   description="Key terms for IB History, each with a definition and an explanation of why it matters."
 >
-  <PageHeader
-    eyebrow="Glossary"
-    title="Key terms"
-    lede={`${terms.length} terms from the notes. Each explains what the term means and — more importantly for the exam — why it matters.`}
-  >
+  <PageHeader title="Glossary">
     <div class="tools">
       <label class="search">
         <span class="visually-hidden">Filter terms</span>
@@ -32,7 +30,7 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
             stroke-width="1.8"
             stroke-linecap="round"></path></svg
         >
-        <input type="search" placeholder="Filter terms…" data-filter autocomplete="off" />
+        <input type="search" placeholder={`Filter ${terms.length} terms…`} data-filter autocomplete="off" />
       </label>
       <nav class="letters" aria-label="Jump to letter">
         {letters.map((l) => <a href={`#letter-${l}`}>{l}</a>)}
@@ -102,27 +100,72 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
       ))
     }
     <p class="no-results" hidden data-no-results>No terms match that filter.</p>
+    <nav class="pager" aria-label="Glossary pages" hidden data-pager>
+      <button type="button" data-step="-1">← Previous</button>
+      {Array.from({ length: pages }, (_, i) => <button type="button" data-page={i}>{i + 1}</button>)}
+      <button type="button" data-step="1">Next →</button>
+    </nav>
   </div>
 </BaseLayout>
 
 <script>
-  const input = document.querySelector<HTMLInputElement>('[data-filter]');
+  const PAGE_SIZE = 20;
+  const input = document.querySelector<HTMLInputElement>('[data-filter]')!;
   const entries = [...document.querySelectorAll<HTMLElement>('[data-entry]')];
   const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
-  const none = document.querySelector<HTMLElement>('[data-no-results]');
-  input?.addEventListener('input', () => {
+  const none = document.querySelector<HTMLElement>('[data-no-results]')!;
+  const pager = document.querySelector<HTMLElement>('[data-pager]')!;
+  const pageButtons = [...pager.querySelectorAll<HTMLButtonElement>('[data-page]')];
+  const last = pageButtons.length - 1;
+  let page = Math.min(last, Math.max(0, Number(new URLSearchParams(location.search).get('page') ?? 1) - 1 || 0));
+
+  // Searching shows every match; otherwise only the current page's terms.
+  function render() {
     const q = input.value.trim().toLowerCase();
     let shown = 0;
-    for (const e of entries) {
-      e.hidden = !!q && !e.dataset.text!.includes(q);
+    entries.forEach((e, i) => {
+      e.hidden = q ? !e.dataset.text!.includes(q) : Math.floor(i / PAGE_SIZE) !== page;
       if (!e.hidden) shown++;
-    }
+    });
     for (const g of groups) g.hidden = !g.querySelector('[data-entry]:not([hidden])');
-    if (none) none.hidden = shown > 0;
+    none.hidden = shown > 0;
+    pager.hidden = !!q;
+    pageButtons.forEach((b, i) => (i === page ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current')));
+    pager.querySelector<HTMLButtonElement>('[data-step="-1"]')!.disabled = page === 0;
+    pager.querySelector<HTMLButtonElement>('[data-step="1"]')!.disabled = page === last;
+  }
+
+  function goTo(next: number) {
+    page = next;
+    const url = new URL(location.href);
+    url.hash = '';
+    if (page) url.searchParams.set('page', String(page + 1));
+    else url.searchParams.delete('page');
+    history.replaceState(null, '', url);
+    render();
+    document.querySelector('.glossary')!.scrollIntoView();
+  }
+
+  // Letter links, "See also" links and popover links open the page holding their target.
+  function showHash() {
+    const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    const entry = target?.matches('[data-entry]') ? target : target?.querySelector<HTMLElement>('[data-entry]');
+    if (!entry) return;
+    input.value = '';
+    page = Math.floor(entries.indexOf(entry) / PAGE_SIZE);
+    render();
+    for (const e of entries) e.classList.toggle('is-target', e === target);
+    target!.scrollIntoView();
+  }
+
+  input.addEventListener('input', render);
+  pager.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
+    if (b) goTo(b.dataset.page ? Number(b.dataset.page) : page + Number(b.dataset.step));
   });
-  // Highlight the entry linked from a notes popover.
-  const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
-  target?.classList.add('is-target');
+  window.addEventListener('hashchange', showHash);
+  render();
+  showHash();
 </script>
 
 <style>
@@ -130,8 +173,8 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 16px 24px;
-    margin-top: 28px;
+    gap: 12px 24px;
+    margin-top: 20px;
   }
   .search {
     display: flex;
@@ -139,15 +182,13 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     gap: 10px;
     flex: 1 1 280px;
     max-width: 420px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    border: 1px solid var(--rule-strong);
-    background: var(--card);
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    background: var(--paper-2);
     color: var(--ink-3);
   }
   .search:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
+    box-shadow: 0 0 0 2px var(--accent);
   }
   .search input {
     flex: 1;
@@ -169,33 +210,29 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-weight: 600;
     text-decoration: none;
     color: var(--ink-2);
   }
   .letters a:hover {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--paper-2);
+    color: var(--ink);
   }
   .glossary {
     padding-bottom: clamp(48px, 7vw, 96px);
   }
   .letter-group {
-    display: grid;
-    grid-template-columns: 80px minmax(0, 1fr);
-    gap: 24px;
-    padding-block: 20px;
-    border-top: 1px solid var(--rule);
+    padding-top: 24px;
   }
   .letter-group[hidden] {
     display: none;
   }
   .letter {
-    font-size: var(--step-4);
-    color: var(--brass);
-    line-height: 1;
-    margin: 0;
+    font-size: var(--step-2);
+    color: var(--ink-3);
+    margin: 0 0 4px;
+    scroll-margin-top: calc(var(--header-h) + 24px);
   }
   dl {
     margin: 0;
@@ -220,7 +257,7 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     background: var(--brass-soft);
   }
   dt {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 1.2rem;
     font-weight: 600;
     line-height: 1.3;
@@ -244,10 +281,8 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
   }
   .sig-label {
     display: block;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--accent);
   }
   .links {
@@ -262,8 +297,41 @@ const withRelated = await Promise.all(terms.map(async (t) => ({ t, related: awai
     text-align: center;
     color: var(--ink-3);
   }
+  .pager {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 32px;
+  }
+  .pager[hidden] {
+    display: none;
+  }
+  .pager button {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink-2);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .pager button:hover:not(:disabled) {
+    background: var(--paper-2);
+    color: var(--ink);
+  }
+  .pager button[aria-current] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .pager button:disabled {
+    color: var(--ink-3);
+    opacity: 0.5;
+    cursor: default;
+  }
   @media (max-width: 720px) {
-    .letter-group,
     .entry {
       grid-template-columns: 1fr;
     }

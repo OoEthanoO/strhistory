@@ -1,7 +1,7 @@
 .home-globe { position: relative; height: 610px; min-width: 0; overflow: hidden; border-radius: var(--radius-l); color: var(--night-ink); background: radial-gradient(ellipse at 50% 45%, var(--night-2), var(--night) 75%); }
 .home-globe__caption { position: absolute; z-index: 2; top: 26px; left: 28px; display: flex; gap: 14px; align-items: baseline; pointer-events: none; }
-.home-globe__caption span:first-child { font-size: 10px; letter-spacing: .16em; }
-.home-globe__caption strong { font: 500 32px var(--font-serif); }
+.home-globe__caption span:first-child { font-size: 13px; }
+.home-globe__caption strong { font: 600 32px var(--font-display); letter-spacing: -.04em; }
 .home-globe__caption span:last-child { font-size: 11px; opacity: .65; }
 .home-globe__surface { position: absolute; inset: 38px 0 42px; }
 .home-globe__surface > .home-globe__map { position: absolute; inset: 0; opacity: 0; pointer-events: none; }

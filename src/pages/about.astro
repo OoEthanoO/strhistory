@@ -5,35 +5,10 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="About" description={`About ${site.name}: how the site works, where the maps come from, and how to contribute.`}>
-  <PageHeader
-    eyebrow="About"
-    title={`About ${site.name}`}
-    lede="A study companion for IB History students and a home for the history department online."
-  />
+  <PageHeader title="About" />
   <div class="container">
     <div class="prose about">
-      <h2>Why a globe?</h2>
-      <p>
-        History happens in places. Every individual note has a location and a date range, so an event in Paris can sit
-        alongside another in Berlin, Rome or Moscow. Move through the timeline to explore the wider world, then open a pin
-        to read the event’s notes. The timeline extends beyond the course: its snapshots are a way to explore history in
-        their own right.
-      </p>
-
-      <h2>Our 2028 course</h2>
-      <p>
-        The revised IB History course, first assessed in 2028, shapes the current notes collection. Our selected options
-        are political and economic transitions for Paper 1, authoritarian rule for Paper 2, and Europe for Paper 3,
-        focusing on the French Revolution and the unification of Germany and Italy. SL shows the shared core notes;
-        HL adds the regional study. Earlier syllabus material is labelled as an archive.
-      </p>
-      <p>
-        Use the searchable <a href="/topics">notes library</a> to find an event without the globe, or the
-        <a href="/glossary">glossary</a> to look up a term. These pages and the globe use the same notes, so new events
-        appear in both places.
-      </p>
-
-      <h2>How to use the notes</h2>
+      <h2>Using the notes</h2>
       <ul>
         <li><strong>Highlighted quotations</strong> are sources you should be able to recognise and use. Click one to see who said it and why it matters.</li>
         <li><strong>Underlined key terms</strong> open a card with a definition and their significance — the point a strong exam answer makes.</li>
@@ -45,22 +20,28 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
         the final word on what you need to know.
       </p>
 
-      <h2>Where the maps come from</h2>
+      <h2>The 2028 course</h2>
+      <p>
+        Current notes follow the revised IB History course, first assessed in 2028: political and economic transitions
+        (Paper 1), authoritarian rule (Paper 2) and, at HL, Europe — the French Revolution and the unification of Germany
+        and Italy (Paper 3). Earlier syllabus material is labelled as an archive.
+      </p>
+
+      <h2>Maps</h2>
       <p>
         Historical borders come from the open
         <a href="https://github.com/aourednik/historical-basemaps">historical-basemaps</a> project by André Ourednik and
-        contributors (GPL-3.0). We simplify the shapes so they load quickly and correct some names that were out of place
-        for their year. Borders before 1800 are especially approximate; the globe draws approximate borders dashed. Base
-        land shapes are from <a href="https://www.naturalearthdata.com/">Natural Earth</a> (public domain), and the globe is
-        rendered with <a href="https://maplibre.org/">MapLibre GL</a>.
+        contributors (GPL-3.0), simplified and with some anachronistic names corrected. Borders before 1800 are especially
+        approximate; approximate borders are drawn dashed. Land shapes are from
+        <a href="https://www.naturalearthdata.com/">Natural Earth</a> (public domain); the globe is rendered with
+        <a href="https://maplibre.org/">MapLibre GL</a>.
       </p>
 
       <h2>Contributing</h2>
       <p>
-        Teachers and student volunteers can add topics, key terms and department news. Every topic, term, teacher profile
-        and news post is a single text file, so changes are easy to review and rarely clash. The
-        <a href={site.repo}>source repository</a> explains how — start with <code>AGENTS.md</code>. The site updates
-        automatically a minute or two after a change is merged.
+        Every topic, term, teacher profile and news post is a single text file. The
+        <a href={site.repo}>source repository</a> explains how to add one — start with <code>AGENTS.md</code>. The site
+        updates a minute or two after a change is merged.
       </p>
     </div>
   </div>

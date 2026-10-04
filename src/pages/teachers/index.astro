@@ -8,11 +8,7 @@ const teachers = await getTeachers();
 ---
 
 <BaseLayout title="Teachers" description="Meet the teachers of the history department.">
-  <PageHeader
-    eyebrow="The department"
-    title="Our teachers"
-    lede="Historians, coaches and extended essay supervisors. Click a profile to see what each teacher teaches and the notes they have written."
-  />
+  <PageHeader title="Teachers" />
   <div class="container list">
     <div class="grid" style="--min: 260px">
       {teachers.map((t) => <TeacherCard teacher={t} />)}

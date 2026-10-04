@@ -28,5 +28,3 @@ export const nav: NavItem[] = [
   { href: '/news', label: 'News' },
   { href: '/resources', label: 'Resources' },
 ];
-
-export const footerNav: NavItem[] = [...nav, { href: '/about', label: 'About' }];

@@ -5,8 +5,7 @@
  * (the globe) — dark floating header, no footer, no page scroll.
  */
 import '@fontsource-variable/inter';
-import '@fontsource-variable/newsreader/opsz.css';
-import '@fontsource-variable/newsreader/opsz-italic.css';
+import '@fontsource-variable/manrope';
 import '@/styles/tokens.css';
 import '@/styles/base.css';
 import Footer from '@/components/Footer.astro';
@@ -35,7 +34,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content={immersive ? '#0b1220' : '#f6f3ec'} />
+    <meta name="theme-color" content={immersive ? '#0b1220' : '#ffffff'} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={fullTitle} />

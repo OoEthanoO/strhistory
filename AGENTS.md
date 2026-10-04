@@ -105,7 +105,7 @@ package, restart it (Vite's dependency cache is stale).
 | Content | **Astro content collections** (Markdown / MDX + Zod schemas) | One file per topic/term/teacher; schemas catch mistakes at build time. |
 | Immediate globe | **d3-geo** SVG + React | A baked initial frame is in the HTML; drag, pinch, wheel, keyboard and note links work while MapLibre details arrive. The initial 1783 border geometry uses the same palette as the detailed map. |
 | Styling | Plain CSS with design tokens + Astro scoped styles | No framework to learn; tokens keep both themes consistent. |
-| Fonts | Newsreader (serif, variable, optical sizes) + Inter (sans), self-hosted via Fontsource | No third-party font requests (student privacy). |
+| Fonts | Manrope (headings) + Inter (text and UI), self-hosted via Fontsource | No third-party font requests (student privacy). |
 | Hosting | Home server (Windows 11) behind **Caddy** (automatic HTTPS) | See §10. |
 
 Astro 7 specifics worth knowing (they differ from older tutorials):
@@ -354,24 +354,28 @@ screen replaces the globe. WebGL failures leave the SVG usable.
 
 ## 7. Design system
 
-**Personality:** a modern archive — warm paper, ink, oxblood and brass in the
-department pages; a dark "planetarium" for the globe. Calm, editorial, serious
-about sources, never gamified beyond the key-term progress bar.
+**Personality:** a clean study tool, modelled on RevisionDojo — white and
+neutral grey surfaces, a violet accent, pastel tints per paper (sky, amber,
+fuchsia), large rounded panels and pill controls; a dark explorer for the
+globe. Text is short: no page intros, eyebrow labels or repeated links.
+Never gamified: explored key terms change colour, nothing more.
 
 - **Tokens only.** Colours, fonts, radii and shadows come from
   `src/styles/tokens.css` (`--paper`, `--ink`, `--accent`, `--brass`,
-  `--term`, callout families…). Both themes are defined there; components
+  `--term`, callout families…). Paper 1/2/3 use the exam/context/
+  historiography families. Both themes are defined there; components
   never hard-code colours. The globe has its own palette in `globe.css`
   (always dark).
 - **Themes:** light by default, dark via `prefers-color-scheme` or the header
   toggle (`html[data-theme]`, stored in `localStorage`). Check both.
-- **Type:** Newsreader for headings and reading text (optical sizing on),
-  Inter for UI. Fluid type scale `--step--1 … --step-5`.
-- **Semantics:** key terms = teal dotted underline (`--term`); quotations =
-  brass highlighter (`--highlight`); exam callouts = teal, historiography =
-  violet, context = brass, warnings = red.
-- **Layout:** `.container` (max 1200px), prose max 68ch, generous whitespace,
-  cards with 16px radius and soft shadows.
+- **Type:** Manrope (`--font-display`) for headings, Inter (`--font-sans`) for
+  reading text and UI. Fluid type scale `--step--1 … --step-5`.
+- **Semantics:** key terms = sky dotted underline and tinted definition boxes
+  (`--term`); quotations = yellow highlighter (`--highlight`); exam callouts =
+  sky, historiography = fuchsia, context = amber, warnings = red.
+- **Layout:** `.container` (max 1200px), prose max 68ch. Panels use 24px
+  radius (`--radius-l`) and a hairline ring (`--shadow-s`) rather than borders
+  or drop shadows. Lists of notes are compact rows, not cards.
 - **Accessibility (required):** semantic headings in order; visible focus
   styles; all interactive elements reachable by keyboard; `alt` text on images;
   colour is never the only signal; respect `prefers-reduced-motion`; check

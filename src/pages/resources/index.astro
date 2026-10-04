@@ -11,11 +11,7 @@ const categories = ['Assessment', 'Skills', 'Research'] as const;
   title="Resources"
   description="Study guides for IB History: exam papers, source analysis, essay writing, the internal assessment and the extended essay."
 >
-  <PageHeader
-    eyebrow="Resources"
-    title="Study guides"
-    lede="How the IB History exams work, and how to do well in them — from source analysis to the historical investigation."
-  />
+  <PageHeader title="Study guides" />
   <div class="container list">
     {
       categories.map((cat) => {
@@ -29,7 +25,6 @@ const categories = ['Assessment', 'Skills', 'Research'] as const;
                   <a class="guide" href={`/resources/${g.id}`}>
                     <h3>{g.data.title}</h3>
                     <p>{g.data.summary}</p>
-                    <span class="go">Read the guide →</span>
                   </a>
                 ))}
               </div>
@@ -46,10 +41,11 @@ const categories = ['Assessment', 'Skills', 'Research'] as const;
     padding-bottom: clamp(48px, 7vw, 96px);
   }
   .cat + .cat {
-    margin-top: 48px;
+    margin-top: 40px;
   }
   .cat h2 {
-    font-size: var(--step-2);
+    font-size: var(--step-1);
+    color: var(--ink-3);
   }
   .guide {
     display: flex;
@@ -57,29 +53,23 @@ const categories = ['Assessment', 'Skills', 'Research'] as const;
     gap: 8px;
     padding: 22px 24px;
     border-radius: var(--radius-l);
-    border: 1px solid var(--rule);
-    border-top: 4px solid var(--brass);
     background: var(--card);
+    box-shadow: var(--shadow-s);
     color: var(--ink);
     text-decoration: none;
-    transition: transform 0.2s var(--ease), box-shadow 0.2s;
+    transition: box-shadow 0.15s;
   }
   .guide:hover {
-    transform: translateY(-3px);
     box-shadow: var(--shadow);
     color: var(--ink);
   }
   .guide h3 {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
   }
   .guide p {
     margin: 0;
-    color: var(--ink-2);
-    flex: 1;
-  }
-  .go {
-    font-weight: 600;
-    color: var(--accent);
+    color: var(--ink-3);
+    font-size: 0.94rem;
   }
 </style>

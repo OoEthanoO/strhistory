@@ -20,8 +20,7 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
 ---
 
 <BaseLayout title="Study notes" description="Search individual IB History notes by event, place or year. Explore the 2028 course at Standard or Higher Level, with interactive terms and quotations.">
-  <PageHeader eyebrow="The notes library" title="A place for every story."
-    lede="Find an event, follow an argument, explore a source. Every note has its own place and time on the globe — and can be read right here.">
+  <PageHeader title="Notes">
     <div class="tools">
       <label class="search">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
@@ -41,10 +40,6 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
         </select>
       </label>
     </div>
-    <div class="library-meta">
-      <p data-level-hint>SL includes the shared Paper 1 and Paper 2 notes. HL also includes Europe.</p>
-      <a href="/globe?level=SL&curriculum=2028" data-globe-link>Explore these notes on the globe ↗</a>
-    </div>
   </PageHeader>
 
   <div class="container papers">
@@ -52,46 +47,38 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
       <p role="status" aria-live="polite" aria-atomic="true" data-result-count>{initialCount} notes · 2028 course · SL</p>
       <nav class="jump" aria-label="Jump to paper">
         {papers.map((p) => <a href={`#paper-${p.paper}`} data-paper-link={p.paper} hidden={p.paper === 3}>Paper {p.paper}</a>)}
+        <a href="/globe?level=SL&curriculum=2028" data-globe-link>View on globe ↗</a>
       </nav>
     </div>
     <p class="archive-notice" data-archive-notice hidden>These notes belong to the earlier syllabus and are retained for wider reading. They are outside this department’s selected 2028 course.</p>
     {papers.map((p) => (
-      <section class="paper" id={`paper-${p.paper}`} data-paper={p.paper} aria-labelledby={`paper-${p.paper}-title`} hidden={p.paper === 3}>
-        <div class="paper-head">
-          <div>
-            <p class="paper-number">Paper {p.paper} <span>· {p.level}</span></p>
-            <h2 id={`paper-${p.paper}-title`} data-paper-title data-current-title={p.name}>{p.name}</h2>
+      <details class="paper" id={`paper-${p.paper}`} data-paper={p.paper} hidden={p.paper === 3} open>
+        <summary>
+          <span class="paper-number">Paper {p.paper}</span>
+          <h2 data-paper-title data-current-title={p.name}>{p.name}</h2>
+          <span class="paper-level">{p.level}</span>
+        </summary>
+        {p.units.map(({ unit, topics: unitTopics }) => (
+          <div class="unit" data-unit data-curriculum={unit.data.curriculum} data-level={unit.data.levels === 'HL only' ? 'HL' : 'SL'} hidden={unit.data.curriculum !== '2028' || p.paper === 3}>
+            {unit.data.title !== p.name && <h3>{unit.data.title}</h3>}
+            {unitTopics.length ? (
+              <ul class="topic-list">
+                {unitTopics.map((t) => (
+                  <li data-topic data-level={t.data.level} data-start={t.data.period.start} data-end={t.data.period.end}
+                    data-text={`${t.data.title} ${t.data.location.place} ${t.data.period.start} ${t.data.period.end} ${t.data.summary} ${t.data.keyQuestions.join(' ')} ${unit.data.title}`}
+                    hidden={t.data.level === 'HL'}>
+                    <a href={`/topics/${t.id}`} class="note-link" title={t.data.summary}>
+                      <span class="t-title">{t.data.title}</span>
+                      {t.data.draft && <Badge tone="sample">Draft</Badge>}
+                      <span class="t-meta">{formatYearRange(t.data.period.start, t.data.period.end)} · {t.data.location.place}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : <p class="empty">Notes for this unit are being prepared.</p>}
           </div>
-        </div>
-        <div class="units">
-          {p.units.map(({ unit, topics: unitTopics }) => (
-            <div class="unit" data-unit data-curriculum={unit.data.curriculum} data-level={unit.data.levels === 'HL only' ? 'HL' : 'SL'} hidden={unit.data.curriculum !== '2028' || p.paper === 3}>
-              <div class="unit-head">
-                <p class="unit-component">{unit.data.component}</p>
-                <h3>{unit.data.title}</h3>
-                <p class="unit-desc">{unit.data.description}</p>
-              </div>
-              {unitTopics.length ? (
-                <ul class="topic-list">
-                  {unitTopics.map((t) => (
-                    <li data-topic data-level={t.data.level} data-start={t.data.period.start} data-end={t.data.period.end}
-                      data-text={`${t.data.title} ${t.data.location.place} ${t.data.period.start} ${t.data.period.end} ${t.data.summary} ${t.data.keyQuestions.join(' ')} ${unit.data.title}`}
-                      hidden={t.data.level === 'HL'}>
-                      <a href={`/topics/${t.id}`} class="note-link">
-                        <span class="t-meta">{formatYearRange(t.data.period.start, t.data.period.end)} <span aria-hidden="true">/</span> {t.data.location.place}</span>
-                        <span class="t-title">{t.data.title}<span aria-hidden="true" class="go">↗</span></span>
-                        <span class="t-summary">{t.data.summary}</span>
-                        {t.data.level === 'HL' && <span class="hl-label">Higher Level</span>}
-                        {t.data.draft && <Badge tone="sample">Draft</Badge>}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : <p class="empty">Notes for this unit are being prepared.</p>}
-            </div>
-          ))}
-        </div>
-      </section>
+        ))}
+      </details>
     ))}
     <div class="no-results" hidden data-no-results>
       <h2>No notes found</h2>
@@ -182,50 +169,48 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
 </script>
 
 <style>
-  .tools { display: flex; flex-wrap: wrap; align-items: stretch; gap: 12px; margin-top: 30px; }
-  .search { display: flex; align-items: center; gap: 12px; flex: 1 1 340px; padding: 14px 18px; border: 1px solid var(--rule-strong); border-radius: var(--radius); background: var(--card); color: var(--ink-2); }
-  .search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .tools { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin-top: 20px; }
+  .search { display: flex; align-items: center; gap: 12px; flex: 1 1 340px; padding: 12px 18px; border-radius: var(--radius); background: var(--paper-2); color: var(--ink-3); }
+  .search:focus-within { box-shadow: 0 0 0 2px var(--accent); }
   .search input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; color: var(--ink); outline: none; }
-  .search input::placeholder { color: var(--ink-2); opacity: 1; }
-  .level-filter { display: flex; padding: 4px; margin: 0; border: 1px solid var(--rule-strong); border-radius: var(--radius); background: var(--paper-2); }
+  .search input::placeholder { color: var(--ink-3); opacity: 1; }
+  .level-filter { display: flex; padding: 4px; margin: 0; border: 0; border-radius: var(--radius); background: var(--paper-2); }
   .level-filter label { position: relative; display: flex; }
   .level-filter input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-  .level-filter span { display: grid; place-items: center; min-width: 58px; padding: 8px 15px; border-radius: var(--radius-s); font-weight: 650; cursor: pointer; color: var(--ink-2); }
+  .level-filter span { display: grid; place-items: center; min-width: 52px; padding: 6px 14px; border-radius: var(--radius-s); font-weight: 600; cursor: pointer; color: var(--ink-3); }
   .level-filter input:checked + span { background: var(--ink); color: var(--paper); }
   .level-filter input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 3px; }
   .collection-filter { display: flex; }
-  .collection-filter select { width: 100%; border: 1px solid var(--rule-strong); border-radius: var(--radius); background: var(--card); color: var(--ink); font: inherit; padding: 12px 34px 12px 14px; }
-  .library-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; margin-top: 14px; font-size: 0.85rem; }
-  .library-meta p { margin: 0; color: var(--ink-2); }
-  .library-meta a { font-weight: 600; }
+  .collection-filter select { width: 100%; border: 0; border-radius: var(--radius); background: var(--paper-2); color: var(--ink); font: inherit; padding: 12px 34px 12px 14px; }
   .papers { padding-bottom: clamp(48px, 7vw, 96px); }
-  .results-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-bottom: 20px; color: var(--ink-2); font-size: 0.85rem; }
+  .results-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-bottom: 8px; color: var(--ink-3); font-size: 0.875rem; }
   .results-head p { margin: 0; }
   .jump { display: flex; flex-wrap: wrap; gap: 18px; font-weight: 600; }
-  .jump a { color: var(--ink-2); }
-  .archive-notice { padding: 18px 22px; margin-bottom: 28px; border: 1px solid var(--rule-strong); border-radius: var(--radius); background: var(--paper-2); color: var(--ink-2); }
-  .paper + .paper { margin-top: clamp(44px, 6vw, 72px); }
-  .paper-head { padding-bottom: 20px; border-bottom: 2px solid var(--ink); }
-  .paper-number { margin: 0 0 8px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
-  .paper-number span { color: var(--ink-2); }
-  .paper-head h2 { margin: 0; font-size: var(--step-3); }
-  .units { display: grid; }
-  .unit { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr); gap: 22px 56px; padding: 30px 0; border-bottom: 1px solid var(--rule); }
-  .unit-component { margin: 0 0 8px; font-size: 0.75rem; font-weight: 650; color: var(--ink-2); letter-spacing: 0.07em; text-transform: uppercase; }
-  .unit h3 { font-size: 1.45rem; margin-bottom: 10px; }
-  .unit-desc { margin: 0; font-size: 0.93rem; color: var(--ink-2); }
-  .topic-list { display: flex; flex-direction: column; gap: 12px; list-style: none; margin: 0; padding: 0; }
-  .note-link { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--card); text-decoration: none; color: var(--ink); transition: border-color 0.15s; }
-  .note-link:hover { border-color: var(--accent); color: var(--ink); }
-  .t-meta { font-size: 0.75rem; color: var(--ink-2); }
-  .t-meta > span { padding-inline: 6px; color: var(--rule-strong); }
-  .t-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-family: var(--font-serif); font-size: 1.3rem; font-weight: 560; line-height: 1.25; }
-  .go { flex-shrink: 0; font-family: var(--font-sans); font-size: 1rem; color: var(--accent); }
-  .t-summary { color: var(--ink-2); font-size: 0.88rem; line-height: 1.55; }
-  .hl-label { color: var(--c-historiography); font-size: 0.75rem; font-weight: 650; }
-  .empty { margin: 0; padding-block: 20px; align-self: center; color: var(--ink-2); font-size: 0.92rem; }
-  .no-results { padding: 48px 24px; border: 1px solid var(--rule); border-radius: var(--radius); text-align: center; color: var(--ink-2); }
+  .jump a { color: var(--ink-2); text-decoration: none; }
+  .jump a:hover { color: var(--accent); }
+  .archive-notice { padding: 16px 20px; margin: 8px 0 0; border-radius: var(--radius); background: var(--brass-soft); color: var(--ink-2); }
+  .paper { margin-top: 12px; border-radius: var(--radius-l); box-shadow: var(--shadow-s); }
+  .paper:first-of-type { margin-top: 8px; }
+  .paper summary { display: flex; align-items: baseline; gap: 12px; padding: 18px 22px; cursor: pointer; list-style: none; }
+  .paper summary::-webkit-details-marker { display: none; }
+  .paper summary::after { content: ''; align-self: center; flex-shrink: 0; width: 8px; height: 8px; margin-left: auto; border: solid var(--ink-3); border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); transition: transform 0.15s; }
+  .paper:not([open]) summary::after { transform: rotate(-45deg); }
+  .paper-number { flex-shrink: 0; font-size: 0.875rem; font-weight: 600; color: var(--accent); }
+  .paper[data-paper='1'] .paper-number { color: var(--c-exam); }
+  .paper[data-paper='2'] .paper-number { color: var(--c-context); }
+  .paper[data-paper='3'] .paper-number { color: var(--c-historiography); }
+  .paper h2 { margin: 0; font-size: var(--step-1); }
+  .paper-level { flex-shrink: 0; font-size: 0.875rem; color: var(--ink-3); }
+  .unit { padding: 0 10px 12px; }
+  .unit h3 { margin: 4px 12px 4px; font: 600 0.875rem var(--font-sans); letter-spacing: 0; color: var(--ink-3); }
+  .topic-list { list-style: none; margin: 0; padding: 0; }
+  .note-link { display: flex; align-items: baseline; gap: 12px; padding: 10px 12px; border-radius: var(--radius-s); text-decoration: none; color: var(--ink); }
+  .note-link:hover { background: var(--paper-2); color: var(--ink); }
+  .t-title { font-weight: 500; }
+  .t-meta { margin-left: auto; flex-shrink: 0; font-size: 0.85rem; color: var(--ink-3); text-align: right; }
+  .empty { margin: 0; padding: 10px 12px; color: var(--ink-3); font-size: 0.92rem; }
+  .no-results { margin-top: 32px; padding: 48px 24px; border-radius: var(--radius-l); background: var(--paper-2); text-align: center; color: var(--ink-3); }
   .no-results h2 { color: var(--ink); }
   [hidden] { display: none !important; }
-  @media (max-width: 760px) { .unit { grid-template-columns: 1fr; } .collection-filter { flex: 1; } .level-filter span { min-width: 52px; } }
+  @media (max-width: 760px) { .collection-filter { flex: 1; } .note-link { flex-direction: column; gap: 2px; } .t-meta { margin-left: 0; text-align: left; } }
 </style>

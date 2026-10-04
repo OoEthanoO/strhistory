@@ -11,11 +11,7 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
 ---
 
 <BaseLayout title="Courses" description="History courses offered by the department, and how the IB History syllabus is organised.">
-  <PageHeader
-    eyebrow="Courses"
-    title="What we teach"
-    lede="From the foundations in the early grades to the IB Diploma at Standard and Higher Level."
-  />
+  <PageHeader title="Courses" />
 
   <div class="container">
     <div class="grid courses" style="--min: 320px">
@@ -32,7 +28,6 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
               {c.data.code && ` · ${c.data.code}`}
             </p>
             <p class="summary">{c.data.summary}</p>
-            <span class="go">Course details →</span>
           </a>
         ))
       }
@@ -41,12 +36,7 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
 
   <section class="section">
     <div class="container">
-      <p class="eyebrow">IB History · First assessment 2028</p>
-      <h2>Units and their notes</h2>
-      <p class="lede">
-        Our selected course covers political and economic transitions and authoritarian rule at SL and HL.
-        Higher Level adds Europe: the French Revolution and the unification of Germany and Italy.
-      </p>
+      <h2>IB History units, first assessment 2028</h2>
       <div class="table-wrap">
         <table class="syllabus">
           <thead>
@@ -92,8 +82,7 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
         </table>
       </div>
       <p class="note muted">
-        These are the department’s selected options for the revised course, first assessed in 2028.
-        Consult your teacher’s course outline for the complete required coverage. <a href="/topics?curriculum=archive">Earlier syllabus notes</a> remain available for wider reading.
+        The department’s selected options. Your teacher’s course outline sets the full required coverage. <a href="/topics?curriculum=archive">Earlier syllabus notes</a> remain for wider reading.
       </p>
     </div>
   </section>
@@ -109,15 +98,13 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
     gap: 8px;
     padding: 26px;
     border-radius: var(--radius-l);
-    border: 1px solid var(--rule);
     background: var(--card);
     color: var(--ink);
     text-decoration: none;
     box-shadow: var(--shadow-s);
-    transition: transform 0.2s var(--ease), box-shadow 0.2s;
+    transition: box-shadow 0.15s;
   }
   .course:hover {
-    transform: translateY(-3px);
     box-shadow: var(--shadow);
     color: var(--ink);
   }
@@ -128,14 +115,12 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
     gap: 8px;
   }
   .level {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--brass);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink-3);
   }
   .course h2 {
-    font-size: 1.7rem;
+    font-size: 1.35rem;
     margin: 4px 0 0;
   }
   .grades {
@@ -144,19 +129,21 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
     color: var(--ink-3);
   }
   .summary {
-    margin: 4px 0 8px;
-    color: var(--ink-2);
-    flex: 1;
+    margin: 4px 0 0;
+    color: var(--ink-3);
+    font-size: 0.94rem;
   }
-  .go {
-    font-weight: 600;
-    color: var(--accent);
+  .section {
+    padding-top: clamp(32px, 5vw, 56px);
+  }
+  .section h2 {
+    font-size: var(--step-2);
   }
   .table-wrap {
     overflow-x: auto;
-    margin-top: 28px;
-    border: 1px solid var(--rule);
+    margin-top: 20px;
     border-radius: var(--radius-l);
+    box-shadow: var(--shadow-s);
     background: var(--card);
   }
   .syllabus {
@@ -167,8 +154,6 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
   .syllabus th {
     text-align: left;
     font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: var(--ink-3);
     padding: 14px 18px;
     border-bottom: 1px solid var(--rule);
@@ -184,9 +169,9 @@ const topicsIn = (unitId: string) => topics.filter((t) => t.data.unit.id === uni
   }
   .u-title {
     display: block;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 1.08rem;
-    font-weight: 560;
+    font-weight: 600;
   }
   .u-comp {
     font-size: 0.82rem;
