@@ -114,7 +114,7 @@ button {
 }
 
 .section {
-  padding-block: clamp(48px, 8vw, 96px);
+  padding-block: clamp(40px, 6vw, 72px);
 }
 
 .section--alt {
@@ -220,5 +220,6 @@ button {
   margin-bottom: clamp(16px, 3vw, 32px);
 }
 .page-head h1 {
+  font-size: var(--step-3);
   margin-bottom: 0.3em;
 }

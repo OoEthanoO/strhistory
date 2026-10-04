@@ -60,13 +60,13 @@
   --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
 
-  --step--1: clamp(0.83rem, 0.8rem + 0.12vw, 0.9rem);
-  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
-  --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.4rem);
-  --step-2: clamp(1.44rem, 1.3rem + 0.7vw, 1.85rem);
-  --step-3: clamp(1.73rem, 1.5rem + 1.15vw, 2.5rem);
-  --step-4: clamp(2.07rem, 1.7rem + 1.9vw, 3.4rem);
-  --step-5: clamp(2.5rem, 1.9rem + 3vw, 4.6rem);
+  --step--1: clamp(0.8rem, 0.78rem + 0.1vw, 0.85rem);
+  --step-0: clamp(0.94rem, 0.92rem + 0.1vw, 1rem);
+  --step-1: clamp(1.1rem, 1.05rem + 0.25vw, 1.25rem);
+  --step-2: clamp(1.3rem, 1.2rem + 0.45vw, 1.6rem);
+  --step-3: clamp(1.55rem, 1.4rem + 0.75vw, 2rem);
+  --step-4: clamp(1.8rem, 1.55rem + 1.2vw, 2.6rem);
+  --step-5: clamp(2.1rem, 1.75rem + 1.8vw, 3.4rem);
 
   /* Shape & depth */
   --radius-s: 10px;
@@ -80,7 +80,7 @@
   --container: 1200px;
   --prose: 68ch;
   --gutter: clamp(16px, 4vw, 40px);
-  --header-h: 64px;
+  --header-h: 56px;
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }

@@ -23,7 +23,7 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
   <PageHeader title="Notes">
     <div class="tools">
       <label class="search">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
         <span class="visually-hidden">Search notes by event, place, theme or year</span>
         <input type="search" placeholder="Search an event, place, theme or year…" data-filter autocomplete="off" />
       </label>
@@ -45,17 +45,13 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
   <div class="container papers">
     <div class="results-head">
       <p role="status" aria-live="polite" aria-atomic="true" data-result-count>{initialCount} notes · 2028 course · SL</p>
-      <nav class="jump" aria-label="Jump to paper">
-        {papers.map((p) => <a href={`#paper-${p.paper}`} data-paper-link={p.paper} hidden={p.paper === 3}>Paper {p.paper}</a>)}
-        <a href="/globe?level=SL&curriculum=2028" data-globe-link>View on globe ↗</a>
-      </nav>
+      <a href="/globe?level=SL&curriculum=2028" data-globe-link>View on globe ↗</a>
     </div>
     <p class="archive-notice" data-archive-notice hidden>These notes belong to the earlier syllabus and are retained for wider reading. They are outside this department’s selected 2028 course.</p>
     {papers.map((p) => (
       <details class="paper" id={`paper-${p.paper}`} data-paper={p.paper} hidden={p.paper === 3} open>
         <summary>
-          <span class="paper-number">Paper {p.paper}</span>
-          <h2 data-paper-title data-current-title={p.name}>{p.name}</h2>
+          <h2>Paper {p.paper} – <span data-paper-title data-current-title={p.name}>{p.name}</span></h2>
           <span class="paper-level">{p.level}</span>
         </summary>
         {p.units.map(({ unit, topics: unitTopics }) => (
@@ -133,8 +129,6 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
       paper.hidden = !paper.querySelector('[data-unit]:not([hidden])');
       const title = paper.querySelector<HTMLElement>('[data-paper-title]')!;
       title.textContent = curriculum === 'archive' ? 'Earlier syllabus notes' : title.dataset.currentTitle!;
-      const link = document.querySelector<HTMLElement>(`[data-paper-link="${paper.dataset.paper}"]`);
-      if (link) link.hidden = paper.hidden;
     }
     const collectionName = curriculum === '2028' ? '2028 course' : 'Earlier syllabus archive';
     count.textContent = `${shown} ${shown === 1 ? 'note' : 'notes'} · ${collectionName} · ${level}${query ? ` · “${input.value.trim()}”` : ''}`;
@@ -169,44 +163,39 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
 </script>
 
 <style>
-  .tools { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin-top: 20px; }
-  .search { display: flex; align-items: center; gap: 12px; flex: 1 1 340px; padding: 12px 18px; border-radius: var(--radius); background: var(--paper-2); color: var(--ink-3); }
+  .tools { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin-top: 12px; font-size: 0.9rem; }
+  .search { display: flex; align-items: center; gap: 10px; flex: 1 1 340px; padding: 8px 14px; border-radius: var(--radius-s); background: var(--paper-2); color: var(--ink-3); }
   .search:focus-within { box-shadow: 0 0 0 2px var(--accent); }
   .search input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; color: var(--ink); outline: none; }
   .search input::placeholder { color: var(--ink-3); opacity: 1; }
-  .level-filter { display: flex; padding: 4px; margin: 0; border: 0; border-radius: var(--radius); background: var(--paper-2); }
+  .level-filter { display: flex; padding: 3px; margin: 0; border: 0; border-radius: var(--radius-s); background: var(--paper-2); }
   .level-filter label { position: relative; display: flex; }
   .level-filter input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-  .level-filter span { display: grid; place-items: center; min-width: 52px; padding: 6px 14px; border-radius: var(--radius-s); font-weight: 600; cursor: pointer; color: var(--ink-3); }
+  .level-filter span { display: grid; place-items: center; min-width: 40px; padding: 3px 10px; border-radius: calc(var(--radius-s) - 3px); font-weight: 600; cursor: pointer; color: var(--ink-3); }
   .level-filter input:checked + span { background: var(--ink); color: var(--paper); }
   .level-filter input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 3px; }
   .collection-filter { display: flex; }
-  .collection-filter select { width: 100%; border: 0; border-radius: var(--radius); background: var(--paper-2); color: var(--ink); font: inherit; padding: 12px 34px 12px 14px; }
+  .collection-filter select { width: 100%; border: 0; border-radius: var(--radius-s); background: var(--paper-2); color: var(--ink); font: inherit; padding: 8px 30px 8px 12px; }
   .papers { padding-bottom: clamp(48px, 7vw, 96px); }
   .results-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-bottom: 8px; color: var(--ink-3); font-size: 0.875rem; }
   .results-head p { margin: 0; }
-  .jump { display: flex; flex-wrap: wrap; gap: 18px; font-weight: 600; }
-  .jump a { color: var(--ink-2); text-decoration: none; }
-  .jump a:hover { color: var(--accent); }
+  .results-head a { font-weight: 600; color: var(--ink-2); text-decoration: none; }
+  .results-head a:hover { color: var(--accent); }
   .archive-notice { padding: 16px 20px; margin: 8px 0 0; border-radius: var(--radius); background: var(--brass-soft); color: var(--ink-2); }
-  .paper { margin-top: 12px; border-radius: var(--radius-l); box-shadow: var(--shadow-s); }
+  .paper { margin-top: 24px; }
   .paper:first-of-type { margin-top: 8px; }
-  .paper summary { display: flex; align-items: baseline; gap: 12px; padding: 18px 22px; cursor: pointer; list-style: none; }
+  .paper summary { display: flex; align-items: baseline; gap: 12px; padding: 14px 0; cursor: pointer; list-style: none; }
   .paper summary::-webkit-details-marker { display: none; }
-  .paper summary::after { content: ''; align-self: center; flex-shrink: 0; width: 8px; height: 8px; margin-left: auto; border: solid var(--ink-3); border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); transition: transform 0.15s; }
+  .paper summary::after { content: ''; align-self: center; flex-shrink: 0; width: 8px; height: 8px; margin-left: 4px; border: solid var(--ink-3); border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); transition: transform 0.15s; }
   .paper:not([open]) summary::after { transform: rotate(-45deg); }
-  .paper-number { flex-shrink: 0; font-size: 0.875rem; font-weight: 600; color: var(--accent); }
-  .paper[data-paper='1'] .paper-number { color: var(--c-exam); }
-  .paper[data-paper='2'] .paper-number { color: var(--c-context); }
-  .paper[data-paper='3'] .paper-number { color: var(--c-historiography); }
-  .paper h2 { margin: 0; font-size: var(--step-1); }
-  .paper-level { flex-shrink: 0; font-size: 0.875rem; color: var(--ink-3); }
-  .unit { padding: 0 10px 12px; }
+  .paper h2 { margin: 0; font: 500 var(--step-1) var(--font-sans); }
+  .paper-level { flex-shrink: 0; margin-left: auto; font-size: 0.875rem; color: var(--ink-3); }
+  .unit { padding: 0 0 8px 28px; }
   .unit h3 { margin: 4px 12px 4px; font: 600 0.875rem var(--font-sans); letter-spacing: 0; color: var(--ink-3); }
   .topic-list { list-style: none; margin: 0; padding: 0; }
-  .note-link { display: flex; align-items: baseline; gap: 12px; padding: 10px 12px; border-radius: var(--radius-s); text-decoration: none; color: var(--ink); }
+  .note-link { display: flex; align-items: baseline; gap: 12px; padding: 12px; border-radius: var(--radius-s); text-decoration: none; color: var(--ink); }
   .note-link:hover { background: var(--paper-2); color: var(--ink); }
-  .t-title { font-weight: 500; }
+  .t-title { font-size: 1.05rem; }
   .t-meta { margin-left: auto; flex-shrink: 0; font-size: 0.85rem; color: var(--ink-3); text-align: right; }
   .empty { margin: 0; padding: 10px 12px; color: var(--ink-3); font-size: 0.92rem; }
   .no-results { margin-top: 32px; padding: 48px 24px; border-radius: var(--radius-l); background: var(--paper-2); text-align: center; color: var(--ink-3); }
