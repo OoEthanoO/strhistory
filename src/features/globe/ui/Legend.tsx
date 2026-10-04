@@ -5,16 +5,14 @@
 // apps/site/src/ui/legend.ts.
 import { useEffect, useId, useRef } from 'react';
 import type { CSSProperties, JSX, KeyboardEvent, ReactNode } from 'react';
-import { KEY_COLORS, MAP_THEME_RESOLVED, fillColor } from '../map-colors';
+import { MAP_THEME_RESOLVED, fillColor, keyColorsFor } from '../map-colors';
 import { IconButton } from './Icon';
 
 export interface LegendProps {
   open: boolean;
+  year: number;
   onOpenChange(open: boolean): void;
 }
-
-// A polity in slot `c` with no identity colour, as drawn.
-const slot = (c: number): string => fillColor({ power: '', pid: '', c });
 
 /** Custom properties for a swatch (`--sw-fill`, `--sw-hatch`, `--sw-line`). */
 const vars = (v: Record<string, string>): CSSProperties => v as CSSProperties;
@@ -36,8 +34,10 @@ function Row({ swatch, children }: { swatch: ReactNode; children: string }): JSX
   );
 }
 
-export function Legend({ open, onOpenChange }: LegendProps): JSX.Element {
+export function Legend({ open, year, onOpenChange }: LegendProps): JSX.Element {
   const t = MAP_THEME_RESOLVED;
+  // A polity in slot `c` with no identity colour, as drawn for this year.
+  const slot = (c: number): string => fillColor({ power: '', pid: '', c }, year);
   const id = `legend-${useId().replace(/[^A-Za-z0-9_-]/g, '')}`;
   const titleId = `${id}-title`;
   const rootRef = useRef<HTMLDivElement>(null);
@@ -85,7 +85,7 @@ export function Legend({ open, onOpenChange }: LegendProps): JSX.Element {
           <Row
             swatch={
               <Swatch cls="legend__sw--multi">
-                {KEY_COLORS.map((c, i) => (
+                {keyColorsFor(year).map((c, i) => (
                   <span key={i} style={{ background: c }} />
                 ))}
               </Swatch>

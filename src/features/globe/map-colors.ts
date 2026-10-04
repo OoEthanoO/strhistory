@@ -2,11 +2,15 @@
 // in the manner of a grand-strategy game's political map
 // (Victoria 3): the major powers in their traditional colours (Britain red, France blue,
 // Russia green, …) through every era of the data, every other polity in one of twelve
-// softer colours by its colour slot `c`, a deep slate-blue sea and stone-grey land that
+// softer colours by its colour slot `c`, a charcoal sea and stone-grey land that
 // no polity held. Passed to the globe as `theme` and `palette`; the key and the search
 // list draw their swatches from the same functions, so they match the map.
 //
-// How the colours were chosen (OKLab ΔE×100, as drawn), checked against the borders
+// All polity colours pass through the tunable HSL adjustment in color-schemes.ts.
+// Pasted period schemes remain available through USE_PASTED_COLOR_SCHEMES below.
+//
+// How the original base colours were chosen (before HSL adjustment, OKLab ΔE×100),
+// checked against the borders
 // that actually occur (every pair of colour keys sharing an edge in any of the 593
 // frames): neighbouring identity colours are at least 9.9 apart (Italy/Russia, at their
 // Tianjin concessions; Ottoman/Russia 10.1, Britain/Denmark 11.6); a minor polity is at
@@ -16,12 +20,15 @@
 // fill is at least 11 from the sea and 9.5 from the land.
 import type { PolityProps } from '@alexs-atlas/borders';
 import { blendOver, resolveTheme, type GlobeTheme } from '@alexs-atlas/globe';
-import { pastedColorFor } from './color-schemes';
+import { adjustSchemeColor, pastedColorFor } from './color-schemes';
 import { COUNTRY_COLORS } from './country-colors';
+
+/** Opt in to the retained pasted period schemes; the Atlas palette is the default. */
+export const USE_PASTED_COLOR_SCHEMES = false;
 
 /** Globe theme, layered over the package defaults. */
 export const MAP_THEME: Partial<GlobeTheme> = {
-  // A muted mid-blue sea, and Victoria 3's grey for decentralized, unclaimed land.
+  // A charcoal sea, and Victoria 3's grey for decentralized, unclaimed land.
   ocean: '#353535',
   lake: '#353535',
   land: '#e3e0d9',
@@ -153,23 +160,29 @@ const IDENTITY: readonly (readonly [color: string, keys: readonly string[]])[] =
 
 const BY_KEY: ReadonlyMap<string, string> = new Map(IDENTITY.flatMap(([color, keys]) => keys.map((k) => [k, color] as const)));
 
-/** Identity colours of four well-known powers (Britain, France, Italy, Spain), for the map key. */
-export const KEY_COLORS: readonly string[] = ['ne:gbr', 'ne:fra', 'ne:ita', 'ne:esp'].map((k) => BY_KEY.get(k)!);
+/** The active, adjusted colours of Britain, France, Italy and Spain for the map key. */
+export function keyColorsFor(year?: number): readonly string[] {
+  return ['ne:gbr', 'ne:fra', 'ne:ita', 'ne:esp'].map((key) =>
+    fillColor({ power: key, pid: key, c: 0 }, year),
+  );
+}
 
-/** The palette function given to the globe: a polity's base colour (before blending). */
+/** A polity's palette colour, adjusted once before the globe blends it over land. */
 export function mapColor(
   p: Pick<PolityProps, 'power' | 'pid' | 'c'> & Partial<Pick<PolityProps, 'name' | 'subjecto'>>,
   year?: number,
 ): string {
-  const pasted = pastedColorFor(p, year);
-  if (pasted) return pasted;
+  if (USE_PASTED_COLOR_SCHEMES) {
+    const pasted = pastedColorFor(p, year);
+    if (pasted) return pasted;
+  }
   const key = p.power || p.pid;
   // A classic colour, else the country's flag colour (country-colors.ts), else a slot.
   const identity = BY_KEY.get(key) ?? COUNTRY_COLORS[key];
-  if (identity) return identity;
+  if (identity) return adjustSchemeColor(identity);
   const n = SLOT_PALETTE.length;
   const slot = Number.isFinite(p.c) ? ((Math.trunc(p.c) % n) + n) % n : 0;
-  return SLOT_PALETTE[slot]!;
+  return adjustSchemeColor(SLOT_PALETTE[slot]!);
 }
 
 /** A polity's colour as the globe draws it (blended over the land colour at `fillBlend`). */

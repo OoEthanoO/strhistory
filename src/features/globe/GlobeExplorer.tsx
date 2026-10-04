@@ -797,7 +797,7 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
             year={listYear}
             present={present}
             lifespan={(pid) => lifespan(index?.[pid])}
-            color={fillColor}
+            color={(p) => fillColor(p, listYear)}
             selected={selectedPid}
             onChoose={(pid, source) => {
               void selectPolity(pid, { source, fly: true, push: true });
@@ -825,7 +825,7 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
             onLocate={locate}
             onHover={(topic) => (topic ? hover(topic) : unhover())}
           />
-          <Legend open={panel === 'key'} onOpenChange={(open) => setPanel((current) => (open ? 'key' : current === 'key' ? null : current))} />
+          <Legend year={listYear} open={panel === 'key'} onOpenChange={(open) => setPanel((current) => (open ? 'key' : current === 'key' ? null : current))} />
         </div>
         <div className="hud hud--right" ref={hudRightEl}>
           <div className="hud__item">
