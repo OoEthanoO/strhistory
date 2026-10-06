@@ -1,0 +1,43 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { randomBytes, scryptSync } from 'node:crypto';
+import { once } from 'node:events';
+import { createAdminServer } from './server.mjs';
+import { COOKIE } from './auth.mjs';
+const code = 'test-teacher-code';
+const salt = randomBytes(16).toString('hex');
+const config = { origin: 'https://strhistory.ca', salt, codeHash: scryptSync(code, salt, 64).toString('hex'), sessionKey: randomBytes(32).toString('hex'), siteRoot: '.' };
+test('teacher authentication is separate, expires, resists CSRF and protects every API', async (t) => {
+  let now = Date.now(); let writes = 0;
+  const store = { busy: false, list: async () => [], status: () => null, read: async () => ({}), save: async () => { writes++; return { ok: true }; }, preview: async () => ({}), publish: async () => ({}), discard: async () => ({}) };
+  const server = createAdminServer(config, store, { now: () => now }); server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const get = (path, headers = {}) => fetch(base + path, { headers, redirect: 'manual' });
+  const post = (path, data, headers = {}) => fetch(base + '/admin/api/' + path, { method: 'POST', headers: { Origin: config.origin, 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(data), redirect: 'manual' });
+  for (const path of ['entries', 'entry', 'status']) {
+    assert.equal((await get('/admin/api/' + path)).status, 401);
+    assert.equal((await get('/admin/api/' + path, { Cookie: '__Host-history-access=student-cookie' })).status, 401);
+  }
+  for (const path of ['draft', 'preview', 'publish', 'discard', 'logout']) assert.equal((await post(path, {})).status, 401);
+  assert.equal((await get('/verify')).headers.get('location'), '/admin/login');
+  assert.equal((await post('login', { code: 'wrong' })).status, 401);
+  for (const origin of ['https://evil.test', 'null', 'https://history.ethanyanxu.com', 'http://strhistory.ca']) assert.equal((await post('login', { code }, { Origin: origin })).status, 403);
+  let response = await post('login', { code }); assert.equal(response.status, 200);
+  assert.match(response.headers.get('cache-control'), /private, no-store/);
+  const cookie = response.headers.get('set-cookie'); assert.match(cookie, /__Host-history-admin=/); assert.match(cookie, /Secure; HttpOnly; SameSite=Strict; Max-Age=28800/);
+  const headers = { Cookie: cookie.split(';')[0] };
+  assert.equal((await get('/verify', headers)).status, 204);
+  assert.equal((await get('/admin/api/entries', headers)).status, 200);
+  assert.equal((await post('draft', {}, { ...headers, Origin: 'https://evil.test' })).status, 403); assert.equal(writes, 0);
+  assert.equal((await post('draft', {}, headers)).status, 200); assert.equal(writes, 1);
+  assert.equal((await post('draft', { body: 'x'.repeat(140000) }, headers)).status, 413);
+  assert.equal((await get('/verify', { Cookie: headers.Cookie + 'forged' })).status, 303);
+  response = await post('logout', {}, headers); assert.match(response.headers.get('set-cookie'), /Max-Age=0/);
+  assert.equal((await get('/verify', headers)).status, 303, 'logged-out token is revoked');
+  response = await post('login', { code }); const secondCookie = response.headers.get('set-cookie').split(';')[0];
+  now += 9 * 60 * 60 * 1000; assert.equal((await get('/verify', { Cookie: secondCookie })).status, 303);
+  for (let i = 0; i < 10; i++) await post('login', { code: 'wrong' }, { 'X-Admin-Client': 'limited-client' });
+  assert.equal((await post('login', { code }, { 'X-Admin-Client': 'limited-client' })).status, 429);
+  assert.ok(COOKIE !== '__Host-history-access');
+});
