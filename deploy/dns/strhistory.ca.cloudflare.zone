@@ -1,0 +1,10 @@
+; STR History: prepared Cloudflare DNS records, checked 2026-10-06.
+; Import with Cloudflare proxying disabled (DNS only).
+; The apex CNAME uses Cloudflare's automatic apex flattening.
+; This file does not change the registrar's authoritative nameservers.
+$ORIGIN strhistory.ca.
+$TTL 300
+@          60   IN CNAME finprint.ethanyanxu.com.
+www             IN CNAME strhistory.ca.
+_dmarc          IN TXT   "v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;"
+_domainconnect  IN CNAME _domainconnect.gd.domaincontrol.com.

@@ -712,15 +712,45 @@ then waits for the next commit. The preferred fix for a bad commit is
 - Scripts must run on Windows PowerShell 5.1: no `??`, `?.`, `&&`; keep `.ps1`
   files ASCII-only (5.1 reads BOM-less files as Windows-1252).
 
-**DNS:** `strhistory.ca` must resolve to the home connection's public IPv4
-(the same as `ai.ethanyanxu.com` and `finprint.ethanyanxu.com`). Set its apex
-`@` A record to that address and `www` CNAME to `strhistory.ca`. Do not copy an
-old IP from these docs: resolve the existing home-server hostname when making
-the change. Keep the apex A record updated if the home's public IP changes.
-Only publish an AAAA record if the server is actually reachable over IPv6.
-The legacy `history.ethanyanxu.com` record remains on Vercel DNS and must keep
-pointing at this server so old links can redirect. Caddy obtains and renews
-certificates for the canonical domain and both aliases automatically.
+**DNS and dynamic IPs:** the Cloudflare Free zone for `strhistory.ca` was
+prepared on **6 October 2026**, but the registrar cutover is still pending.
+GoDaddy's authoritative nameservers (`ns77.domaincontrol.com` and
+`ns78.domaincontrol.com`) currently serve a stale fixed apex A record. The
+GoDaddy account owner must replace that nameserver pair with the assigned
+Cloudflare pair: **`christian.ns.cloudflare.com` and `pat.ns.cloudflare.com`**.
+Registration stays with GoDaddy. These are registrar nameserver settings, not
+NS records to add to the old DNS zone. No parent DS record was present at the
+preparation check; recheck DNSSEC state if the cutover happens later.
+
+Prepared records are in `deploy/dns/strhistory.ca.cloudflare.zone`. All are
+**DNS only**, preserving direct HTTPS to Caddy. The apex is a CNAME to
+`finprint.ethanyanxu.com` (60-second TTL), automatically flattened by Cloudflare;
+`www` is a CNAME to `strhistory.ca`. The existing `_dmarc` TXT and `_domainconnect`
+CNAME are preserved. Both assigned Cloudflare nameservers were queried directly
+and verified to serve these records and the current home IP. Public DNS checks
+and Cloudflare's scan found these four records; they cannot prove that an
+unlisted custom hostname does not exist. Preserve any additional records in the
+owner's GoDaddy zone before the nameserver change. There were no apex MX, TXT,
+AAAA or CAA records in the public check.
+
+The existing SYSTEM task `ethanyanxu-cloudflare-ddns` runs
+`C:\ProgramData\YanLearn\ops\update-cloudflare-dns.ps1` every five minutes. It
+compares two independent public-IP lookups and updates only the existing
+Cloudflare A records for `finprint.ethanyanxu.com` and `ai.ethanyanxu.com`.
+STR History follows the former by CNAME, so it needs no additional updater or
+DNS API credential. The legacy `history.ethanyanxu.com` is already a Cloudflare
+CNAME to `ai.ethanyanxu.com`; Caddy redirects it to the canonical domain. Its
+redirect therefore also appears broken while the canonical DNS remains stale.
+Do not replace the prepared apex CNAME with a fixed home IP. Only publish an
+AAAA record if the server is actually reachable over IPv6. Caddy continues to
+manage HTTPS for the canonical domain and both aliases.
+
+After the owner changes nameservers, verify delegation with public resolvers,
+Cloudflare's active status, apex/`www` resolution, `/version.json`, public
+`/globe`, student and teacher access, and both alias redirects. Verify TLS
+normally, without `--resolve`; a direct authoritative query or an IP-pinned
+HTTPS check proves readiness but not that the public cutover is complete.
+Update this pending-cutover note only after that verification succeeds.
 
 For a domain migration, prepare and verify DNS and the new host's HTTPS before
 deploying the legacy-host redirect. Change `astro.config.mjs`, `common.ps1`,
