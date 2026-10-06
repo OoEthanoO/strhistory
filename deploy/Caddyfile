@@ -14,7 +14,7 @@ history.ethanyanxu.com, www.strhistory.ca {
 	# do not forward its access code in a cross-origin POST.
 	@accessPost {
 		method POST
-		path /access/unlock /access/logout
+		path /access/unlock /access/logout /admin/api/*
 	}
 	redir @accessPost https://strhistory.ca/access 303
 	redir https://strhistory.ca{uri} 308
@@ -64,7 +64,30 @@ strhistory.ca {
 	@publicPage path /globe /globe/ /globe/index.html /access /access/ /access/index.html /favicon.svg /robots.txt /sitemap-index.xml /sitemap-0.xml /version.json
 	@publicAsset path_regexp publicAsset ^(/_astro/[^/]+\.(js|css|woff2|woff|svg|png|jpg|jpeg|webp|avif)|/data/land\.geojson|/data/snapshots/world_-?[0-9]+\.geojson|/data/snapshots/LICENSE\.md|/glyphs/noto-sans/[0-9]+-[0-9]+\.pbf|/data/alexs-atlas/(?:(?:chunks/l[0-9]+|base)/)?[a-z0-9_-]+(?:\.[a-z0-9_-]+)*\.json|/data/alexs-atlas/(?:ATTRIBUTION|LICENSE)\.md)$
 	@accessAction path /access/unlock /access/logout /access/session
+	@adminLogin path /admin/login /admin/login/ /admin/login/index.html
+	@adminApi path /admin/api/*
+	@adminPage path_regexp adminPage (?i)^/admin(?:/|$)
 	route {
+		handle @adminApi {
+			header Cache-Control "private, no-store"
+			header X-Robots-Tag "noindex, nofollow"
+			reverse_proxy 127.0.0.1:4311 {
+				header_up X-Admin-Client {remote_host}
+			}
+		}
+		handle @adminLogin {
+			header Cache-Control "private, no-store"
+			header X-Robots-Tag "noindex, nofollow"
+			file_server
+		}
+		handle @adminPage {
+			header Cache-Control "private, no-store"
+			header X-Robots-Tag "noindex, nofollow"
+			forward_auth 127.0.0.1:4311 {
+				uri /verify
+			}
+			file_server
+		}
 		handle @accessAction {
 			reverse_proxy 127.0.0.1:4310 {
 				header_up X-Access-Client {remote_host}

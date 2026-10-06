@@ -1,0 +1,8 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Editor from '@/features/admin/Editor';
+---
+<BaseLayout title="Teacher editor" description="Manage STR History's teaching materials.">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <Editor client:load />
+</BaseLayout>

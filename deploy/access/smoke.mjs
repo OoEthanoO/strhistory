@@ -16,7 +16,7 @@ const post = (path, value, headers = {}) => request(path, { method: 'POST', head
 }, body: new URLSearchParams({ code: value, next: '/topics/storming-bastille-1789?from=globe' }) });
 const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((f) => f.isDirectory() ? walk(join(dir, f.name)) : [join(dir, f.name)]);
 const protectedPages = walk('dist').filter((f) => f.endsWith('.html')).map((f) => '/' + relative('dist', f).replaceAll('\\', '/'))
-  .filter((p) => !['/globe/index.html', '/access/index.html'].includes(p));
+  .filter((p) => !['/globe/index.html', '/access/index.html'].includes(p) && !p.startsWith('/admin/'));
 for (const path of [...protectedPages, '/', '/topics', '/topics/', '/glossary', '/TOPICS/FIRST-CRUSADE/INDEX.HTML', '/topics%2Ffirst-crusade/index.html', '/globe/../topics/first-crusade/', '/_astro/../topics/first-crusade/', '/topics/first-crusade/index.html?x=.css', '/data/alexs-atlas/../../topics/first-crusade/', '/data/alexs-atlas/chunks/../../../topics/first-crusade/index.html']) {
   const r = await request(path);
   assert.equal(r.status, 303, `locked: ${path}`);

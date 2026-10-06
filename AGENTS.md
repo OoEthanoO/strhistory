@@ -55,6 +55,14 @@ Never commit the access code or session signing key, or embed them in frontend J
 This gate protects the deployed website, not the source files in the public GitHub
 repository. Making source content confidential requires a separate repository decision.
 
+**Teachers:** `/admin` is the content desk, protected by a separate admin code.
+`/admin/login` is public; the student code and student cookie never grant editing
+access. Admin sessions last eight hours. Teachers can add and edit entries in all
+eight collections, save private drafts, preview notes and publish after checks.
+The footer links to the editor. Published changes are Git commits, so they remain
+visible to developers and survive normal deployments. Application code, map data
+and site-wide layout are still maintained through the repository.
+
 ### Content standards (non-negotiable)
 
 This is an educational site; accuracy matters more than volume.
@@ -177,6 +185,8 @@ src/
       popover-client.ts      positioning + key-term progress (client JS)
       notes.css              prose + component styles
       index.ts               the map of components exposed to MDX
+    admin/                 ← FEATURE: teacher editor (React island, scoped CSS)
+      Editor.tsx             collection browser, structured fields, text, preview and publish
   components/              ← shared UI: Header, Footer, cards, Badge, Avatar, HeroGlobe…
   layouts/BaseLayout.astro ← the HTML shell (head, fonts, theme, header/footer)
   pages/                   ← thin route files; they query content and compose components
@@ -204,6 +214,8 @@ packages/                  ← Alex's Atlas modules; packages/AGENTS.md and TODO
 deploy/
   Caddyfile                the site's Caddy config (source of truth)
   access/                  code/session service, provisioning helper, tests
+  admin/                   separate teacher service: auth, content policy, Git/draft store,
+                           shared editor field definitions and tests
   server/*.ps1             install / poll / deploy / status / rollback on the home server
 .github/workflows/ci.yml   check + build on every push and PR
 ```
@@ -538,6 +550,11 @@ shell, Node 24, Git, Caddy 2.11 (also serving finprint and ai subdomains).
 | `logs\deploy.log`, `logs\access.log` | deploy log; Caddy access log |
 | `private\access.json` | salted scrypt code hash + random session signing key; outside repo/releases, restricted ACL |
 | `bin\access\server.mjs` | running access service, restarted when its code or configured origin changes |
+| `private\admin.json` | independent teacher-code hash/session key and editor paths; never committed |
+| `private\admin-git`, `private\admin-known-hosts` | repository-scoped write deploy key and pinned GitHub SSH host keys |
+| `private\admin-data\` | durable private drafts and last publishing-job status |
+| `authoring\repo\` | marked, dedicated scratch clone for teacher validation/publishing; never edit by hand |
+| `bin\admin\` | installed teacher service, updated by `deploy/server/admin.ps1` |
 
 **Access service:** the SYSTEM task `strhistory-access` starts on boot, runs
 Node directly on `127.0.0.1:4310`, and restarts on failure. Every deploy runs
@@ -581,6 +598,75 @@ always serve through this Caddyfile. The access page can be previewed locally,
 but its unlock action requires the access service and the configured origin.
 Pass alias origins after the base URL to verify permanent redirects and old
 forms too: `node deploy/access/smoke.mjs https://strhistory.ca https://history.ethanyanxu.com https://www.strhistory.ca`.
+
+### Teacher editor
+
+`strhistory-admin` is a SYSTEM task running Node on **127.0.0.1:4311**. Caddy
+checks its `/verify` endpoint before serving any `/admin` content page, including
+case variants and direct HTML paths. Only the login page is exempt. Each
+`/admin/api/*` handler independently requires an admin session (except login and
+the boolean session check). A stopped editor fails closed and does not affect
+the globe or student access service. Admin responses are private/no-store and
+noindex. The `__Host-history-admin` cookie is Secure, HttpOnly, SameSite=Strict,
+signed with its own key, and expires after eight hours. POSTs require the exact
+configured Origin; login has a separate 10-attempt/15-minute limit. Logout
+revokes the token for the running service as well as clearing the browser cookie.
+
+The editor uses ordinary fields for metadata and Markdown/MDX for page text,
+with buttons for quotations, terms, callouts and self-tests. The preview renders
+an escaped syntax tree into a sandboxed, script-free iframe. It is a reading
+preview, not the entire page layout. Only established note components with
+quoted text attributes are accepted: no JS expressions, imports, scripts or
+arbitrary HTML. `content.mjs` uses the same Satteri parser already supplied by
+Astro's MDX dependency chain; its compatibility and safety are tested in CI.
+Images can reference existing public image paths (or existing sibling image
+frontmatter). Uploads, renaming, deleting published entries and changing layout
+are repository tasks. Unknown frontmatter fields fail safely rather than being
+discarded; extend the shared definitions/policy when the content schema grows.
+
+Drafts are JSON files under `private/admin-data/drafts`, **outside both clones
+and the document root**. Each save carries a draft version; competing saves
+return a conflict instead of overwriting another teacher. Publishing fetches
+current `main` into the dedicated, marked scratch clone, checks the original
+entry's revision, applies only that file, runs `npm run check` and `npm run build`,
+then commits and pushes without force. The normal poller deploys that commit.
+Checks or concurrent Git updates leave the draft saved and show an actionable
+error. Newly created unpublished notes/posts can use `draft: true`. Saving a
+private editor draft itself never commits anything. Back up `private/admin-data`
+with the other private server configuration.
+
+Initial setup (before deploying routes):
+
+1. Keep `private` restricted to SYSTEM and Administrators. Run
+   `node deploy/admin/configure.mjs C:\Users\ethan\strhistory` on the server.
+   Save the generated code privately; the helper stores only its salted hash and
+   refuses to overwrite an existing config. Never put this code in the repository.
+2. Generate an Ed25519 key as `private/admin-git`; add **only its public key** as a
+   write-enabled deploy key for `OoEthanoO/strhistory`. Populate
+   `private/admin-known-hosts` from GitHub's authenticated HTTPS `/meta` API (or
+   verify against published fingerprints). SSH strictly checks this file.
+3. Clone `main` over SSH into `authoring/repo`; create `.teacher-authoring` in it
+   and add that marker to `.git/info/exclude`. Run `npm ci` there, and verify a
+   `git push --dry-run origin HEAD:main` using the dedicated key. The service
+   requires the marker before it may reset this scratch checkout. Set the paths
+   in `private/admin.json`; never reuse the deployment or a contributor's clone.
+4. Deploy. `deploy/server/admin.ps1` installs and health-checks the service before
+   Caddy exposes it. On code updates it drains requests and waits for an active
+   publish to finish before restarting. `/drain`, `/health` and `/verify` are
+   loopback-only endpoints, never public API routes.
+
+Tests: `node --test deploy/admin/auth.test.mjs deploy/admin/content.test.mjs deploy/admin/store.test.mjs`.
+They cover separate sessions/CSRF/rate limits, unsafe content, all existing
+entries, durable drafts, concurrent edits, failed builds, new entries and
+publishing to an isolated local Git remote. CI and server deployments run them.
+`node deploy/admin/smoke.mjs <base-url>` takes the admin code on stdin and verifies
+the real gate, APIs, preview, and logout without changing published content.
+
+To rotate an admin code, replace only `salt`, `codeHash` (scrypt, 64 bytes) and
+`sessionKey` in `private/admin.json`, retain the other paths and restricted ACL,
+and restart `strhistory-admin`. Rotate the signing key to invalidate all sessions
+across restarts. To revoke publishing separately, remove the repository deploy
+key in GitHub. Never give the service an account-wide GitHub token.
 
 The main Caddyfile (`C:\Users\ethan\finprint\scripts\selfhost\Caddyfile`, run by
 the `finprint-caddy` task) contains a managed block:

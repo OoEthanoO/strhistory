@@ -10,6 +10,7 @@ const year = new Date().getFullYear();
       © {year} {site.department}{site.school && `, ${site.school}`}
       {site.email && <> · <a href={`mailto:${site.email}`}>{site.email}</a></>}
       · <a href="/about">About</a>
+      · <a href="/admin">Teacher editor</a>
     </p>
     <p>
       Historical borders from <a href="https://github.com/aourednik/historical-basemaps">historical-basemaps</a>

@@ -1,0 +1,52 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+<BaseLayout title="Teacher sign in" description="Sign in to the STR History teacher editor.">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="container admin-login">
+    <div class="login-card">
+      <p class="eyebrow">FOR TEACHERS</p>
+      <h1>A place to<br /><em>build understanding.</em></h1>
+      <p>Edit study notes, add a new perspective, and keep the department up to date.</p>
+      <form id="admin-login">
+        <label for="admin-code">Admin access code</label>
+        <input id="admin-code" type="password" name="code" required maxlength="128" autocomplete="current-password" autocapitalize="none" spellcheck="false" aria-describedby="code-help" />
+        <p id="code-help">Use the separate teacher code. The student code doesn’t open the editor. Sessions last eight hours.</p>
+        <p id="login-error" role="alert" hidden></p>
+        <button class="btn btn--primary" type="submit">Open the teacher editor <span aria-hidden="true">→</span></button>
+      </form>
+      <noscript><p>JavaScript is needed to use the teacher editor.</p></noscript>
+      <a class="back-link" href="/globe">← Back to the public globe</a>
+    </div>
+  </section>
+</BaseLayout>
+<script>
+  const form = document.querySelector<HTMLFormElement>('#admin-login')!;
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = form.querySelector('button')!;
+    const error = document.getElementById('login-error')!;
+    const input = document.querySelector<HTMLInputElement>('#admin-code')!;
+    button.disabled = true; error.hidden = true;
+    try {
+      const response = await fetch('/admin/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: input.value }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to sign in.');
+      input.value = ''; location.assign('/admin');
+    } catch (e) { error.textContent = e instanceof Error ? e.message : 'Unable to reach the editor. Please try again.'; error.hidden = false; input.focus(); }
+    finally { button.disabled = false; }
+  });
+</script>
+<style>
+  .admin-login { padding-block: clamp(40px, 8vw, 100px); }
+  .login-card { max-width: 530px; margin-inline: auto; border: 1px solid var(--rule); padding: clamp(24px, 4vw, 44px); border-radius: var(--radius); background: var(--card); }
+  h1 { font-size: var(--step-4); line-height: 1.12; margin-block: 20px; }
+  h1 em { color: var(--accent); font-weight: inherit; }
+  p { color: var(--ink-2); }
+  label { display: block; margin-top: 28px; margin-bottom: 8px; font-weight: 600; }
+  input { width: 100%; padding: 12px; border: 1px solid var(--rule-strong); border-radius: var(--radius-s); background: var(--paper); color: var(--ink); font: inherit; }
+  #code-help { font-size: .85rem; color: var(--ink-3); margin-block: 10px 24px; }
+  #login-error { color: var(--accent); }
+  .btn { width: 100%; justify-content: center; }
+  .back-link { display: inline-block; margin-top: 28px; font-size: .9rem; }
+</style>

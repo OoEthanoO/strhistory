@@ -70,6 +70,7 @@ try {
     # 2. Content check and build.
     Run 'content check' { & $npm run --silent check:content }
     Run 'access checks' { & $config.node --test deploy/access/server.test.mjs }
+    Run 'teacher editor checks' { & $config.node --test deploy/admin/auth.test.mjs deploy/admin/content.test.mjs deploy/admin/store.test.mjs }
     Run 'build' { & $npm run --silent build }
 
     $dist = Join-Path $paths.Repo 'dist'
@@ -85,6 +86,7 @@ try {
 
     # 4. Start/refresh the access service before enabling its Caddy gate.
     Run 'access service' { & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'access.ps1') -Root $Root }
+    Run 'teacher editor service' { & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'admin.ps1') -Root $Root }
     # Caddy site block: apply repo changes only if Caddy accepts them.
     $candidate = Join-Path $paths.Repo 'deploy\Caddyfile'
     $caddyError = $null
