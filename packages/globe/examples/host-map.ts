@@ -70,7 +70,7 @@ map.on('load', async () => {
   try {
     const borders = createBorders({ manifestUrl: '/data/alexs-atlas/manifest.json' });
     const add = (year: number): BorderLayersHandle =>
-      addBorderLayers(map, { borders, year, beforeId: 'graticule', prefix: 'chrono-', fontFamily: 'system-ui, sans-serif' });
+      addBorderLayers(map, { borders, year, beforeId: 'graticule', prefix: 'chrono-' });
 
     let handle = add(1453);
     await handle.setYear(1453);

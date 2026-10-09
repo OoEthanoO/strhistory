@@ -6,7 +6,7 @@ import '../src/style.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { defineChronoGlobeElement, type ChronoGlobeElement } from '../src/index.js';
 
-defineChronoGlobeElement('chrono-globe', { workerUrl, fontFamily: 'Inter Variable' });
+defineChronoGlobeElement('chrono-globe', { workerUrl });
 
 const el = document.querySelector('chrono-globe') as ChronoGlobeElement;
 const events: string[] = [];

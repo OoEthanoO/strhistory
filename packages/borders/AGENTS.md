@@ -83,12 +83,12 @@ share the colonial power's colour.
   extents.
 
 **Precision.** `exact` when the boundary follows sources or admin units closely;
-`approximate` when it is an indicative extent (drawn dashed, labelled
+`approximate` when it is an indicative extent (drawn dashed, marked
 "approximate extent").
 
 **Wikidata ids.** Never write a QID from memory — look every one up
-(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q…&props=labels|descriptions&languages=en&format=json`
-or `action=wbsearchentities`) and check the label and description match. Leave
+(`https://www.wikidata.org/wiki/Special:EntityData/Q….json`
+or `action=wbsearchentities`) and check its English name and description match. Leave
 `wikidata` out when unsure.
 
 **Sources.** Every active fix needs at least one source a reader can open:
@@ -183,7 +183,7 @@ modern file, saying who held it each year:
     { "years": [1990, "present"], "state": { "pid": "ne:deu", "name": "Germany", "kind": "state", "wikidata": "Q183" } }
   ],
   "subunits": [
-    { "id": "west-germany", "label": "West German Länder",
+    { "id": "west-germany",
       "geometry": { "type": "admin1", "codes": ["DE-BW", "DE-BY", "DE-HB", "DE-HH", "DE-HE", "DE-NI", "DE-NW", "DE-RP", "DE-SH"] },
       "timeline": [
         { "years": [1946, 1948], "state": { "pid": "ovr:allied-occupied-germany", "name": "Allied-occupied Germany", "kind": "dependency", "wikidata": "Q2415901" } },
@@ -230,7 +230,7 @@ Written by the fact-check toolkit (`pipeline/factcheck/`, see the root AGENTS.md
   or `status` (`check_cliopatria.py` keeps reviewed entries on rerun); to change
   data, move the entry into a curated file.
 - Wikidata rules for tools and people: verify every class QID against its English
-  label (`Q1371849` is "filmography", not a polity class); entity JSON dates have
+  name (`Q1371849` is "filmography", not a polity class); entity JSON dates have
   no year 0 but query-service dates do; stay at or below 5 requests/s (search 1/s).
 - Tile-QA thresholds: `factcheck/config.json` → `tileQa.thresholds` (a
   `"factcheck"` object in `pipeline/config.json` can override them).
@@ -528,8 +528,7 @@ const fc = await borders.bordersAt(1453, { lod: 'l1' });   // FeatureCollection<
   `{ manifestUrl }` or `{ manifest, baseUrl }`; `loadManifest(url, { fetch?, signal? })`;
   `validateManifest(json)` (throws on an invalid manifest).
 - Client: `ready()`, `frameOf(year)` (`{ from, to }`, ±Infinity outside the
-  coverage), `bordersAt`, `labelsAt` (one point per pid, at its largest tier-0
-  record), `linesAt` (`kind: 'border'` = arcs between two different features,
+  coverage), `bordersAt`, `linesAt` (`kind: 'border'` = arcs between two different features,
   unclaimed land included; `'coast'` = arcs used by exactly one feature, internal
   seams excluded; frames of one chunk with the same coastline share one coast Feature
   object), `base('land' | 'lakes', lod)`, `polities()`, `polity(pid)`,

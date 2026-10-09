@@ -15,11 +15,6 @@ export const DEFAULT_THEME: Readonly<GlobeTheme> = Object.freeze({
   approximate: 'rgba(230, 237, 246, 0.6)',
   coast: 'rgba(136, 162, 186, 0.75)',
   hatch: 'rgba(240, 244, 250, 0.5)',
-  label: '#eef2f7',
-  labelHalo: 'rgba(7, 11, 20, 0.85)',
-  labelHaloWidth: null,
-  labelHaloBlur: null,
-  labelOverlay: '#f3e2bf',
   hover: '#f4f7fb',
   selection: '#e9b45f',
   fillBlend: 0.85,
@@ -40,19 +35,13 @@ const COLOR_KEYS = [
   'approximate',
   'coast',
   'hatch',
-  'label',
-  'labelHalo',
-  'labelOverlay',
   'hover',
   'selection',
 ] as const satisfies readonly (keyof GlobeTheme)[];
 
 const NUMBER_KEYS = ['fillBlend', 'overlayTint', 'hoverLighten', 'edge', 'atmosphere'] as const satisfies readonly (keyof GlobeTheme)[];
 
-/** Pixel sizes (0..8), or null for the layer's own default. */
-const PX_KEYS = ['labelHaloWidth', 'labelHaloBlur'] as const satisfies readonly (keyof GlobeTheme)[];
-
-/** `labelHalo` → `--ca-label-halo`. */
+/** `lakeShore` → `--ca-lake-shore`. */
 export function cssVarName(key: keyof GlobeTheme): string {
   return `--ca-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
 }
@@ -69,7 +58,7 @@ export function readCssTheme(el: Element): Partial<GlobeTheme> {
     const v = cs.getPropertyValue(cssVarName(key)).trim();
     if (v) out[key] = v;
   }
-  for (const key of [...NUMBER_KEYS, ...PX_KEYS]) {
+  for (const key of NUMBER_KEYS) {
     const v = cs.getPropertyValue(cssVarName(key)).trim();
     if (v && Number.isFinite(parseFloat(v))) out[key] = parseFloat(v);
   }
@@ -96,10 +85,6 @@ export function resolveTheme(...layers: (Partial<GlobeTheme> | undefined)[]): Gl
   for (const key of NUMBER_KEYS) {
     const n = Number(merged[key]);
     merged[key] = Number.isFinite(n) ? clamp01(n) : DEFAULT_THEME[key];
-  }
-  for (const key of PX_KEYS) {
-    const n = merged[key] === null ? NaN : Number(merged[key]);
-    merged[key] = Number.isFinite(n) ? Math.min(8, Math.max(0, n)) : null;
   }
   merged.stars = Boolean(merged.stars);
   return merged;

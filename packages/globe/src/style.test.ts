@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_PALETTE } from './palette.js';
-import { FILTERS, borderIds, borderLayers, borderSources, buildBaseStyle, externalUrls, fontStack, layerOrder, skySpec, type LayerSpec } from './style.js';
+import { FILTERS, borderIds, borderLayers, borderSources, buildBaseStyle, externalUrls, layerOrder, skySpec, type LayerSpec } from './style.js';
 import { DEFAULT_THEME } from './theme.js';
 
 const ids = borderIds('ca-');
-const ctx = { ids, theme: { ...DEFAULT_THEME }, palette: DEFAULT_PALETTE, fontFamily: 'Inter Variable, sans-serif' };
+const ctx = { ids, theme: { ...DEFAULT_THEME }, palette: DEFAULT_PALETTE };
 
 describe('layer order (AGENTS.md §5.5)', () => {
   const layers = borderLayers(ctx);
@@ -12,7 +12,7 @@ describe('layer order (AGENTS.md §5.5)', () => {
   it('emits the layers in contract order', () => {
     expect(layers.map((l) => l.id)).toEqual(layerOrder(ids));
     const pos = (id: string): number => layers.findIndex((l) => l.id === id);
-    // ocean background (base style) → base land → tier-0 fills → borders → tier-1 → lakes → coast → labels → highlight
+    // ocean background (base style) → base land → tier-0 fills → borders → tier-1 → lakes → coast → highlight
     expect(pos(ids.baseLand)).toBeLessThan(pos(ids.fill));
     expect(pos(ids.fill)).toBeLessThan(pos(ids.edge));
     expect(pos(ids.edge)).toBeLessThan(pos(ids.border));
@@ -23,8 +23,7 @@ describe('layer order (AGENTS.md §5.5)', () => {
     expect(pos(ids.overlayHatch)).toBeLessThan(pos(ids.overlayLine));
     expect(pos(ids.overlayLine)).toBeLessThan(pos(ids.lakes));
     expect(pos(ids.lakes)).toBeLessThan(pos(ids.coast));
-    expect(pos(ids.coast)).toBeLessThan(pos(ids.labels));
-    expect(pos(ids.labels)).toBeLessThan(pos(ids.hoverLine));
+    expect(pos(ids.coast)).toBeLessThan(pos(ids.hoverLine));
     expect(pos(ids.hoverLine)).toBeLessThan(pos(ids.selectLine));
   });
 
@@ -39,9 +38,8 @@ describe('layer order (AGENTS.md §5.5)', () => {
     expect(byId[ids.lakes]!.source).toBe(ids.lakesSrc);
     expect(byId[ids.baseLand]!.source).toBe(ids.baseLandSrc);
     expect(byId[ids.selectLine]!.source).toBe(ids.highlightSrc);
-    // Big polities first, small on top; labels sorted by −area.
+    // Big polities first, small on top.
     expect(byId[ids.fill]!.layout!['fill-sort-key']).toEqual(['-', 0, ['to-number', ['get', 'a'], 0]]);
-    expect(byId[ids.labels]!.layout!['symbol-sort-key']).toEqual(['-', 0, ['to-number', ['get', 'a'], 0]]);
     // Approximate precision and tier 1 draw dashed.
     expect(byId[ids.approx]!.filter).toContainEqual(['==', ['get', 'precision'], 'approximate']);
     expect(byId[ids.approx]!.paint!['line-dasharray']).toBeDefined();
@@ -62,23 +60,16 @@ describe('layer order (AGENTS.md §5.5)', () => {
     expect(JSON.stringify(fill)).toContain('"_fill"');
   });
 
-  it('labels use the host font family (no glyph server) and hide tiny polities at low zoom', () => {
-    const labels = borderLayers(ctx).find((l) => l.id === ids.labels)!;
-    expect(labels.layout!['text-font']).toEqual(['Inter Variable', 'sans-serif']);
-    const filter = JSON.stringify(labels.filter);
-    expect(filter).toContain('"zoom"');
-    expect(filter).toContain('"unclaimed"');
-    expect(fontStack(undefined)).toEqual(['sans-serif']);
-    expect(fontStack(`"Inter Variable", system-ui`)).toEqual(['Inter Variable', 'system-ui']);
-  });
-
-  it('can hide labels, base land and lakes', () => {
-    const l = borderLayers({ ...ctx, labels: false, baseLand: false, lakes: false });
+  it('can hide base land and lakes', () => {
+    const l = borderLayers({ ...ctx, baseLand: false, lakes: false });
     const vis = (id: string): unknown => l.find((x) => x.id === id)!.layout!.visibility;
-    expect(vis(ids.labels)).toBe('none');
     expect(vis(ids.baseLand)).toBe('none');
     expect(vis(ids.lakes)).toBe('none');
     expect(vis(ids.lakeShore)).toBe('none');
+  });
+
+  it('draws no text: no symbol layers', () => {
+    expect(borderLayers(ctx).filter((l) => (l.type as string) === 'symbol')).toEqual([]);
   });
 
   it('prefixes every id', () => {
@@ -101,10 +92,9 @@ describe('base style', () => {
     expect(skySpec({ atmosphere: 1, ocean: '#000' })['atmosphere-blend']).toContain(0.6);
   });
 
-  it('has no glyphs or sprite by default (labels are drawn locally)', () => {
+  it('has no glyphs or sprite (no text is drawn on the map)', () => {
     expect(style).not.toHaveProperty('glyphs');
     expect(style).not.toHaveProperty('sprite');
-    expect(buildBaseStyle({ theme: { ...DEFAULT_THEME }, glyphs: '/glyphs/{fontstack}/{range}.pbf' }).glyphs).toBe('/glyphs/{fontstack}/{range}.pbf');
   });
 
   it('contains no external URL anywhere (style, sources, layers)', () => {
@@ -158,53 +148,6 @@ describe('own outlines (theme.edge) and lines in a transparent colour', () => {
     for (const id of [ids.coast, ids.border, ids.hoverLine, ids.lakeShore]) expect(l[id]!.layout!.visibility).toBe('none');
     const d = byId({});
     for (const id of [ids.coast, ids.border, ids.hoverLine, ids.lakeShore]) expect(d[id]!.layout!.visibility).toBe('visible');
-  });
-});
-
-describe("curved labels (labelMode 'curved')", () => {
-  const layers = borderLayers({ ...ctx, labelMode: 'curved' });
-  const label = layers.find((l) => l.id === ids.labels)!;
-  const sources = borderSources({ ids });
-
-  it('draws names along arcs from their own coarse source, in capitals', () => {
-    expect(label.source).toBe(ids.labelArcsSrc);
-    expect(label.filter).toEqual(FILTERS.labelArcs);
-    expect(label.layout!['symbol-placement']).toBe('line-center');
-    expect(label.layout!['text-transform']).toBe('uppercase');
-    // Size, spacing and colour per arc (computed for the current zoom), never by zoom in the style:
-    // MapLibre tests whether a line label fits with its size at zoom 18.
-    expect(JSON.stringify(label.layout!['text-size'])).toContain('_px');
-    expect(JSON.stringify(label.layout!['text-size'])).not.toContain('zoom');
-    expect(JSON.stringify(label.layout!['text-letter-spacing'])).toContain('_ls');
-    expect(JSON.stringify(label.paint!['text-color'])).toContain('_ink');
-    const arcs = sources[ids.labelArcsSrc]!;
-    expect(arcs).toMatchObject({ maxzoom: 2, buffer: 512, tolerance: 0, promoteId: 'id' });
-  });
-
-  it('draws no halo when the halo colour is fully transparent', () => {
-    expect(label.paint!['text-halo-width']).toBeGreaterThan(0);
-    for (const labelMode of ['curved', 'point'] as const) {
-      const bare = borderLayers({ ...ctx, labelMode, theme: { ...ctx.theme, labelHalo: 'rgba(0, 0, 0, 0)' } }).find((l) => l.id === ids.labels)!;
-      expect(bare.paint!['text-halo-width']).toBe(0);
-    }
-  });
-
-  it('takes halo width and blur from the theme, capped to the type size, else the label mode defaults', () => {
-    expect(label.paint!['text-halo-blur']).toBe(0);
-    const glow = borderLayers({ ...ctx, labelMode: 'curved', theme: { ...ctx.theme, labelHaloWidth: 2, labelHaloBlur: 2 } }).find((l) => l.id === ids.labels)!;
-    // ['min', 2, ['*', share, ['to-number', ['get', '_px'], 10]]]: never wider than the glyphs' distance field.
-    for (const key of ['text-halo-width', 'text-halo-blur']) {
-      const e = glow.paint![key] as unknown[];
-      expect(e[0]).toBe('min');
-      expect(e[1]).toBe(2);
-      expect(JSON.stringify(e[2])).toContain('_px');
-    }
-  });
-
-  it('keeps point labels by default', () => {
-    const point = borderLayers(ctx).find((l) => l.id === ids.labels)!;
-    expect(point.source).toBe(ids.frameSrc);
-    expect(point.layout!['symbol-placement']).toBeUndefined();
   });
 });
 

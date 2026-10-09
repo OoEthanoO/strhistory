@@ -6,7 +6,7 @@ import { DEFAULT_THEME, cssVarName, readCssTheme, resolveTheme } from './theme.j
 describe('theme', () => {
   it('maps keys to --ca-* custom properties', () => {
     expect(cssVarName('ocean')).toBe('--ca-ocean');
-    expect(cssVarName('labelHalo')).toBe('--ca-label-halo');
+    expect(cssVarName('lakeShore')).toBe('--ca-lake-shore');
     expect(cssVarName('fillBlend')).toBe('--ca-fill-blend');
   });
 
@@ -28,26 +28,16 @@ describe('theme', () => {
   it('reads --ca-* custom properties from an element', () => {
     const el = document.createElement('div');
     el.style.setProperty('--ca-ocean', '#102030');
-    el.style.setProperty('--ca-label-halo', 'rgba(0, 0, 0, 0.5)');
+    el.style.setProperty('--ca-lake-shore', 'rgba(0, 0, 0, 0.5)');
     el.style.setProperty('--ca-fill-blend', '0.7');
     el.style.setProperty('--ca-stars', 'off');
     document.body.appendChild(el);
     const css = readCssTheme(el);
-    expect(css).toMatchObject({ ocean: '#102030', labelHalo: 'rgba(0, 0, 0, 0.5)', fillBlend: 0.7, stars: false });
+    expect(css).toMatchObject({ ocean: '#102030', lakeShore: 'rgba(0, 0, 0, 0.5)', fillBlend: 0.7, stars: false });
     expect(css.land).toBeUndefined();
     const t = resolveTheme(css, { ocean: '#000000' });
     expect(t.ocean).toBe('#000000');
-    expect(t.labelHalo).toBe('rgba(0, 0, 0, 0.5)');
-  });
-
-  it('keeps label halo sizes null (the layer default) unless set, then clamps them to 0–8 px', () => {
-    expect(resolveTheme().labelHaloWidth).toBeNull();
-    expect(resolveTheme({ labelHaloWidth: 2, labelHaloBlur: 20 })).toMatchObject({ labelHaloWidth: 2, labelHaloBlur: 8 });
-    expect(resolveTheme({ labelHaloWidth: -1, labelHaloBlur: Number.NaN })).toMatchObject({ labelHaloWidth: 0, labelHaloBlur: null });
-    const el = document.createElement('div');
-    el.style.setProperty('--ca-label-halo-blur', '2.5');
-    document.body.appendChild(el);
-    expect(readCssTheme(el).labelHaloBlur).toBe(2.5);
+    expect(t.lakeShore).toBe('rgba(0, 0, 0, 0.5)');
   });
 });
 

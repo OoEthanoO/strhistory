@@ -74,7 +74,7 @@ async function openPage(url, viewport = { width: 1280, height: 800 }) {
   return page;
 }
 
-/** Waits until MapLibre is idle (all tiles loaded and drawn, labels placed). */
+/** Waits until MapLibre is idle (all tiles loaded and drawn). */
 async function idle(page) {
   await page.evaluate(
     () =>
@@ -84,7 +84,7 @@ async function idle(page) {
         const t = setTimeout(done, 15000);
         map.once('idle', () => {
           clearTimeout(t);
-          setTimeout(done, 250); // label fade-in
+          setTimeout(done, 250); // a moment for the last paint
         });
         map.triggerRepaint();
       }),

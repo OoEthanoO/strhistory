@@ -1,11 +1,10 @@
-// Builds the MapLibre style pieces in code — no style URL, no sprite, no glyph
-// server (labels are drawn locally from a CSS font family). Pure functions:
-// the output is plain JSON that unit tests inspect.
+// Builds the MapLibre style pieces in code — no style URL, no sprite, no glyphs.
+// Pure functions: the output is plain JSON that unit tests inspect.
 //
 // Layer order (AGENTS.md §5.5), bottom to top:
 //   ocean background → base land (until the first frame) → tier-0 fills →
 //   each polity's own outline (theme.edge) → borders → approximate-border dashes →
-//   tier-1 tint, hatch, dashed outline → lakes → coastline → labels →
+//   tier-1 tint, hatch, dashed outline → lakes → coastline →
 //   hover/selection outlines. A line layer whose theme colour is fully transparent is
 //   not drawn at all (visibility none).
 import { isTransparent } from './color.js';
@@ -17,7 +16,7 @@ import type { GlobeTheme, ReliefOptions } from './types.js';
 export type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 export interface LayerSpec {
   id: string;
-  type: 'background' | 'fill' | 'line' | 'symbol' | 'raster';
+  type: 'background' | 'fill' | 'line' | 'raster';
   source?: string;
   filter?: unknown[];
   layout?: Record<string, unknown>;
@@ -49,8 +48,6 @@ export interface BorderIds {
   highlightSrc: string;
   /** Relief tiles (`relief`). */
   reliefSrc: string;
-  /** Curved-label arcs (`labelMode: 'curved'`). */
-  labelArcsSrc: string;
   // images
   hatchImage: string;
   // layers in drawing order
@@ -66,7 +63,6 @@ export interface BorderIds {
   lakes: string;
   lakeShore: string;
   coast: string;
-  labels: string;
   hoverLine: string;
   selectGlow: string;
   selectLine: string;
@@ -82,7 +78,6 @@ export function borderIds(prefix = 'ca-'): BorderIds {
     lakesSrc: `${p}lakes`,
     highlightSrc: `${p}highlight`,
     reliefSrc: `${p}relief`,
-    labelArcsSrc: `${p}label-arcs`,
     hatchImage: `${p}hatch`,
     baseLand: `${p}base-land`,
     fill: `${p}fill`,
@@ -96,7 +91,6 @@ export function borderIds(prefix = 'ca-'): BorderIds {
     lakes: `${p}lakes`,
     lakeShore: `${p}lake-shore`,
     coast: `${p}coast`,
-    labels: `${p}labels`,
     hoverLine: `${p}hover-line`,
     selectGlow: `${p}select-glow`,
     selectLine: `${p}select-line`,
@@ -119,7 +113,6 @@ export function layerOrder(ids: BorderIds, o: { relief?: boolean; reliefUnder?: 
     ids.lakes,
     ids.lakeShore,
     ids.coast,
-    ids.labels,
     ids.hoverLine,
     ids.selectGlow,
     ids.selectLine,
@@ -131,7 +124,6 @@ export const EMPTY_FC = Object.freeze({ type: 'FeatureCollection', features: [] 
 // ---- filters ----------------------------------------------------------------
 const isPolygon = ['==', ['geometry-type'], 'Polygon'];
 const isLine = ['==', ['geometry-type'], 'LineString'];
-const isPoint = ['==', ['geometry-type'], 'Point'];
 
 export const FILTERS = {
   tier0: ['all', isPolygon, ['==', ['get', 'tier'], 0]],
@@ -140,43 +132,9 @@ export const FILTERS = {
   tier1: ['all', isPolygon, ['==', ['get', 'tier'], 1]],
   border: ['all', isLine, ['==', ['get', 'kind'], 'border']],
   coast: ['all', isLine, ['==', ['get', 'kind'], 'coast']],
-  /**
-   * One label per polity point; tiny polities appear only when zoomed in.
-   * The area threshold (km²) keeps a polity ≳ 15 px wide at each integer zoom
-   * (filters with ["zoom"] are evaluated per integer zoom).
-   */
-  /** Curved labels: arcs from BorderLayers, sized for the current zoom (`_px`, `_ls`). */
-  labelArcs: ['all', isLine, ['has', '_label']],
-  labels: [
-    'all',
-    isPoint,
-    ['!=', ['get', 'kind'], 'unclaimed'],
-    ['!=', ['to-string', ['get', 'name']], ''],
-    ['>=', ['to-number', ['get', 'a'], 0], ['step', ['zoom'], 1.4e6, 1, 3.4e5, 2, 8.6e4, 3, 2.1e4, 4, 5.4e3, 5, 1.3e3, 6, 330, 7, 0]],
-  ],
   hover: ['==', ['get', 'role'], 'hover'],
   select: ['==', ['get', 'role'], 'select'],
 } as const;
-
-/** log10 of the feature's area in km² (≥ 0). */
-const logArea = ['log10', ['max', ['to-number', ['get', 'a'], 1], 1]];
-
-/**
- * Label typography by area, shared by the style and the rim fade (rim.ts), which
- * estimates each label's box: text size per zoom as [log10 km², px] stops (~9 px for small
- * polities, ~16–21 px for empires), upper case from UPPERCASE_KM2, letter spacing (em) by
- * log10 area, line wrap at MAX_WIDTH_EM.
- */
-export const LABEL_TYPE = {
-  size: [
-    [0, [[5, 9], [6, 11], [7, 14]]],
-    [3, [[3.5, 10], [5, 12], [6, 14.5], [7, 17]]],
-    [7, [[1, 11], [3, 13], [5, 17], [6.5, 21]]],
-  ] as const,
-  uppercaseKm2: 2.5e6,
-  letterSpacing: [[5.5, 0.02], [6.6, 0.14]] as const,
-  maxWidthEm: 7,
-};
 
 export interface BorderStyleContext {
   ids: BorderIds;
@@ -185,24 +143,10 @@ export interface BorderStyleContext {
   palette: readonly string[];
   /** True when colours come from a palette function: features carry `_fill`, `_hover`, `_line`, `_edge`. */
   perFeatureColors?: boolean;
-  /** CSS font family for labels. */
-  fontFamily?: string;
-  labels?: boolean;
-  /** 'curved': arcs from BorderLayers (`_px`, `_ls`, `_ink`), else label points. */
-  labelMode?: 'point' | 'curved';
   /** Relief tiles drawn over the fills (layer `<prefix>relief`). */
   relief?: ReliefOptions;
   baseLand?: boolean;
   lakes?: boolean;
-}
-
-/** Splits a CSS font-family list into the `text-font` array MapLibre joins back with commas. */
-export function fontStack(fontFamily: string | undefined): string[] {
-  const fams = (fontFamily ?? 'sans-serif')
-    .split(',')
-    .map((f) => f.trim().replace(/^["']|["']$/g, ''))
-    .filter(Boolean);
-  return fams.length ? fams : ['sans-serif'];
 }
 
 /** Colour expressions for fills (`fill`), their hover variant, own outlines (`edge`) and tier-1 outlines. */
@@ -237,8 +181,8 @@ export function borderSources(ctx: Pick<BorderStyleContext, 'ids' | 'relief'>): 
       ? { [ids.reliefSrc]: { type: 'raster' as const, tiles: [...relief.tiles], tileSize: relief.tileSize ?? 512, minzoom: 0, maxzoom: relief.maxzoom ?? 4 } }
       : {}),
     [ids.baseLandSrc]: { type: 'geojson', data: EMPTY_FC, maxzoom: 8 },
-    // Polygons, border lines and label points of one frame in ONE source, so a year
-    // change swaps all of them in the same tile update.
+    // Polygons and border lines of one frame in ONE source, so a year change swaps
+    // both in the same tile update.
     // buffer 32 px (default 128): enough for fills and ≤ 3 px lines at tile edges and
     // ~15–20 % less tile work per year change (measured on the dev dataset).
     [ids.frameSrc]: { type: 'geojson', data: EMPTY_FC, promoteId: 'id', maxzoom: 9, buffer: 32 },
@@ -248,12 +192,6 @@ export function borderSources(ctx: Pick<BorderStyleContext, 'ids' | 'relief'>): 
     [ids.coastSrc]: { type: 'geojson', data: EMPTY_FC, maxzoom: 9, buffer: 32 },
     [ids.lakesSrc]: { type: 'geojson', data: EMPTY_FC, maxzoom: 8 },
     [ids.highlightSrc]: { type: 'geojson', data: EMPTY_FC, maxzoom: 9 },
-    // Curved-label arcs: tiled at zoom 2 only (overscaled beyond) with a full-tile buffer,
-    // so each arc lies whole in one tile and MapLibre places its label once, at the arc's
-    // true centre (in a finely tiled source a 'line-center' label is lost wherever the
-    // arc crosses a tile edge). No simplification: at zoom 2 it would turn the smooth arcs
-    // into a few straight pieces whose corners exceed text-max-angle.
-    [ids.labelArcsSrc]: { type: 'geojson', data: EMPTY_FC, promoteId: 'id', maxzoom: 2, buffer: 512, tolerance: 0 },
   };
 }
 
@@ -371,39 +309,6 @@ export function borderLayers(ctx: BorderStyleContext): LayerSpec[] {
       layout: { ...drawn(theme.coast), 'line-join': 'round' },
       paint: { 'line-color': theme.coast, 'line-width': width(0.4, 0.7, 1.4) },
     },
-    ctx.labelMode === 'curved'
-      ? curvedLabelLayer(ctx, vis(ctx.labels), hovered)
-      : {
-      id: ids.labels,
-      type: 'symbol',
-      source: ids.frameSrc,
-      filter: [...FILTERS.labels],
-      layout: {
-        ...vis(ctx.labels),
-        'text-field': ['to-string', ['get', 'name']],
-        'text-font': fontStack(ctx.fontFamily),
-        // Size by area and zoom (LABEL_TYPE).
-        'text-size': [
-          'interpolate', ['linear'], ['zoom'],
-          ...LABEL_TYPE.size.flatMap(([zoom, stops]) => [zoom, ['interpolate', ['linear'], logArea, ...stops.flat()]]),
-        ],
-        'text-transform': ['case', ['>=', ['to-number', ['get', 'a'], 0], LABEL_TYPE.uppercaseKm2], 'uppercase', 'none'],
-        'text-letter-spacing': ['interpolate', ['linear'], logArea, ...LABEL_TYPE.letterSpacing.flat()],
-        'text-max-width': LABEL_TYPE.maxWidthEm,
-        'text-padding': 3,
-        'symbol-sort-key': ['-', 0, ['to-number', ['get', 'a'], 0]],
-        'symbol-z-order': 'source',
-      },
-      paint: {
-        'text-color': ['case', ['==', ['get', 'tier'], 1], theme.labelOverlay, theme.label],
-        'text-halo-color': theme.labelHalo,
-        'text-halo-width': isTransparent(theme.labelHalo) ? 0 : (theme.labelHaloWidth ?? 1.3),
-        'text-halo-blur': theme.labelHaloBlur ?? 0.4,
-        // × feature-state 'edge' (0–1): labels fade out near the globe's rim, where they
-        // would otherwise stick out into space (BorderLayers.updateEdgeFade).
-        'text-opacity': ['*', ['case', hovered, 1, 0.92], ['coalesce', ['feature-state', 'edge'], 1]],
-      },
-    },
     {
       id: ids.hoverLine,
       type: 'line',
@@ -434,60 +339,6 @@ export function borderLayers(ctx: BorderStyleContext): LayerSpec[] {
   ];
 }
 
-/**
- * Curved labels (label-lines.ts): each name in capitals along its arc (`line-center`),
- * at the size `_px` and letter spacing `_ls` BorderLayers computed for the current zoom
- * (the map's scale up to fitZoom, growing more slowly beyond, at most maxPx; spread to
- * span most of the arc); MapLibre drops a label that does not fit its arc.
- */
-/** Largest halo width and blur of curved labels, in em: together within the glyphs' distance field (~0.125 em). */
-const HALO_WIDTH_EM = 0.07;
-const HALO_BLUR_EM = 0.05;
-
-export function curvedLabelLayer(ctx: BorderStyleContext, visibility: Record<string, unknown>, hovered: unknown): LayerSpec {
-  const { ids, theme } = ctx;
-  return {
-    id: ids.labels,
-    type: 'symbol',
-    source: ids.labelArcsSrc,
-    filter: [...FILTERS.labelArcs],
-    layout: {
-      ...visibility,
-      'symbol-placement': 'line-center',
-      // `_text`: the name, or its short form when the full name does not fit.
-      'text-field': ['to-string', ['coalesce', ['get', '_text'], ['get', 'name']]],
-      'text-font': fontStack(ctx.fontFamily),
-      'text-transform': 'uppercase',
-      'text-size': ['to-number', ['get', '_px'], 10],
-      'text-letter-spacing': ['to-number', ['get', '_ls'], 0],
-      // Our arcs turn at most 20° in all, so MapLibre's angle check is off (180°): on a globe
-      // it subdivides lines at tile-grid crossings and rounds the vertices, and a crossing
-      // next to a vertex leaves a micro-segment pointing anywhere, which dropped whole labels
-      // (larger type checks a longer window, so big names went first: British Raj, Qing at
-      // 85°). Its fit check stays.
-      'text-max-angle': 180,
-      'text-keep-upright': true,
-      'text-rotation-alignment': 'map',
-      'text-padding': 2,
-      'symbol-sort-key': ['-', 0, ['to-number', ['get', 'a'], 0]],
-      'symbol-z-order': 'source',
-    },
-    paint: {
-      // Each name in its polity's own outline colour (`_ink`, from BorderLayers), outlined by the halo.
-      'text-color': ['to-color', ['coalesce', ['get', '_ink'], theme.label]],
-      'text-halo-color': theme.labelHalo,
-      // A fully transparent halo colour means no outline at all. A themed halo (a glow) is
-      // capped to its share of the type size: MapLibre draws halos from the glyphs' distance
-      // field, which reaches only ~0.125 em beyond each letter, and clips anything wider to
-      // the glyph's box (a light rectangle behind each letter at 9 px).
-      'text-halo-width': isTransparent(theme.labelHalo) ? 0 : theme.labelHaloWidth == null ? 0.9 : ['min', theme.labelHaloWidth, ['*', HALO_WIDTH_EM, ['to-number', ['get', '_px'], 10]]],
-      'text-halo-blur': theme.labelHaloBlur == null ? 0 : ['min', theme.labelHaloBlur, ['*', HALO_BLUR_EM, ['to-number', ['get', '_px'], 10]]],
-      // × feature-state 'edge' (0–1): arcs fade out at the globe's rim (BorderLayers.updateEdgeFade).
-      'text-opacity': ['*', ['case', hovered, 1, 0.9], ['coalesce', ['feature-state', 'edge'], 1]],
-    },
-  };
-}
-
 /** `sky` for the globe: a thin atmosphere fading out by zoom 7 (never 1: it washes colours out). */
 export function skySpec(theme: Pick<GlobeTheme, 'atmosphere' | 'ocean'>): Record<string, unknown> {
   const a = Math.min(0.6, Math.max(0, theme.atmosphere));
@@ -504,8 +355,6 @@ export function skySpec(theme: Pick<GlobeTheme, 'atmosphere' | 'ocean'>): Record
 
 export interface BaseStyleOptions {
   theme: GlobeTheme;
-  /** Optional same-origin glyph template; omitted by default (local glyph drawing). */
-  glyphs?: string;
   /** Background layer id. */
   backgroundId?: string;
 }
@@ -530,7 +379,6 @@ export function buildBaseStyle(opts: BaseStyleOptions): Record<string, unknown> 
     sources: {},
     layers: [{ id: opts.backgroundId ?? 'ca-ocean', type: 'background', paint: { 'background-color': opts.theme.ocean } }],
   };
-  if (opts.glyphs) style.glyphs = opts.glyphs;
   return style;
 }
 

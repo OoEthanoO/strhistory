@@ -195,7 +195,6 @@ function fakeClient(opts: { partition?: boolean; coast?: boolean; spread?: boole
         ...(opts.coast ? [coastOf(year)] : []),
       ],
     }),
-    labelsAt: async () => ({ type: 'FeatureCollection', features: [] }),
     base: async (name: string) => ({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: square, properties: { name } }] }),
     polities: async () => ({ 'clio:small-1900': { name: 'small', kind: 'state', spans: [[1850, 1950]], bbox: [0, 0, 1, 1], src: 'test' } }),
     polity: async () => undefined,
@@ -449,7 +448,7 @@ describe('coast source and view culling', () => {
   });
 });
 
-describe('labels and picking helpers', () => {
+describe('tooltip and picking helpers', () => {
   it('formats lifespans', () => {
     expect(formatSpan(395, 1453)).toBe('395–1453');
     expect(formatSpan(-509, -27)).toBe('509 BCE – 27 BCE');

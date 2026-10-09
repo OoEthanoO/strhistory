@@ -9,7 +9,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import '../src/style.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { createBorders, type BordersClient, type PolityProps } from '@alexs-atlas/borders';
-import type { Feature, Point, Polygon } from 'geojson';
+import type { Feature, Polygon } from 'geojson';
 import { ChronoGlobe } from '../src/index.js';
 
 const real = createBorders({ manifestUrl: '/data/alexs-atlas/manifest.json' });
@@ -43,18 +43,13 @@ const overlay: Feature<Polygon, PolityProps> = {
   properties: overlayProps,
   geometry: { type: 'Polygon', coordinates: [[[45, 16.5], [56, 16.5], [56, 23.5], [45, 23.5], [45, 16.5]]] },
 };
-const overlayLabel: Feature<Point, PolityProps> = {
-  type: 'Feature',
-  id: overlayProps.id,
-  properties: overlayProps,
-  geometry: { type: 'Point', coordinates: OVERLAY_CENTER },
-};
 const alive = (year: number): boolean => year >= overlayProps.from && year <= overlayProps.to;
 
 const client: BordersClient = {
   ready: () => real.ready(),
   frameOf: (y) => real.frameOf(y),
   linesAt: (y, o) => real.linesAt(y, o),
+  labelsAt: (y, o) => real.labelsAt(y, o),
   base: (name, lod) => real.base(name, lod),
   polities: () => real.polities(),
   polity: (pid) => real.polity(pid),
@@ -68,10 +63,6 @@ const client: BordersClient = {
     );
     return { ...fc, features: alive(year) ? [...features, overlay] : features };
   },
-  async labelsAt(year, o) {
-    const fc = await real.labelsAt(year, o);
-    return alive(year) ? { ...fc, features: [...fc.features, overlayLabel] } : fc;
-  },
 };
 
 const year = Number(new URLSearchParams(location.search).get('year') ?? 1914);
@@ -79,7 +70,6 @@ new ChronoGlobe(document.getElementById('globe') as HTMLElement, {
   data: { client },
   year,
   view: { center: [47, 21], scale: 4.5 },
-  fontFamily: 'Inter Variable',
   workerUrl,
   exposeAs: '__globe',
 });

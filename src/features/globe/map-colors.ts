@@ -39,16 +39,9 @@ export const MAP_THEME: Partial<GlobeTheme> = {
   lakeShore: 'rgba(0, 0, 0, 0)',
   border: 'rgba(0, 0, 0, 0)',
   edge: 0.2,
-  // Dashes and hatching in dark ink on the paper-light map; names in each polity's own
-  // border colour (curved labels), set off by a soft dark glow instead of a hard outline
-  // (the globe caps its width and blur to the type size, so it stays a glow at 9 px).
+  // Dashes and hatching in dark ink on the paper-light map.
   approximate: 'rgba(48, 40, 32, 0.6)',
   hatch: 'rgba(48, 40, 32, 0.38)',
-  label: '#2b2621',
-  labelHalo: 'rgba(0, 0, 0, 0.45)',
-  labelHaloWidth: 2,
-  labelHaloBlur: 2,
-  labelOverlay: '#4a3c2c',
   // Hovering lightens the fill but leaves the outline alone; the selected polity's
   // outline turns white.
   hover: 'rgba(0, 0, 0, 0)',
