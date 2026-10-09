@@ -57,6 +57,10 @@ export interface GlobeTheme {
   hover: string;
   /** Outline of the selected polity. */
   selection: string;
+  /** Country names on the map (names.ts): their ink over land, … */
+  nameInk: string;
+  /** … and the ink of the letters of a name that lie over the sea. */
+  nameSeaInk: string;
   /** Opacity used to pre-blend palette colours over `land` (opaque result). 0..1. */
   fillBlend: number;
   /** Opacity of the tint drawn under the hatch of tier-1 overlays. 0..1. */
@@ -146,6 +150,14 @@ export interface ChronoGlobeOptions {
    * e.g. light and shadow on a transparent ground. Tile URLs with {z}/{x}/{y}.
    */
   relief?: ReliefOptions;
+  /**
+   * Country names painted on the map, fixed to the ground in the manner of Victoria 3:
+   * in capitals along each polity's arc, they scale with the map (twice the zoom scale,
+   * twice the size). Default true.
+   */
+  names?: boolean;
+  /** CSS font family of the names (drawn locally, no glyph server). Default `serif`. */
+  nameFont?: string;
   /** Hover highlight + `onHover`. Default true. */
   hover?: boolean;
   /** Built-in hover tooltip ("name · years"); false when the host draws its own. Default true. */
@@ -179,6 +191,10 @@ export interface BorderLayersOptions {
    * e.g. light and shadow on a transparent ground. Tile URLs with {z}/{x}/{y}.
    */
   relief?: ReliefOptions;
+  /** Country names painted on the map (see `ChronoGlobeOptions.names`). Default true. */
+  names?: boolean;
+  /** CSS font family of the names. Default `serif`. */
+  nameFont?: string;
   /** Hover feature-state + `onHover`. Default true. */
   hover?: boolean;
   /** Click selects the polity under the pointer. Default true. */

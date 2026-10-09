@@ -1,12 +1,14 @@
 // addBorderLayers(map, opts): the Alex’s Atlas border sources and layers on any
 // MapLibre map — the host's own map (bring-your-own-map) or ChronoGlobe's.
 import { formatYear, lodForZoom } from '@alexs-atlas/borders';
-import type { Feature, FeatureCollection } from '@alexs-atlas/borders';
+import type { Feature, FeatureCollection, MultiPolygon, Polygon } from '@alexs-atlas/borders';
 import type { Map as MlMap, MapMouseEvent, GeoJSONSource } from 'maplibre-gl';
 import { normalizeColor, shade } from './color.js';
 import { WHOLE, angularDistance, capContains, cullFeatures, growCap, isWhole, splitParts, type Cap } from './cull.js';
 import { FrameScheduler, type FrameKey } from './frames.js';
 import { hatchImage } from './hatch.js';
+import { MapNames } from './map-names.js';
+import type { PlacedName } from './names.js';
 import { DEFAULT_PALETTE, blendPalette, hoverPalette, isPaletteFunction, overlayLinePalette } from './palette.js';
 import { globeDisc, type Disc, type DiscMap } from './rim.js';
 import { EMPTY_FC, borderIds, borderLayers, borderSources, layerOrder, type BorderIds, type BorderStyleContext, type LayerSpec } from './style.js';
@@ -45,6 +47,8 @@ interface FrameData {
   polygons: number;
   /** The frame has `unclaimed` features, i.e. its tier-0 areas cover all land (AGENTS.md §5.2). */
   partitionsLand: boolean;
+  /** The frame's records at the coarsest LOD, for the country names (null: the frame is at it, or they failed to load). */
+  coarse: PolityFeature[] | null;
 }
 
 /**
@@ -157,6 +161,8 @@ export class BorderLayers implements BorderLayersHandle {
   private wantedYear: number;
   private readonly timingsLog: StepTiming[] = [];
   private readonly cleanup: (() => void)[] = [];
+  /** Country names painted on the map (map-names.ts), unless `names: false`. */
+  private readonly names: MapNames | null;
   private readyResolve!: () => void;
   /** Resolves when the first frame has rendered. */
   readonly firstFrame: Promise<void>;
@@ -173,6 +179,19 @@ export class BorderLayers implements BorderLayersHandle {
     this.layerIds = layerOrder(this.ids, { relief: !!this.opts.relief?.tiles.length, reliefUnder: !!this.opts.relief?.under });
     this.sourceIds = Object.keys(borderSources({ ids: this.ids, relief: this.opts.relief }));
     this.firstFrame = new Promise((resolve) => (this.readyResolve = resolve));
+    this.names =
+      opts.names === false
+        ? null
+        : new MapNames(map, {
+            font: opts.nameFont,
+            ink: this.theme.nameInk,
+            seaInk: this.theme.nameSeaInk,
+            // Lakes are drawn over the polities in the sea's colour: names take the sea ink there.
+            lakes: this.borders.ready().then((m) => {
+              const lod = m.lods[0]?.id ?? 'l0';
+              return opts.lakes !== false && m.base.lakes?.[lod] ? this.borders.base('lakes', lod).then((fc) => fc.features as { geometry: Polygon | MultiPolygon | null }[]) : [];
+            }),
+          });
 
     this.scheduler = new FrameScheduler<FrameData>({
       frameOf: (y) => this.borders.frameOf(y),
@@ -210,6 +229,16 @@ export class BorderLayers implements BorderLayersHandle {
     if (this.interacting === active) return;
     this.interacting = active;
     if (!active) this.refreshLod();
+  }
+
+  /** Shows or hides the country names on the map. */
+  setNames(visible: boolean): void {
+    this.names?.setVisible(visible);
+  }
+
+  /** The names on the map, largest first (dev handle and tests). */
+  namesShown(): readonly PlacedName[] {
+    return this.names?.placed() ?? [];
   }
 
   /** Selects a polity by pid (highlight persists across years); null clears. */
@@ -296,6 +325,7 @@ export class BorderLayers implements BorderLayersHandle {
   /** Changes theme colours at runtime (merged over the current theme). */
   setTheme(theme: Partial<GlobeTheme>): void {
     this.theme = resolveTheme(this.theme, theme);
+    this.names?.setColors(this.theme.nameInk, this.theme.nameSeaInk);
     this.refreshPaint();
     this.addHatch(true);
     if (isPaletteFunction(this.palette) && this.current) {
@@ -334,6 +364,7 @@ export class BorderLayers implements BorderLayersHandle {
     if (this.removed) return;
     this.removed = true;
     this.scheduler.dispose();
+    this.names?.remove();
     if (this.hoverRaf) cancelRaf(this.hoverRaf);
     for (const off of this.cleanup.splice(0)) off();
     if (!this.added) return;
@@ -644,7 +675,17 @@ export class BorderLayers implements BorderLayersHandle {
   private async loadFrame(key: FrameKey, year: number): Promise<FrameData> {
     const t0 = now();
     const o = { lod: key.lod };
-    const [polys, lines] = await Promise.all([this.borders.bordersAt(year, o), this.borders.linesAt(year, o)]);
+    // Country names come from the coarsest LOD at every zoom (each LOD would give a slightly
+    // different arc), loaded with the frame so they change with its borders.
+    const coarsest = this.manifest?.lods[0]?.id ?? 'l0';
+    const coarse =
+      this.names && key.lod !== coarsest
+        ? this.borders.bordersAt(year, { lod: coarsest }).then(
+            (fc) => fc.features as PolityFeature[],
+            () => null,
+          )
+        : Promise.resolve(null);
+    const [polys, lines, coarseFeatures] = await Promise.all([this.borders.bordersAt(year, o), this.borders.linesAt(year, o), coarse]);
     const byId = new Map<number, PolityFeature>();
     const byPid = new Map<string, PolityFeature[]>();
     for (const f of polys.features as PolityFeature[]) {
@@ -666,6 +707,7 @@ export class BorderLayers implements BorderLayersHandle {
       // mainland. byId/byPid (frameFeatures, featuresOf) keep one feature per record.
       features: [...splitParts(polys.features as Feature[]), ...lineFeatures.filter((f) => !isCoast(f))],
       coast: lineFeatures.find(isCoast) ?? null,
+      coarse: coarseFeatures,
     };
     this.lastLoadMs = now() - t0;
     return isPaletteFunction(this.palette) ? this.recolor(data) : data;
@@ -716,6 +758,7 @@ export class BorderLayers implements BorderLayersHandle {
     });
     if (this.timingsLog.length > 100) this.timingsLog.shift();
     this.updateBaseLand(data.partitionsLand, key.lod);
+    this.names?.show(data.coarse ?? [...data.byId.values()]);
     if (!this.firstFrameShown) {
       this.firstFrameShown = true;
       this.readyResolve();

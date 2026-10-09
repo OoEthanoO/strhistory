@@ -17,6 +17,8 @@ export const DEFAULT_THEME: Readonly<GlobeTheme> = Object.freeze({
   hatch: 'rgba(240, 244, 250, 0.5)',
   hover: '#f4f7fb',
   selection: '#e9b45f',
+  nameInk: 'rgba(238, 242, 247, 0.72)',
+  nameSeaInk: 'rgba(238, 242, 247, 0.6)',
   fillBlend: 0.85,
   overlayTint: 0.3,
   hoverLighten: 0.16,
@@ -37,6 +39,8 @@ const COLOR_KEYS = [
   'hatch',
   'hover',
   'selection',
+  'nameInk',
+  'nameSeaInk',
 ] as const satisfies readonly (keyof GlobeTheme)[];
 
 const NUMBER_KEYS = ['fillBlend', 'overlayTint', 'hoverLighten', 'edge', 'atmosphere'] as const satisfies readonly (keyof GlobeTheme)[];

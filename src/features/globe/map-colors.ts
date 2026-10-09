@@ -46,6 +46,10 @@ export const MAP_THEME: Partial<GlobeTheme> = {
   // outline turns white.
   hover: 'rgba(0, 0, 0, 0)',
   selection: '#ffffff',
+  // Country names painted on the map as in Victoria 3: dark, slightly translucent ink
+  // that lets the colours show through; letters over the charcoal sea in light ink.
+  nameInk: 'rgba(38, 32, 26, 0.68)',
+  nameSeaInk: 'rgba(236, 231, 222, 0.6)',
   // Opaque colours as given (no blend over the land colour).
   fillBlend: 1,
   // No atmosphere: no whitish haze at the globe's edge when zoomed out.

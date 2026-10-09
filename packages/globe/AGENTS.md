@@ -22,6 +22,9 @@ covers the behaviour it relies on.
 | `src/frames.ts` | `FrameScheduler`: year → frame, latest-wins coalescing, keep-old-until-rendered (pure, unit-tested). |
 | `src/cull.ts` | View culling: spherical caps, part bounding boxes, `cullFeatures()` (pure, unit-tested; §3.4). |
 | `src/rim.ts` | `globeDisc`: the globe's outline on screen, for picking and the star field (pure). |
+| `src/name-arcs.ts` | Country names: `nameArcs` (an arc along the long axis of each territory a polity holds apart, seas between its parts bridged, never other land), `otherLand`, `landWater` (where the sea and lakes are, shores clipped to a box), `shortName` (pure, unit-tested; §5.3). |
+| `src/names.ts` | Country names: letters set on the sphere (`layoutName`), MapLibre's globe camera (`globeCamera`, `projectPoint`, `facing`), fades, overlaps (`nameBlockers`), reading direction (pure, unit-tested; §5.3). |
+| `src/map-names.ts` | `MapNames`: the canvas the names are painted on, above the map and below markers, repainted with every map frame; arcs found in time slices (§5.3). |
 | `src/sky.ts` | Star field: a fixed catalogue of stars at infinity projected through the map's camera and painted on a canvas under the map (pure projection, unit-tested; §5.2). |
 | `src/style.ts` | Style builder (pure JSON): base style, sources, layers in contract order, `externalUrls()` guard. |
 | `src/palette.ts`, `src/color.ts`, `src/theme.ts`, `src/hatch.ts` | 12-slot palette, colour maths, theme + `--ca-*` reading, tier-1 hatch pattern (pixels generated in code). |
@@ -85,6 +88,8 @@ fills it (give the container a size; never `position: fixed`) and sets
 | `maxZoom` | `7` | MapLibre max zoom. |
 | `minScale` | `0.6` | Smallest scale the user can zoom out to. |
 | `relief` | — | `{ tiles, tileSize?: 512, maxzoom?: 4, opacity?: 1, under?: false }`: same-origin raster tiles (layer `<prefix>relief`), drawn over the fills and outlines (below borders and overlays), or with `under` first of all, beneath the land, so they show only on water (e.g. sea-floor relief). |
+| `names` | `true` | Country names painted on the map, fixed to the ground in the manner of Victoria 3 (§5.3). `false` leaves them out. |
+| `nameFont` | `'serif'` | CSS font family of the names (a family or a list; drawn locally in the page, no glyph server). |
 | `hover` | `true` | Hover outline + `onHover`. `false` also disables the tooltip. |
 | `tooltip` | `true` | Built-in "name · years" tooltip after 120 ms; `false` when the host draws its own from `onHover`. |
 | `layerPrefix` | `'ca-'` | Prefix of every source, layer and image id (background: `<prefix>ocean`). |
@@ -121,6 +126,7 @@ fills it (give the container a size; never `position: fixed`) and sets
 | `zoomBy(delta)`, `resetView()` | Zoom levels; back to the initial view. |
 | `flyToPolity(pid, { year?, padding? })` | Fits the bbox of the polity's features in `year` (default: the shown year; fetched if needed), else the polity-index bbox, inside `padding` (default: the `padding` option, else 40 px). Max zoom 6. `jumpTo` under `prefers-reduced-motion`. Resolves `false` when unknown. Map padding: see below. |
 | `select(pid \| null)`, `getSelected()` | Selection outline (brass) persists across years by `pid`; works before the map loaded. |
+| `setNames(bool)` | Shows or hides the country names (remembered until the map has loaded; nothing to show with `names: false`). |
 | `startSpin()` / `stopSpin()` / `isSpinning` | Slow eastward spin (3°/s at scale 1, slower when zoomed in); stops on any user input; never under reduced motion. |
 | `resize()` | Re-measure (a `ResizeObserver` already does this, keeping the relative scale). |
 | `setTheme(partial)` | Runtime theme change (paint properties, sky, hatch). |
@@ -180,6 +186,7 @@ const handle = addBorderLayers(map, {
   palette, theme, hover: true, clickSelect: true,
   baseLand: true,          // Natural Earth land until the first frame
   lakes: true,             // Natural Earth lakes above the polities
+  names: true, nameFont,   // country names on a canvas in the map's canvas container (§5.3)
   onYearApplied, onHover, onSelect, onLoadingChange, onFailure,
 });
 await handle.setYear(1914);      // resolves once 1914 (or a later request) rendered
@@ -191,7 +198,7 @@ Call it after the map's `load` (if the style is still loading, it waits for it).
 It adds no background, sky or projection: those stay the host's. A missing
 `beforeId` logs a warning and adds the layers on top. The handle is a
 `BorderLayers` instance; beyond the contract it offers `setInteracting(bool)`,
-`select(pid)`, `getSelected()`, `featuresOf(pid)`, `frameFeatures()`,
+`select(pid)`, `getSelected()`, `setNames(bool)`, `namesShown()`, `featuresOf(pid)`, `frameFeatures()`,
 `featuresAt(point)`, `loadPolities()`, `setTheme()`, `setPalette()`,
 `timings()` (last year-change timings), `getManifest()` and the `firstFrame`
 promise.
@@ -275,6 +282,7 @@ Precedence: `DEFAULT_THEME` < `--ca-*` custom properties on the container
 | `coast` | `--ca-coast` | `rgba(136,162,186,.75)` | Coastline. |
 | `hatch` | `--ca-hatch` | `rgba(240,244,250,.5)` | Tier-1 hatch lines. |
 | `hover` / `selection` | `--ca-hover` / `--ca-selection` | `#f4f7fb` / `#e9b45f` | Outlines. |
+| `nameInk` / `nameSeaInk` | `--ca-name-ink` / `--ca-name-sea-ink` | `rgba(238,242,247,.72)` / `rgba(238,242,247,.6)` | Country names (§5.3): letters over land, and letters over the sea. |
 | `fillBlend` | `--ca-fill-blend` | `0.85` | Pre-blend strength of palette colours over `land`. |
 | `edge` | `--ca-edge` | `0` | Own outlines (layer `ca-edge`): OKLab lightness drop of each polity's outline from its fill; 0 = none. With outlines the selection replaces the polity's outline in place (no glow). |
 | `overlayTint` | `--ca-overlay-tint` | `0.3` | Tier-1 tint opacity. |
@@ -283,6 +291,72 @@ Precedence: `DEFAULT_THEME` < `--ca-*` custom properties on the container
 | `stars` | `--ca-stars: off` | `true` | Star field (`sky.ts`): 26 000 stars at infinity (seeded, so always the same sky; most faint, a few bright, three tints) projected through the map's camera — centre, field of view and padding — onto a canvas under the map, repainted when the camera moves. They turn with the camera as in a 3D scene (the sky slides opposite to the surface), are hidden behind the globe and fade in from its rim to 1.75 radii. Hidden under `prefers-contrast: more` and forced colours. |
 
 A line layer whose colour is fully transparent (`coast`, `border`, `lakeShore`, `hover`, `selection`) is not drawn at all (visibility `none`), e.g. a map without coastlines.
+
+### 5.3 Country names
+
+Every tier-0 and tier-1 polity of the frame on screen is named on the map in the
+manner of Victoria 3: its name in capitals (the short form from `shortName`,
+"Kingdom of France" → "France", unless another polity of the frame shares it, as
+both Congos do), spread along a gentle arc through its main body (`nameArcs`) and
+**fixed to the ground**. Each territory a polity holds apart is named on its own (up
+to four, each seeded by a part at least 3 % of its largest and 2,000 km from the
+territories named before it), so a colonial power is named at home as well as over
+its largest colony: the United Kingdom over Britain and Aden in 1914, the Dutch
+Republic over the Netherlands and Java in 1789; an archipelago (Indonesia) or Alaska
+is not named again. Each letter is placed once on the sphere, with a size in
+kilometres: the largest letters that fit 80 % of the arc (at least 0.12 em apart)
+and 40 % of the polity's width across it, spread up to 1 em apart to span the arc
+(`NAME_TYPE` in `names.ts`). An arc's ends are trimmed where it leaves its land or the
+land narrows to under 35 % of its median room (China's east end over the Yellow Sea,
+Pakistan's northern tip). A polity around an inner sea is also tried with that sea
+bridged, and the arc holding the larger name wins (less a little for each share over
+water), so the Roman Empire is named across the Mediterranean in every year, not along
+one shore in some years and across in others. A name is therefore as much a part of the map as a
+border: at twice the scale it is twice as large, and it foreshortens towards the
+rim and sets behind the horizon with the land under it.
+
+- **Drawing.** `MapNames` paints a 2D canvas inserted in `map.getCanvasContainer()`
+  right after the map's canvas (markers and popups stay on top; pointer events pass
+  through), on every MapLibre `render` event, so names never lag the map. Each
+  letter is drawn with `fillText` under an affine transform from central differences
+  of the projection over one em at the letter, through `globeCamera`: MapLibre
+  6.11's globe camera (`VerticalPerspectiveTransform`) computed analytically, a
+  pinhole camera `(height / 2) / tan(fovY / 2)` px above the view centre on a globe
+  of radius `512 · 2^zoom / (2π · cos(centre latitude))` px, the principal point
+  moved by the map padding (checked in Chrome against `map.project`: within 1e-12 px).
+  Otherwise (a rotated or tilted host map, zoom ≥ 10 where MapLibre turns the globe
+  into Web Mercator, another projection): `map.project` itself, on a globe with a
+  letter in sight when `map.unproject` finds it again, on a flat map at the world copy
+  nearest the centre. Painting ~150 names, ~200 letters of them split at shores,
+  takes under 0.3 ms on a GPU.
+- **Visibility.** A name fades in while its letters grow from 7 to 10 px and out
+  while they grow from 20 % to 32 % of the view's smaller side (zoomed in close,
+  as in Victoria 3, a name no longer fits the view); letters fade out towards the
+  rim (surface facing the viewer < 0.32, hidden < 0.1). Where two names overlap on
+  the ground, the larger is drawn and the smaller only as far as the larger is not
+  (`nameBlockers`; tier-1 names rank as 0.75 × their size). New names fade in over
+  250 ms; a polity whose borders change keeps its name (no new fade-in) and shows the
+  old one until the new record's is set. A name reads left to right, judged at its
+  middle letter (the letter nearest the view centre while the middle is near the
+  rim), so a curved name does not flip as the map pans; names within 15° of vertical
+  read upward.
+- **Ink.** `nameInk` over land and `nameSeaInk` over water: the sea (no tier-0 land)
+  and the Natural Earth lakes at l0, which are drawn over the polities in the sea's
+  colour (`OTTOMAN` over the Mediterranean, letters over the IJsselmeer). Nine points
+  across each letter decide; a letter across a shore keeps the land around it
+  (`landWater().shores`, clipped to a box round the letter, even-odd) and is drawn
+  twice, clipped to the land in `nameInk` and to the water in `nameSeaInk`, so it
+  changes colour exactly at the coast.
+- **Data.** Arcs come from the frame at the coarsest LOD whatever the zoom, so a name
+  keeps its place at every zoom: a finer frame loads its records at l0 with it
+  (`bordersAt(year, { lod: 'l0' })`; on failure the frame's own), and the names change
+  when its borders do. Arcs are found in 6 ms slices, largest polities first (a whole
+  frame takes 40–70 ms at l0), and cached by record (`rid`), so a year change only
+  sets the names of new records; arcs and names of the least recently used records
+  beyond 2,000 are dropped (never the frame's own). Names wait for the lakes; the font
+  is measured once it has loaded (`document.fonts.load`, 3 s wait, then again when it
+  arrives). `namesShown()` lists the names set for the frame, drawn or hidden. The
+  site draws them in Newsreader (`nameFont`) with dark ink (`map-colors.ts`).
 
 UI chrome (tooltip, attribution, map focus ring) reads `--ca-text`,
 `--ca-text-muted`, `--ca-surface`, `--ca-stroke`, `--ca-focus`, `--ca-font`, each
@@ -716,7 +790,9 @@ also matches all 148 files and none of `/../`, `/./`, `//`, unknown folders):
   (contract layer order, filters, no external URL anywhere in the style JSON),
   frame scheduler (frame-change only, latest wins, stale never drawn, old frame
   kept on failure), `addBorderLayers` against a fake map,
-  view culling (cap distance against a brute-force search, part culling), the star
+  view culling (cap distance against a brute-force search, part culling), the country
+  names (arcs, short forms, letters on the sphere, MapLibre's camera, fades, overlaps,
+  reading direction, `MapNames` against a fake map), the star
   field's projection (sky: east/north orientation, pinhole scale, orbit direction, rim
   fade), and in the fake-map tests the coast source (re-sent only when the coast
   changes), culling and re-culling after a pan, and the whole-world `l0` fallback

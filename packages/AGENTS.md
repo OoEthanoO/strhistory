@@ -272,6 +272,7 @@ options: {
   data: { manifestUrl } | { manifest, baseUrl } | { client: BordersClient };
   year: number; view?: { center: [lon, lat]; scale?: number };   // scale = 2^(zoom − fitZoom)
   maxZoom?: 7; minScale?: 0.6; hover?: true; tooltip?: true; layerPrefix?: 'ca-';
+  names?: true; nameFont?: 'serif';   // country names painted on the map, scaling with it
   palette?: string[] | ((p: PolityProps) => string); theme?: Partial<GlobeTheme>;
   workerUrl?: string;           // maplibre setWorkerUrl; Vite: '…/maplibre-gl-worker.mjs?worker&url'
   padding?: number | { top?; right?; bottom?; left? };   // kept clear by flyToPolity
@@ -283,7 +284,7 @@ methods: map, layers, borders, loadState, whenReady(), setYear(y) (coalesced, la
          borders stay until new render), getYear(), setInteracting(bool) (l0 while a timeline
          drag/playback runs), getView(), setView(v, { animate? }),
          flyToPolity(pid, { year?, padding? }): Promise<boolean>, select(pid | null), getSelected(),
-         setTheme(partial), zoomBy(d), resetView(), startSpin(), stopSpin(),
+         setNames(bool), setTheme(partial), zoomBy(d), resetView(), startSpin(), stopSpin(),
          isSpinning, resize(), destroy()
 container gets data-ca-state="loading" | "ready" | "failed"
 
@@ -393,6 +394,10 @@ an adaptive step, Home/End, `[`/`]` previous/next border change, Space play, `/`
 search, Esc closes panels.
 
 ### 7.3 Globe interaction and search
+
+Country names are painted on the map in the manner of Victoria 3: capitals spread
+along each polity's arc, fixed to the ground, so they grow and shrink with the map
+(packages/globe/AGENTS.md §5.3).
 
 Hover tooltip "name · years" after ~120 ms; click anywhere in a polygon selects it
 (smallest area wins; tier-1 overlays win over tier 0): a brass outline on the globe

@@ -384,6 +384,19 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   `fitZoom = log2(min(width, height)·π/512)`. The SVG is an orthographic
   approximation of MapLibre's perspective globe, so the globe shifts slightly
   in size and position when WebGL takes over.
+- **Country names** are painted on the globe in the manner of Victoria 3 (Alex's
+  Atlas `MapNames`, `packages/globe/AGENTS.md` §5.3): each polity's name in
+  Newsreader capitals, spread along an arc through its main body (each territory a
+  polity holds apart, such as a colonial power's homeland and largest colony, named
+  on its own), short forms ("Kingdom of France" → "France"), dark ink over land and
+  light ink over the sea and lakes, letters split exactly at the coast (`nameInk`,
+  `nameSeaInk` in `map-colors.ts`). A name is fixed to
+  the ground, so it scales with the map: at twice the scale it is twice as large.
+  Names fade in once their letters reach about 7 px and fade out when zoomed in
+  so close that a name no longer fits the view. They are drawn on a canvas above
+  the map and below the note pins, through MapLibre's own globe camera, and follow
+  the timeline (a year change names only the new records). The baked SVG frame has
+  none; they fade in with the detailed map.
 - **Snapshots** are the "world in" context texts: the caption under the year
   shows the latest snapshot at or before the selected year. Their `borderYear` and the GPL files `public/data/snapshots/world_<year>.geojson`
   are legacy: only `check:content` and the geometry test still use them.
