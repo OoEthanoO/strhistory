@@ -15,7 +15,6 @@ const options = (year: number): ChronoGlobeOptions => ({
   data: { manifestUrl: '/data/alexs-atlas/manifest.json' },
   year,
   view: { center: [20, 35], scale: 1 },
-  fontFamily: 'Inter Variable',
   workerUrl,
 });
 const box = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;

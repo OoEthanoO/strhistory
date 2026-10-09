@@ -58,15 +58,15 @@ Verified licences: §6.
 
 ### 2.3 Privacy: zero third-party requests
 
-Pages built from these modules make **no third-party requests** at all: data,
-fonts and label glyphs are same-origin, and styles never reference an external
+Pages built from these modules make **no third-party requests** at all: data
+and fonts are same-origin, and styles never reference an external
 URL. (The sibling site serves high-school students.)
 
 ### 2.4 Accuracy
 
 This is an educational map. Never invent a polity, a date, a boundary or a
 Wikidata id. Every manual fix carries sources (packages/borders/AGENTS.md §3–4).
-Approximate extents are labelled as such in data (`precision`) and in the UI.
+Approximate extents are marked as such in data (`precision`) and in the UI.
 
 ## 3. Architecture
 
@@ -79,7 +79,7 @@ Approximate extents are labelled as such in data (`precision`) and in the UI.
  │ historical layer (≤1945): normalise leaf polities → apply overrides →      │
  │   clip to NE 10m land → assign islands + coastal gaps → assign overrides   │
  │ modern layer (1946→present): NE admin units + unit timelines → partition   │
- │ both: validate → attributes (area, label point, colour slot) → LODs →      │
+ │ both: validate → attributes (area, inner point, colour slot) → LODs →      │
  │   time chunks (TopoJSON) + manifest + polities index + QA report           │
  └────────────────────────────────────┬────────────────────────────────────────┘
                                       ▼
@@ -106,9 +106,9 @@ Key decisions (with evidence in the research notes summarised in §11):
 - **Two layers with a hard cut-over at 1946**: Cliopatria is weakest after 1945
   (ghost colonies, missing microstates, wrong names); Natural Earth units plus a
   fact-checked timeline per unit give exact modern borders.
-- **MapLibre GL JS 6** globe projection (no API keys, no tiles server); labels
-  drawn locally from the page's CSS font (no glyph server); atmosphere via `sky`;
-  stars at infinity painted on a canvas under the map, turning with the camera.
+- **MapLibre GL JS 6** globe projection (no API keys, no tiles server); atmosphere
+  via `sky`; stars at infinity painted on a canvas under the map, turning with the
+  camera.
 
 ## 4. Repository map and ownership
 
@@ -206,7 +206,7 @@ interface PolityProps {
   precision: 'exact' | 'approximate';
   c: number;             // colour slot 0..palette.size-1, stable per power, adjacency-aware
   a: number;             // area km²
-  lx: number; ly: number;  // label point (pole of inaccessibility of the largest part)
+  lx: number; ly: number;  // pole of inaccessibility of the largest part
   src: string;           // source id from manifest.sources ('cliopatria', 'naturalearth', 'override')
 }
 ```
@@ -229,7 +229,6 @@ interface BordersClient {
   ready(): Promise<Manifest>;
   frameOf(year): { from: number; to: number };             // years sharing identical borders
   bordersAt(year, o?: { lod?: string; signal? }): Promise<FeatureCollection<Polygon | MultiPolygon, PolityProps>>;
-  labelsAt(year, o?): Promise<FeatureCollection<Point, PolityProps>>;   // one point per pid (its largest tier-0 record)
   linesAt(year, o?): Promise<FeatureCollection<MultiLineString, { kind: 'border' | 'coast' }>>;
       // topojson mesh of the tier-0 features alive in `year`: 'border' = arcs between two
       // different features (frontier with unclaimed land included), 'coast' = arcs used by
@@ -272,10 +271,9 @@ new ChronoGlobe(container, options, callbacks?)
 options: {
   data: { manifestUrl } | { manifest, baseUrl } | { client: BordersClient };
   year: number; view?: { center: [lon, lat]; scale?: number };   // scale = 2^(zoom − fitZoom)
-  maxZoom?: 7; minScale?: 0.6; labels?: true; hover?: true; tooltip?: true; layerPrefix?: 'ca-';
+  maxZoom?: 7; minScale?: 0.6; hover?: true; tooltip?: true; layerPrefix?: 'ca-';
+  names?: true; nameFont?: 'serif';   // country names painted on the map, scaling with it
   palette?: string[] | ((p: PolityProps) => string); theme?: Partial<GlobeTheme>;
-  fontFamily?: string;          // labels drawn locally from this CSS font — no glyph server
-  glyphs?: string;              // optional same-origin glyph URL (normally omitted)
   workerUrl?: string;           // maplibre setWorkerUrl; Vite: '…/maplibre-gl-worker.mjs?worker&url'
   padding?: number | { top?; right?; bottom?; left? };   // kept clear by flyToPolity
   attribution?: boolean | string; exposeAs?: string;   // dev handle on window
@@ -286,16 +284,16 @@ methods: map, layers, borders, loadState, whenReady(), setYear(y) (coalesced, la
          borders stay until new render), getYear(), setInteracting(bool) (l0 while a timeline
          drag/playback runs), getView(), setView(v, { animate? }),
          flyToPolity(pid, { year?, padding? }): Promise<boolean>, select(pid | null), getSelected(),
-         setLabels(bool), setTheme(partial), zoomBy(d), resetView(), startSpin(), stopSpin(),
+         setNames(bool), setTheme(partial), zoomBy(d), resetView(), startSpin(), stopSpin(),
          isSpinning, resize(), destroy()
 container gets data-ca-state="loading" | "ready" | "failed"
 
-addBorderLayers(map, { borders, year, beforeId?, prefix?, palette?, labels?, hover?, theme?, … })
+addBorderLayers(map, { borders, year, beforeId?, prefix?, palette?, hover?, theme?, … })
   → { setYear(y): Promise<void>; remove(): void; layerIds: string[]; sourceIds: string[]; … }
 
-new Timeline(container, { min, max, value, present?, stops?, frames?, eras?, highlight?, labels?,
+new Timeline(container, { min, max, value, present?, stops?, frames?, eras?, highlight?,
                           speed?, speeds?, sweepSeconds?, layout?: 'stacked' | 'bar', step?: number | 'adaptive',
-                          yearField?: 'input' | 'label', changeButtons?,
+                          yearField?, changeButtons?,
                           onInput?(y), onChange?(y), onPlayChange?(playing) })
   // highlight: { from, to } | { from, to }[] | null
   // layout 'bar': one row of separate controls with a thick track (tick lines inside), themed by --ca-control-*
@@ -319,7 +317,7 @@ createTimeScale(stops: [year, t][]) → { toT(year), toYear(t), … }   // piece
   first frame arrives) → tier-0 fills (polities in opaque colours pre-blended
   with land, `unclaimed` in the land colour, `fill-sort-key: -a`) → border lines
   (`linesAt` kind `border`) → tier-1 hatched fills + dashed outlines → lakes →
-  coastline (`linesAt` kind `coast`) → labels → hover/selection outlines.
+  coastline (`linesAt` kind `coast`) → hover/selection outlines.
   Approximate precision draws dashed.
 - Fills get one feature per polygon part (same `id`): MapLibre classifies a feature's
   rings by winding per tile, and a sliver part that flips winding when it is tiled would
@@ -327,16 +325,12 @@ createTimeScale(stops: [year, t][]) → { toT(year), toYear(t), … }   // piece
 - Year changes: only when the frame changes; `setData` with a latest-wins guard;
   keep showing the previous frame until the new one rendered; l0 while dragging
   the timeline, the zoom's LOD on release.
-- Labels: one per polity at `lx/ly`, `symbol-sort-key: -a`, size by area,
-  hidden for tiny polities at low zoom; font from the host's CSS (`fontFamily`).
-  `labelMode: 'curved'` instead draws each name along an arc through the polity's
-  largest part (packages/globe/AGENTS.md §3.4).
 - Optional own outlines (`theme.edge` > 0): each tier-0 polity outlined inside its edge
   in a deeper shade of its fill. Line layers whose theme colour is fully transparent
   (coast, border, lake shore, hover) are not drawn.
 - `prefers-reduced-motion`: `jumpTo` instead of `flyTo`, no spin.
 - Implemented details (coastline in its own `<prefix>coast` source, view culling
-  when zoomed in, labels fading at the globe's rim): packages/globe/AGENTS.md §3.4, §4.
+  when zoomed in): packages/globe/AGENTS.md §3.4, §4.
 
 ## 6. Data sources and licensing
 
@@ -388,7 +382,7 @@ controls, every button in one style (§7.5):
 controls: one year back, play/pause, one year forward, the **typed-year field**
 (shows the year; type `1453`, `-500`, `500 BC` or `AD 33` and press Enter; invalid
 input shows the accepted range, Esc reverts), a thick track, and the speed menu (0.25×, 0.5×, 1×, 2×).
-The track is a bar as tall as the buttons with tick lines inside it (no tick labels,
+The track is a bar as tall as the buttons with tick lines inside it (no tick years,
 no era band, no change-density strip), the selected polity's lifespan as a brass
 band and a brass thumb at the year shown. Hovering shows the year under the pointer
 in a bubble; click to jump, drag to scrub (borders follow the thumb, coarse LOD while
@@ -400,6 +394,10 @@ an adaptive step, Home/End, `[`/`]` previous/next border change, Space play, `/`
 search, Esc closes panels.
 
 ### 7.3 Globe interaction and search
+
+Country names are painted on the map in the manner of Victoria 3: capitals spread
+along each polity's arc, fixed to the ground, so they grow and shrink with the map
+(packages/globe/AGENTS.md §5.3).
 
 Hover tooltip "name · years" after ~120 ms; click anywhere in a polygon selects it
 (smallest area wins; tier-1 overlays win over tier 0): a brass outline on the globe
@@ -433,8 +431,8 @@ pushState on search/select).
 menus and buttons `#242424` (translucent with blur over the map), hover `#343434`,
 hairline borders `rgba(255,255,255,.09)`, text `#f2f2f2` / `#b8b8b8` / `#8a8a8a`; **white**
 as the accent (the open button, the timeline thumb and lifespan band, "BCE"), focus
-`#7cc4ff`; one self-hosted typeface, Newsreader (the year, titles, menus, tooltips and
-map labels). **One button style**: every button of the site and every control of the
+`#7cc4ff`; one self-hosted typeface, Newsreader (the year, titles, menus and
+tooltips). **One button style**: every button of the site and every control of the
 timeline bar (buttons, year field, track, speed menu) is the same 40 px (44 px on touch
 screens) surface with a hairline border and a 12 px radius, from the `--ca-control-*`
 custom properties (`apps/site/src/styles/tokens.css`; the timeline bar reads them too).
@@ -459,19 +457,6 @@ political map (Victoria 3), in pastel watercolour tones:
   coastline or border lines: each polity has its own outline inside its edge, a shade
   deeper than its fill (`theme.edge`); hovering lightens the fill only; the selected
   polity's outline turns white. No atmosphere.
-- Labels (`labelMode: 'curved'`): names in capitals along a gentle arc through each
-  polity, spread out to span it, in the polity's own border colour, set off by a soft dark
-  glow (a blurred halo, capped to the type size) instead of a hard outline; compact polities read horizontally; they grow more slowly than the map when
-  zooming in (resized while zooming) and shrink with the map down to 9 px, then keep that
-  size instead of disappearing (a name that would run past 1.5× its polity's arc, or sits
-  near the rim, is left out); all are hidden once the globe is smaller than half the
-  view's shorter side (the site's furthest zoom-out). A name follows the polity's main
-  body and may cross the sea between its parts (the Eastern Roman Empire's name runs
-  across the Mediterranean) but never another polity's land, and slides along its arc
-  onto the polity's own land. A common map name or the name without a leading title
-  or trailing note is used when it reads 1.5× larger ("People's Republic of China" →
-  "China", "German Empire" → "Germany", "Kingdom of Spain" → "Spain"; hover and search
-  keep the full name).
 
 **Globe of History:** the user chose (2026-10-02) to fit its lighter look: charcoal
 greys, white accents and a similar ocean hue, in this project's own values. **Never**
@@ -502,9 +487,7 @@ from it), details and API mapping in packages/globe/AGENTS.md §8.7:
   `@alexs-atlas/globe`; without it MapLibre can leave a polity unfilled, §5.5).
   Static per-year files in Node: `fileFetch` from `@alexs-atlas/borders/node`.
 - **B — keep its own style**: replace the third-party vector source and year filters
-  with `addBorderLayers(map, { borders, year, beforeId: 'sea', prefix: 'ca-' })`;
-  labels are precomputed (drop the client label layout); with a host `glyphs` URL set
-  `fontFamily: 'noto-sans'`.
+  with `addBorderLayers(map, { borders, year, beforeId: 'sea', prefix: 'ca-' })`.
 - **C — adopt `ChronoGlobe`**: `import('@alexs-atlas/globe')` inside the island's
   effect; `new ChronoGlobe(el, options, callbacks)` replaces its controller (same
   method names for `whenReady`, `setYear`, `getView`, `zoomBy`, `resetView`, spin,
@@ -552,7 +535,7 @@ from it), details and API mapping in packages/globe/AGENTS.md §8.7:
   `[x]` when verified; add what you discover.
 - **Work can be interrupted** (account usage limits stop every agent at once).
   Before starting, check whether your files or your scratch folder
-  (`.cache/audit/<label>/`, `.cache/build/`) already hold work for your task and
+  (`.cache/audit/<name>/`, `.cache/build/`) already hold work for your task and
   continue from it — never start over. Save progress early and often (valid
   files after every few steps, short notes in your scratch folder).
 - Be economical with context: don't paste large files or long command output
@@ -590,10 +573,8 @@ from it), details and API mapping in packages/globe/AGENTS.md §8.7:
 | 2026-10-02 | The full override catalog lives in `packages/borders/overrides/CATALOG.md`; packages/borders/AGENTS.md keeps a generated summary (both by `npm run data:catalog`). |
 | 2026-10-02 | `@alexs-atlas/globe`'s JS entry imports no CSS; hosts import `@alexs-atlas/globe/style.css`. Unclaimed land is drawn #343a34 so it never reads as water. |
 | 2026-10-02 | Running Reality dropped entirely: the opt-in embedded comparison panel (site view, `RunningRealityPanel`, `rrHash`/`rrEmbedUrl`), its CSP allowance and its docs are removed; proprietary sources stay excluded (§2.1, §6). |
-| 2026-10-02 | Minimal site UI (user request): only the centred year, search with the list of polities and the map key (top left), About with the credits (top right), three separate map buttons (bottom left) and the timeline bar (`layout: 'bar'`, one-year steps, typed year). The polity panel, list drawer, toolbar, credits chip, share button, era band, tick labels and change-density strip are gone; the data is credited in About; every button shares the `--ca-control-*` style (§7). |
+| 2026-10-02 | Minimal site UI (user request): only the centred year, search with the list of polities and the map key (top left), About with the credits (top right), three separate map buttons (bottom left) and the timeline bar (`layout: 'bar'`, one-year steps, typed year). The polity panel, list drawer, toolbar, credits chip, share button, era band, tick years and change-density strip are gone; the data is credited in About; every button shares the `--ca-control-*` style (§7). |
 | 2026-10-02 | Site look (user request): the Claude app's dark grays (sampled from a screenshot: `#151515` behind the globe, `#212121` menus) for every surface, Newsreader as the only typeface, no atmosphere, a 3D star field (`sky.ts`), and a Victoria 3-style political map: identity colours for 17 major powers by explicit colour keys (`power`), rival factions of one country left in slot colours so splits stay visible (§7.5). |
-| 2026-10-02 | Map look, second pass (user requests): pastel watercolour identity colours by classic convention (the USSR and the PRC red, Qing yellow, Canada red), per-polity outlines instead of shared borders and coastlines, curved capital labels, Victoria 3 grey for unclaimed land; the site's chrome follows Globe of History's lighter greys and white accents in its own values (§7.5). |
-| 2026-10-02 | Curved labels: arcs in a separate GeoJSON source tiled only at zoom 2 (`buffer` 512, `tolerance` 0) and each label's size and letter spacing computed in JS for the current zoom: MapLibre 6 drops a 'line-center' label whose line crosses a tile edge, checks fit with the text size at zoom 18, and lays labels out at the whole tile zoom. |
-| 2026-10-03 | Curved labels (user requests): arcs along each polity's main body, bridging seas between its parts but never another polity's or unclaimed land, one band per arc (no jumps across a horseshoe), names sliding onto own land; labels held at 9 px when zooming out instead of hidden; short map names when they read 1.5× larger; MapLibre's line-label angle check off (it dropped big labels on the globe). |
+| 2026-10-02 | Map look, second pass (user requests): pastel watercolour identity colours by classic convention (the USSR and the PRC red, Qing yellow, Canada red), per-polity outlines instead of shared borders and coastlines, Victoria 3 grey for unclaimed land; the site's chrome follows Globe of History's lighter greys and white accents in its own values (§7.5). |
 | 2026-10-02 | Sea-floor relief removed from the site (user request): a flat sea colour; the tiles, their generator and the About credit are gone (the globe package keeps its generic `relief` option). |
 | 2026-10-02 | Project renamed ChronoAtlas → Alex’s Atlas (user request): packages `@alexs-atlas/*`, data served at `/data/alexs-atlas/`, manifest schema `alexs-atlas.borders/1`, dataset `alexs-atlas-borders`; the built dataset's text files were renamed in place (no geometry changed). |

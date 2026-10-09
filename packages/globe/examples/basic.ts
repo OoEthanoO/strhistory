@@ -1,5 +1,5 @@
 // Dev entry for examples/basic.html (served by `npm run dev -w @alexs-atlas/globe`).
-// URL parameters: year, lon, lat, scale, select (pid), labels=0, shot=1 (hide UI).
+// URL parameters: year, lon, lat, scale, select (pid), shot=1 (hide UI).
 import '@fontsource-variable/inter';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // = '@alexs-atlas/globe/style.css' for an installed package.
@@ -24,8 +24,6 @@ const globe = new ChronoGlobe(
     data: { manifestUrl: '/data/alexs-atlas/manifest.json' },
     year: num('year', 1914),
     view: { center: [num('lon', 20), num('lat', 30)], scale: num('scale', 1) },
-    labels: q.get('labels') !== '0',
-    fontFamily: 'Inter Variable',
     workerUrl,
     exposeAs: '__globe',
     padding: { top: 60, right: 40, bottom: 40, left: 40 },

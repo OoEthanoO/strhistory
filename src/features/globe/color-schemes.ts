@@ -20,9 +20,10 @@ export interface PastedColorScheme {
  * Tune the active map palette without changing its stored base colours.
  * Values are proportional percentages: -60 removes 60% of the existing
  * saturation, while -10 makes the existing lightness 10% darker.
+ * 0 and 0 draw the Alex's Atlas palette exactly as designed.
  */
-export const SCHEME_SATURATION_ADJUSTMENT = -60;
-export const SCHEME_LIGHTNESS_ADJUSTMENT = -10;
+export const SCHEME_SATURATION_ADJUSTMENT = 0;
+export const SCHEME_LIGHTNESS_ADJUSTMENT = 0;
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));

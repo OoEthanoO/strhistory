@@ -5,7 +5,7 @@
 //                 center="20,30" scale="1" style="height: 70vh"></chrono-globe>
 //
 // Attributes: manifest-url (required), year, center ("lon,lat"), scale,
-// labels ("false" hides), font-family, selected (pid). Events (CustomEvent,
+// selected (pid). Events (CustomEvent,
 // bubbling, `detail` = the callback argument): ca-ready, ca-yearapplied,
 // ca-hover, ca-select, ca-viewchange, ca-interactionend, ca-loading, ca-failure.
 import { ChronoGlobe } from './chrono-globe.js';
@@ -25,7 +25,7 @@ function parseCenter(v: string | null): [number, number] | undefined {
 
 /**
  * Registers `<chrono-globe>` (or `tagName`). `defaults` are merged into every
- * instance's options (e.g. `{ workerUrl, fontFamily, theme }`). Returns the
+ * instance's options (e.g. `{ workerUrl, theme }`). Returns the
  * element class; calling it twice returns the already registered class.
  */
 export function defineChronoGlobeElement(
@@ -37,7 +37,7 @@ export function defineChronoGlobeElement(
   if (existing) return existing;
 
   class ChronoGlobeEl extends HTMLElement implements ChronoGlobeElement {
-    static observedAttributes = ['year', 'selected', 'labels'];
+    static observedAttributes = ['year', 'selected'];
     private _globe: ChronoGlobe | null = null;
 
     get globe(): ChronoGlobe | null {
@@ -70,11 +70,8 @@ export function defineChronoGlobeElement(
         ...defaults,
         data: { manifestUrl },
         year: Number.isFinite(year) && year !== 0 ? year : 1,
-        labels: this.getAttribute('labels') !== 'false',
       };
       if (center) options.view = { center, scale: Number.isFinite(scale) && scale > 0 ? scale : 1 };
-      const font = this.getAttribute('font-family');
-      if (font) options.fontFamily = font;
       this._globe = new ChronoGlobe(this, options, {
         onYearApplied: (y) => fire('ca-yearapplied', y),
         onHover: (info) => fire('ca-hover', info),
@@ -102,7 +99,6 @@ export function defineChronoGlobeElement(
       if (!g) return;
       if (name === 'year' && value !== null && Number.isFinite(Number(value))) g.setYear(Number(value));
       else if (name === 'selected') g.select(value || null);
-      else if (name === 'labels') g.setLabels(value !== 'false');
     }
   }
 

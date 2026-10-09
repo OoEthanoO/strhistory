@@ -5,8 +5,9 @@
  * The globe is Alex's Atlas's ChronoGlobe (packages/globe, migration path C in
  * packages/globe/AGENTS.md §8.7): the borders of any year from the Alex's Atlas
  * dataset (served at /data/alexs-atlas/), the political-map colours of
- * map-colors.ts with each polity's own outline, curved labels in Newsreader, the
- * star field, the hover tooltip and click selection. Topic pins are HTML markers
+ * map-colors.ts with each polity's own outline, country names painted on the map in
+ * Newsreader (fixed to the ground, so they scale with the map), the star field, the
+ * hover tooltip and click selection. Topic pins are HTML markers
  * on its MapLibre map (real <a> links), which keeps them keyboard- and
  * screen-reader-usable.
  */
@@ -25,10 +26,10 @@ import { pinOffsets } from './pin-layout';
 
 /** The dataset's entry point; every other file it names is content-hashed. */
 export const MANIFEST_URL = '/data/alexs-atlas/manifest.json';
-/** Map labels are drawn locally from this self-hosted CSS font (BaseLayout loads it). */
-const LABEL_FONT = 'Newsreader Variable';
 /** The default camera: Europe, Africa and western Asia in view. */
 const HOME_CENTER: [number, number] = [15, 30];
+/** Country names are drawn locally in this self-hosted CSS font (BaseLayout loads it). */
+const NAME_FONT = '"Newsreader Variable", Newsreader, Georgia, serif';
 /** A note's pin is shown at least this close when the globe flies to it. */
 const PIN_SCALE = 2 ** 0.9;
 
@@ -93,9 +94,8 @@ export class GlobeController {
         year: options.year,
         view: options.view ?? { center: HOME_CENTER, scale: 1 },
         minScale: options.minScale ?? 0.6,
-        fontFamily: LABEL_FONT,
-        // Names in capitals along each polity's shape, as on grand-strategy maps.
-        labelMode: 'curved',
+        // Country names in capitals along each polity's shape, as in Victoria 3.
+        nameFont: NAME_FONT,
         // Map colours in the manner of a grand-strategy game (map-colors.ts).
         theme: MAP_THEME,
         palette: (p) => mapColor(p, this.paletteYear),

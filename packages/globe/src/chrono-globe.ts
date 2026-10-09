@@ -102,8 +102,9 @@ export class ChronoGlobe {
   private userMoving = false;
   private tooltipTimer: ReturnType<typeof setTimeout> | null = null;
   private interacting = false;
-  private labelsVisible: boolean;
   private pendingSelect: string | null | undefined = undefined;
+  /** Whether the country names are shown (remembered until the map has loaded). */
+  private namesVisible: boolean;
   private readonly ready: Promise<void>;
   private settleReady!: (err?: unknown) => void;
   private readySettled = false;
@@ -116,7 +117,7 @@ export class ChronoGlobe {
     this.callbacks = callbacks;
     this.year = sanitizeYear(options.year);
     this.minScale = options.minScale ?? 0.6;
-    this.labelsVisible = options.labels !== false;
+    this.namesVisible = options.names !== false;
     this.initialView = normalizeView({ center: options.view?.center ?? DEFAULT_VIEW.center, scale: options.view?.scale ?? DEFAULT_VIEW.scale });
     this.ready = new Promise<void>((resolve, reject) => {
       this.settleReady = (err?: unknown) => {
@@ -304,10 +305,10 @@ export class ChronoGlobe {
     return this._layers ? this._layers.getSelected() : (this.pendingSelect ?? null);
   }
 
-  /** Shows or hides the polity labels (remembered if the map is not loaded yet). */
-  setLabels(visible: boolean): void {
-    this.labelsVisible = visible;
-    this._layers?.setLabels(visible);
+  /** Shows or hides the country names (with `names: false` there are none to show). */
+  setNames(visible: boolean): void {
+    this.namesVisible = visible;
+    this._layers?.setNames(visible);
   }
 
   startSpin(): void {
@@ -464,7 +465,7 @@ export class ChronoGlobe {
     try {
       map = new MlMap({
         container: this.mapEl,
-        style: buildBaseStyle({ theme: this.theme, glyphs: o.glyphs, backgroundId: this.backgroundId() }) as unknown as StyleArg,
+        style: buildBaseStyle({ theme: this.theme, backgroundId: this.backgroundId() }) as unknown as StyleArg,
         center: view.center,
         zoom: scaleToZoom(view.scale, this.lastFit),
         minZoom: scaleToZoom(this.minScale, this.lastFit),
@@ -479,7 +480,6 @@ export class ChronoGlobe {
         attributionControl: false,
         maplibreLogo: false,
         fadeDuration: 150,
-        localIdeographFontFamily: o.fontFamily ?? 'sans-serif',
         ...(this.reducedMotion ? { reduceMotion: true } : {}),
       });
     } catch (err) {
@@ -530,12 +530,11 @@ export class ChronoGlobe {
       year: this.year,
       prefix: o.layerPrefix ?? 'ca-',
       palette: o.palette,
-      labels: this.labelsVisible,
-      labelMode: o.labelMode,
       relief: o.relief,
+      names: o.names !== false,
+      nameFont: o.nameFont,
       hover: o.hover !== false,
       theme: this.theme,
-      fontFamily: o.fontFamily,
       onYearApplied: (y) => this.callbacks.onYearApplied?.(y),
       onHover: (info) => this.onHover(info),
       onSelect: (info: SelectInfo | null) => this.callbacks.onSelect?.(info),
@@ -543,6 +542,7 @@ export class ChronoGlobe {
       onFailure: (reason, err) => this.fail(reason, err),
     });
     this._layers = layers;
+    if (!this.namesVisible) layers.setNames(false);
     if (this.interacting) layers.setInteracting(true);
     if (this.pendingSelect !== undefined) layers.select(this.pendingSelect, 'api');
     this.pendingSelect = undefined;

@@ -90,8 +90,6 @@ describe('DEFAULT_PALETTE', () => {
       expect(L).toBeLessThan(0.72);
       const [, a, b] = oklab(f);
       expect(Math.hypot(a, b)).toBeLessThan(0.1); // muted chroma
-      // Light labels with a dark halo stay legible on every fill.
-      expect(contrastRatio(DEFAULT_THEME.label, f)).toBeGreaterThan(2.2);
     }
   });
 

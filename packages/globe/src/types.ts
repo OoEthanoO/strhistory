@@ -19,7 +19,7 @@ export interface GlobeView {
  * Colours and strengths used by the map layers. Every colour accepts hex,
  * `rgb()/rgba()` or `hsl()/hsla()` (other CSS colours are resolved by the browser).
  * Theme from CSS: the same keys as `--ca-<kebab-case>` custom properties on
- * the container (e.g. `--ca-ocean`, `--ca-label-halo`).
+ * the container (e.g. `--ca-ocean`, `--ca-lake-shore`).
  */
 /** A relief overlay: raster tiles drawn over the fills (see `relief` options). */
 export interface ReliefOptions {
@@ -53,20 +53,14 @@ export interface GlobeTheme {
   coast: string;
   /** Diagonal hatch lines of tier-1 overlays (indigenous nations, disputed areas). */
   hatch: string;
-  /** Label text. */
-  label: string;
-  /** Halo behind label text (fully transparent: no halo). */
-  labelHalo: string;
-  /** Halo width in px; null = the label mode's own (curved 0.9, point 1.3). 0..8. */
-  labelHaloWidth: number | null;
-  /** Halo blur in px (a soft glow under the letters); null = the label mode's own (curved 0, point 0.4). 0..8. */
-  labelHaloBlur: number | null;
-  /** Label text of tier-1 overlays. */
-  labelOverlay: string;
   /** Outline of the polity under the pointer. */
   hover: string;
   /** Outline of the selected polity. */
   selection: string;
+  /** Country names on the map (names.ts): their ink over land, … */
+  nameInk: string;
+  /** … and the ink of the letters of a name that lie over the sea. */
+  nameSeaInk: string;
   /** Opacity used to pre-blend palette colours over `land` (opaque result). 0..1. */
   fillBlend: number;
   /** Opacity of the tint drawn under the hatch of tier-1 overlays. 0..1. */
@@ -150,21 +144,20 @@ export interface ChronoGlobeOptions {
   maxZoom?: number;
   /** Smallest scale the user can zoom out to. Default 0.6. */
   minScale?: number;
-  /** Default true. */
-  labels?: boolean;
   /**
-   * 'point' (default): each name horizontal at its label point, sized by area. 'curved':
-   * in capitals along a gentle arc through the polity's largest part, spread out to span
-   * it; labels grow more slowly than the map when zooming in, and are hidden while they
-   * do not fit.
-   */
-  labelMode?: 'point' | 'curved';
-  /**
-   * Optional relief drawn over the polity fills and their outlines (below borders,
-   * overlays and labels): same-origin raster tiles that shade whatever lies under them,
+   * Optional relief drawn over the polity fills and their outlines (below borders and
+   * overlays): same-origin raster tiles that shade whatever lies under them,
    * e.g. light and shadow on a transparent ground. Tile URLs with {z}/{x}/{y}.
    */
   relief?: ReliefOptions;
+  /**
+   * Country names painted on the map, fixed to the ground in the manner of Victoria 3:
+   * in capitals along each polity's arc, they scale with the map (twice the zoom scale,
+   * twice the size). Default true.
+   */
+  names?: boolean;
+  /** CSS font family of the names (drawn locally, no glyph server). Default `serif`. */
+  nameFont?: string;
   /** Hover highlight + `onHover`. Default true. */
   hover?: boolean;
   /** Built-in hover tooltip ("name · years"); false when the host draws its own. Default true. */
@@ -173,13 +166,6 @@ export interface ChronoGlobeOptions {
   layerPrefix?: string;
   palette?: PaletteOption;
   theme?: Partial<GlobeTheme>;
-  /** CSS font family used for labels (drawn locally — no glyph server). Default 'sans-serif'. */
-  fontFamily?: string;
-  /**
-   * Optional same-origin glyph URL template (`…/{fontstack}/{range}.pbf`). Not needed:
-   * MapLibre 6 draws label glyphs locally from `fontFamily` when this is omitted.
-   */
-  glyphs?: string;
   /** Calls maplibre-gl's `setWorkerUrl` (bundlers: see AGENTS.md "Worker URL"). */
   workerUrl?: string;
   /** true (default): MapLibre attribution control with the dataset credits; a string: custom HTML; false: none. */
@@ -199,28 +185,21 @@ export interface BorderLayersOptions {
   /** Prefix for source/layer/image ids. Default 'ca-'. */
   prefix?: string;
   palette?: PaletteOption;
-  /** Default true. */
-  labels?: boolean;
   /**
-   * 'point' (default): each name horizontal at its label point, sized by area. 'curved':
-   * in capitals along a gentle arc through the polity's largest part, spread out to span
-   * it; labels grow more slowly than the map when zooming in, and are hidden while they
-   * do not fit.
-   */
-  labelMode?: 'point' | 'curved';
-  /**
-   * Optional relief drawn over the polity fills and their outlines (below borders,
-   * overlays and labels): same-origin raster tiles that shade whatever lies under them,
+   * Optional relief drawn over the polity fills and their outlines (below borders and
+   * overlays): same-origin raster tiles that shade whatever lies under them,
    * e.g. light and shadow on a transparent ground. Tile URLs with {z}/{x}/{y}.
    */
   relief?: ReliefOptions;
+  /** Country names painted on the map (see `ChronoGlobeOptions.names`). Default true. */
+  names?: boolean;
+  /** CSS font family of the names. Default `serif`. */
+  nameFont?: string;
   /** Hover feature-state + `onHover`. Default true. */
   hover?: boolean;
   /** Click selects the polity under the pointer. Default true. */
   clickSelect?: boolean;
   theme?: Partial<GlobeTheme>;
-  /** CSS font family for labels. Default 'sans-serif'. */
-  fontFamily?: string;
   /** Show Natural Earth land until the first frame arrives. Default true. */
   baseLand?: boolean;
   /** Draw Natural Earth lakes above the polities. Default true. */

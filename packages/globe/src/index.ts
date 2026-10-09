@@ -7,7 +7,6 @@ export { ChronoGlobe, type GlobeState } from './chrono-globe.js';
 export { BorderLayers, addBorderLayers, formatSpan, hoverLabel, pickOrder, type StepTiming } from './border-layers.js';
 export { defineChronoGlobeElement, type ChronoGlobeElement } from './element.js';
 export { DEFAULT_PALETTE, blendPalette, edgePalette, hoverPalette, overlayLinePalette, slotColorExpression } from './palette.js';
-export { CURVED_LABELS, labelLine, labelSizing, shortLabelName, type LabelLine } from './label-lines.js';
 export { DEFAULT_THEME, cssVarName, readCssTheme, resolveTheme } from './theme.js';
 export {
   DEFAULT_VIEW,
@@ -34,7 +33,6 @@ export {
   borderSources,
   buildBaseStyle,
   externalUrls,
-  fontStack,
   layerOrder,
   skySpec,
   type BorderIds,

@@ -4,7 +4,21 @@
 import { describe, expect, it, vi } from 'vitest';
 import { addBorderLayers, formatSpan, hoverLabel, pickOrder } from './border-layers.js';
 import { borderIds, layerOrder } from './style.js';
-import type { BordersClient, Manifest, PolityProps } from './types.js';
+import type { BordersClient, Manifest, PolityFeatureLike, PolityProps } from './types.js';
+
+// The features each MapNames is asked to name (country names, below); otherwise the real
+// class: no metrics in Node, so it never sets or paints a name.
+const nameShows = vi.hoisted(() => [] as (readonly unknown[])[]);
+vi.mock('./map-names.js', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./map-names.js')>();
+  class RecordingMapNames extends mod.MapNames {
+    override show(features: readonly PolityFeatureLike[]): void {
+      nameShows.push(features);
+      super.show(features);
+    }
+  }
+  return { ...mod, MapNames: RecordingMapNames };
+});
 
 type Handler = (e?: unknown) => void;
 
@@ -195,7 +209,6 @@ function fakeClient(opts: { partition?: boolean; coast?: boolean; spread?: boole
         ...(opts.coast ? [coastOf(year)] : []),
       ],
     }),
-    labelsAt: async () => ({ type: 'FeatureCollection', features: [] }),
     base: async (name: string) => ({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: square, properties: { name } }] }),
     polities: async () => ({ 'clio:small-1900': { name: 'small', kind: 'state', spans: [[1850, 1950]], bbox: [0, 0, 1, 1], src: 'test' } }),
     polity: async () => undefined,
@@ -292,7 +305,8 @@ describe('addBorderLayers', () => {
   it('switches LOD on zoomend and uses the coarsest LOD while interacting', async () => {
     const map = new FakeMap();
     const borders = fakeClient();
-    const h = addBorderLayers(map as never, { borders, year: 1914 });
+    // Without names: they look up the coarsest LOD after each frame (tested below).
+    const h = addBorderLayers(map as never, { borders, year: 1914, names: false });
     await h.firstFrame;
     await settle();
     expect(borders.calls.at(-1)!.lod).toBe('l0');
@@ -431,7 +445,7 @@ describe('coast source and view culling', () => {
     map.degPerPx = 0.01;
     map.zoom = 4; // l1
     const borders = fakeClient({ coast: true, spread: true });
-    const h = addBorderLayers(map as never, { borders, year: 1914 });
+    const h = addBorderLayers(map as never, { borders, year: 1914, names: false });
     await h.firstFrame;
     await settle();
     expect(borders.calls.at(-1)!.lod).toBe('l1');
@@ -449,7 +463,7 @@ describe('coast source and view culling', () => {
   });
 });
 
-describe('labels and picking helpers', () => {
+describe('tooltip and picking helpers', () => {
   it('formats lifespans', () => {
     expect(formatSpan(395, 1453)).toBe('395–1453');
     expect(formatSpan(-509, -27)).toBe('509 BCE – 27 BCE');
@@ -465,5 +479,163 @@ describe('labels and picking helpers', () => {
   it('orders picks: tier 1 first, then smallest area', () => {
     const list = [props(1, 'a', { a: 10 }), props(2, 'b', { a: 1 }), props(3, 'c', { a: 100, tier: 1 })].sort(pickOrder);
     expect(list.map((p) => p.pid)).toEqual(['c', 'b', 'a']);
+  });
+});
+
+/** A client whose bordersAt results are kept (by LOD), optionally held until released. */
+function recordingClient(): BordersClient & {
+  calls: { year: number; lod: string | undefined }[];
+  results: { lod: string | undefined; features: unknown[] }[];
+  hold: string | null;
+  release(): void;
+} {
+  const inner = fakeClient();
+  const results: { lod: string | undefined; features: unknown[] }[] = [];
+  const held: (() => void)[] = [];
+  const client = Object.assign(Object.create(null), inner, {
+    results,
+    hold: null as string | null,
+    release: () => held.splice(0).forEach((go) => go()),
+    bordersAt: async (year: number, o?: { lod?: string }) => {
+      const fc = (await inner.bordersAt(year, o as never)) as { features: unknown[] };
+      results.push({ lod: o?.lod, features: fc.features });
+      if (client.hold && o?.lod === client.hold) await new Promise<void>((go) => held.push(go));
+      return fc;
+    },
+  });
+  return client;
+}
+
+/** Calls sorted by LOD (a frame and its l0 records load together, in either order). */
+const byLod = <T extends { lod: string | undefined }>(calls: T[]): T[] => [...calls].sort((a, b) => String(a.lod).localeCompare(String(b.lod)));
+
+describe('country names', () => {
+  it('names each frame from the coarsest LOD: an l1 frame loads its l0 records with it', async () => {
+    const map = new FakeMap();
+    map.zoom = 4; // l1
+    const borders = recordingClient();
+    nameShows.length = 0;
+    const h = addBorderLayers(map as never, { borders, year: 1914 });
+    await h.firstFrame;
+    await settle();
+    expect(byLod(borders.calls)).toEqual([
+      { year: 1914, lod: 'l0' },
+      { year: 1914, lod: 'l1' },
+    ]);
+    // The names get the l0 frame's features (all of them: MapNames picks what to name).
+    expect(nameShows).toHaveLength(1);
+    expect(nameShows[0]).toBe(borders.results.find((r) => r.lod === 'l0')!.features);
+    h.remove();
+  });
+
+  it('reuses an l0 frame for the names (no second call)', async () => {
+    const map = new FakeMap(); // zoom 1.5: l0
+    const borders = fakeClient();
+    nameShows.length = 0;
+    const h = addBorderLayers(map as never, { borders, year: 1914 });
+    await h.firstFrame;
+    await settle();
+    expect(borders.calls).toEqual([{ year: 1914, lod: 'l0' }]);
+    expect(nameShows).toHaveLength(1);
+    expect(nameShows[0]!.map((f) => (f as PolityFeatureLike).properties.rid).sort()).toEqual(h.frameFeatures().map((f) => f.properties.rid).sort());
+    h.remove();
+  });
+
+  it('changes the names with the borders: a frame waits for its l0 records, a stale one is never named', async () => {
+    const map = new FakeMap();
+    map.zoom = 4; // l1
+    const borders = recordingClient();
+    borders.hold = 'l0';
+    nameShows.length = 0;
+    const h = addBorderLayers(map as never, { borders, year: 1914 });
+    await settle();
+    expect(h.frameFeatures()).toEqual([]); // 1914 is not drawn without its names' records
+    expect(nameShows).toHaveLength(0);
+    void h.setYear(1815);
+    borders.hold = null;
+    borders.release();
+    await h.firstFrame;
+    await settle();
+    // 1914 (stale) is never drawn or named; 1815 is, with its names.
+    expect(nameShows).toHaveLength(1);
+    expect((nameShows[0]![0] as PolityFeatureLike).properties.rid).toBe('clio:big-1800@1900');
+    h.remove();
+  });
+
+  it('keeps a frame\'s names when its colours change', async () => {
+    const map = new FakeMap();
+    map.zoom = 4; // l1
+    const borders = recordingClient();
+    nameShows.length = 0;
+    const h = addBorderLayers(map as never, { borders, year: 1914, palette: () => '#808080' });
+    await h.firstFrame;
+    await settle();
+    h.setPalette(() => '#a0a0a0'); // same frame, new colours: the names stay as they are
+    await settle();
+    expect(nameShows).toHaveLength(1);
+    expect(nameShows[0]).toBe(borders.results.find((r) => r.lod === 'l0')!.features);
+    h.remove();
+  });
+
+  it('makes no call for names with names: false', async () => {
+    const map = new FakeMap();
+    map.zoom = 4; // l1
+    const borders = fakeClient();
+    const h = addBorderLayers(map as never, { borders, year: 1914, names: false });
+    await h.firstFrame;
+    await settle();
+    expect(borders.calls.map((c) => c.lod)).toEqual(['l1']);
+    expect(() => h.setNames(false)).not.toThrow();
+    expect(h.namesShown()).toEqual([]);
+    h.remove();
+  });
+
+  it('looks up the l0 frame of each new year shown at l1', async () => {
+    const map = new FakeMap();
+    map.zoom = 4; // l1
+    const borders = fakeClient();
+    const h = addBorderLayers(map as never, { borders, year: 1914 });
+    await h.firstFrame;
+    await settle();
+    await h.setYear(1815);
+    await settle();
+    expect(byLod(borders.calls.slice(2))).toEqual([
+      { year: 1815, lod: 'l0' },
+      { year: 1815, lod: 'l1' },
+    ]);
+    h.remove();
+  });
+
+  it('shows and hides names, and recolours them with the theme, without errors', async () => {
+    const map = new FakeMap();
+    const h = addBorderLayers(map as never, { borders: fakeClient(), year: 1914 });
+    await h.firstFrame;
+    await settle();
+    expect(() => {
+      h.setNames(false);
+      h.setNames(true);
+      h.setTheme({ nameInk: '#102030', nameSeaInk: 'rgba(16, 32, 48, 0.5)' });
+      map.fire('render');
+    }).not.toThrow();
+    // No font metrics in Node (no document): names are never set here.
+    expect(h.namesShown()).toEqual([]);
+    h.remove();
+    expect(() => h.setNames(true)).not.toThrow();
+  });
+
+  it('removes its render handler with the layers', async () => {
+    const map = new FakeMap();
+    const without = addBorderLayers(map as never, { borders: fakeClient(), year: 1914, names: false });
+    await without.firstFrame;
+    await settle();
+    const base = map.handlers.get('render')?.size ?? 0;
+    without.remove();
+    const map2 = new FakeMap();
+    const h = addBorderLayers(map2 as never, { borders: fakeClient(), year: 1914 });
+    await h.firstFrame;
+    await settle();
+    expect(map2.handlers.get('render')?.size ?? 0).toBe(base + 1); // the names' repaint
+    h.remove();
+    expect(map2.handlers.get('render')?.size ?? 0).toBe(0);
   });
 });

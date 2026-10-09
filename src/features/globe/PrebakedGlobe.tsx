@@ -33,7 +33,7 @@ const normalise = ({ center, scale }: GlobeView): GlobeView => ({
 });
 
 /** The first frame is baked into HTML; this same geometry remains draggable
- * while WebGL, detailed coastlines, historical borders and labels arrive. */
+ * while WebGL, detailed coastlines and historical borders arrive. */
 export default function PrebakedGlobe({ topics, center = DEFAULT_CENTER, scale = 1, className = '', onViewChange, onInteractionEnd, pinHref, borders = false }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<[number, number]>([800, 600]);

@@ -21,8 +21,10 @@ covers the behaviour it relies on.
 | `src/border-layers.ts` | `addBorderLayers()` / `BorderLayers`: sources, layers, year changes, LOD, hover, selection. `ChronoGlobe` uses it too. |
 | `src/frames.ts` | `FrameScheduler`: year → frame, latest-wins coalescing, keep-old-until-rendered (pure, unit-tested). |
 | `src/cull.ts` | View culling: spherical caps, part bounding boxes, `cullFeatures()` (pure, unit-tested; §3.4). |
-| `src/rim.ts` | Label box estimate, the fade of labels at the globe's rim, and `globeDisc` (the globe's outline on screen) (pure, unit-tested; §3.4). |
-| `src/label-lines.ts` | Curved labels: `labelLine` (an arc along the long axis of a polity's main body, gaps between its parts filled in), `extendLine` (lead-ins for MapLibre's fit check), sizing by zoom, `shortLabelName` (pure, unit-tested; §3.4). |
+| `src/rim.ts` | `globeDisc`: the globe's outline on screen, for picking and the star field (pure). |
+| `src/name-arcs.ts` | Country names: `nameArcs` (an arc along the long axis of each territory a polity holds apart, seas between its parts bridged, never other land), `otherLand`, `landWater` (where the sea and lakes are, shores clipped to a box), `shortName` (pure, unit-tested; §5.3). |
+| `src/names.ts` | Country names: letters set on the sphere (`layoutName`), MapLibre's globe camera (`globeCamera`, `projectPoint`, `facing`), fades, overlaps (`nameBlockers`), reading direction (pure, unit-tested; §5.3). |
+| `src/map-names.ts` | `MapNames`: the canvas the names are painted on, above the map and below markers, repainted with every map frame; arcs found in time slices (§5.3). |
 | `src/sky.ts` | Star field: a fixed catalogue of stars at infinity projected through the map's camera and painted on a canvas under the map (pure projection, unit-tested; §5.2). |
 | `src/style.ts` | Style builder (pure JSON): base style, sources, layers in contract order, `externalUrls()` guard. |
 | `src/palette.ts`, `src/color.ts`, `src/theme.ts`, `src/hatch.ts` | 12-slot palette, colour maths, theme + `--ca-*` reading, tier-1 hatch pattern (pixels generated in code). |
@@ -64,14 +66,6 @@ node packages/globe/scripts/recipes.mjs [--gpu]
 - **Data**: serve `@alexs-atlas/borders/data/` as static files, e.g. at
   `/data/alexs-atlas/` (plain JSON; `manifest.json` short-cached, everything else
   content-hashed and immutable). Pass `data: { manifestUrl }`.
-- **Fonts**: labels are drawn **locally** from the CSS font family in
-  `fontFamily` (default `'sans-serif'`); no glyph server, no URL in the style.
-  Verified in MapLibre 6.11.2's `GlyphManager`: without a `glyphs` URL every
-  glyph is drawn with TinySDF using the `text-font` stack as the CSS family, after
-  `document.fonts.load(...)`, so a self-hosted web font (e.g.
-  `@fontsource-variable/inter` → `'Inter Variable'`) is used once it loads.
-  The optional `glyphs` option (a same-origin `…/{fontstack}/{range}.pbf`
-  template) exists only for hosts that already serve PBF glyphs.
 
 ## 3. `ChronoGlobe`
 
@@ -93,16 +87,14 @@ fills it (give the container a size; never `position: fixed`) and sets
 | `view` | `{ center: [20, 30], scale: 1 }` | `scale = 2^(zoom − fitZoom)`; 1 = the globe's diameter ≈ the container's smaller side. |
 | `maxZoom` | `7` | MapLibre max zoom. |
 | `minScale` | `0.6` | Smallest scale the user can zoom out to. |
-| `labels` | `true` | Polity labels. |
-| `relief` | — | `{ tiles, tileSize?: 512, maxzoom?: 4, opacity?: 1, under?: false }`: same-origin raster tiles (layer `<prefix>relief`), drawn over the fills and outlines (below borders, overlays and labels), or with `under` first of all, beneath the land, so they show only on water (e.g. sea-floor relief). |
-| `labelMode` | `'point'` | `'point'`: each name horizontal at its label point, sized by area. `'curved'`: names in capitals along an arc through each polity, spread to span it (§3.4). |
+| `relief` | — | `{ tiles, tileSize?: 512, maxzoom?: 4, opacity?: 1, under?: false }`: same-origin raster tiles (layer `<prefix>relief`), drawn over the fills and outlines (below borders and overlays), or with `under` first of all, beneath the land, so they show only on water (e.g. sea-floor relief). |
+| `names` | `true` | Country names painted on the map, fixed to the ground in the manner of Victoria 3 (§5.3). `false` leaves them out. |
+| `nameFont` | `'serif'` | CSS font family of the names (a family or a list; drawn locally in the page, no glyph server). |
 | `hover` | `true` | Hover outline + `onHover`. `false` also disables the tooltip. |
 | `tooltip` | `true` | Built-in "name · years" tooltip after 120 ms; `false` when the host draws its own from `onHover`. |
 | `layerPrefix` | `'ca-'` | Prefix of every source, layer and image id (background: `<prefix>ocean`). |
 | `palette` | `DEFAULT_PALETTE` | 12 colours (one per slot `c`) or `(props) => cssColour`; both are pre-blended over `land` (opaque fills). |
 | `theme` | `DEFAULT_THEME` | `Partial<GlobeTheme>` (§5.2); layered over `--ca-*` custom properties on the container. |
-| `fontFamily` | `'sans-serif'` | CSS family list for labels (drawn locally, §2). |
-| `glyphs` | — | Optional same-origin glyph template; omit it. |
 | `workerUrl` | — | Calls maplibre-gl `setWorkerUrl` (bundlers, §2). |
 | `attribution` | `true` | Compact MapLibre attribution with the dataset credits (`attributionHtml(manifest)`); a string = custom HTML; `false` = none (then credit the data elsewhere — CC BY 4.0 requires it). |
 | `exposeAs` | — | Dev handle: `window[exposeAs] = globe` (removed on destroy). |
@@ -113,7 +105,7 @@ fills it (give the container a size; never `position: fixed`) and sets
 | Callback | When |
 | --- | --- |
 | `onYearApplied(year)` | The borders of `year` are on screen (also when the year stays within the shown frame). |
-| `onHover(info \| null)` | `HoverInfo`: `id`, `pid`, `name`, `props` (`PolityProps`), `polity?` (index entry once loaded), `label` ("Name · 395–1453"), `lngLat`, `point` (px), `others` (other polities under the pointer). |
+| `onHover(info \| null)` | `HoverInfo`: `id`, `pid`, `name`, `props` (`PolityProps`), `polity?` (index entry once loaded), `lngLat`, `point` (px), `others` (other polities under the pointer). |
 | `onSelect(info \| null)` | `SelectInfo`: `pid`, `props?` (feature in the shown year, absent if not on the map), `polity?`, `reason` (`'click' \| 'api'`), `lngLat?`. May fire a second time for the same pid with `polity` filled in once the polity index has loaded. |
 | `onViewChange(view)` | Every camera change, at most once per animation frame. |
 | `onInteractionEnd(view)` | A user gesture (drag, wheel, pinch, keyboard) finished. |
@@ -134,7 +126,7 @@ fills it (give the container a size; never `position: fixed`) and sets
 | `zoomBy(delta)`, `resetView()` | Zoom levels; back to the initial view. |
 | `flyToPolity(pid, { year?, padding? })` | Fits the bbox of the polity's features in `year` (default: the shown year; fetched if needed), else the polity-index bbox, inside `padding` (default: the `padding` option, else 40 px). Max zoom 6. `jumpTo` under `prefers-reduced-motion`. Resolves `false` when unknown. Map padding: see below. |
 | `select(pid \| null)`, `getSelected()` | Selection outline (brass) persists across years by `pid`; works before the map loaded. |
-| `setLabels(bool)` | Show/hide labels (remembered before load). |
+| `setNames(bool)` | Shows or hides the country names (remembered until the map has loaded; nothing to show with `names: false`). |
 | `startSpin()` / `stopSpin()` / `isSpinning` | Slow eastward spin (3°/s at scale 1, slower when zoomed in); stops on any user input; never under reduced motion. |
 | `resize()` | Re-measure (a `ResizeObserver` already does this, keeping the relative scale). |
 | `setTheme(partial)` | Runtime theme change (paint properties, sky, hatch). |
@@ -172,82 +164,6 @@ compensation would undershoot.
   that leaves it shows the whole world at `l0` until `moveend`, then the zoom's LOD
   culled around the new view. Picking, `featuresOf`, `frameFeatures` and the
   highlight always use the whole frame.
-- Labels at the rim (`rim.ts`): MapLibre hides a screen-aligned label only when its
-  anchor is behind the globe, so labels anchored near the horizon used to hang out
-  into space. Each label's box is estimated from the label typography
-  (`LABEL_TYPE` in `style.ts`, shared with the style); a label is fully shown while
-  ≤ 25 % of its box lies outside the globe's outline or the canvas, hidden from 50 %,
-  and faded in quarter steps between (feature-state `edge` × `text-opacity`, updated
-  once per animation frame while the camera moves).
-- Curved labels (`labelMode: 'curved'`, `label-lines.ts`): each label point becomes an
-  arc along its record's main body: the largest part plus the parts within
-  max(100 km, ¼·√area) of it (single linkage over real vertex distance; parts under 2 %
-  of the largest left out), so the Eastern Roman Empire's coasts around the Mediterranean
-  or Japan's main islands count as one shape. Along the body's principal axis (a roundish
-  body reads horizontally) scan lines run across it; on each, a gap between two bands of
-  land is bridged unless it is another polity's or unclaimed land (`otherLand`: a 2° grid
-  index of the frame's tier-0 land), and only between two parts (a sea, a strait) or,
-  inside one part, when at most half as wide as the land on either side (a bay: China's
-  Bohai Gulf). The arc follows one band from a wide scan line outward while it keeps
-  ≥ 18 % of that land, crossing at most 3 weak or empty scan lines in a row (a thin coast,
-  a strait between islands); where the band ends it may hop across open sea to the next
-  island within the body's gap (the Philippines, Japan), never across other land, so a
-  horseshoe-shaped polity (the 1914 Ottoman Empire, Croatia) is labelled along one arm
-  instead of across its neighbours; of 4 starts (the widest scan lines) the fitted arc
-  with the most length over the polity's own land wins; a weighted quadratic through the
-  band middles is sampled over 94 % of it. It may turn at most 6° for thick bodies (median
-  land width ≥ 0.4 × the span: China, France read nearly straight) up to 20° for thin ones
-  (≤ 0.2 ×: Chile, Italy, Japan bend with their shape); when that limit flattens the curve,
-  its offset and tilt are refitted (in proportion to how much the thickness lowered the
-  limit: thin bodies keep their curve's own offset), so it runs through the body's middle
-  (not along the bottom of a U, as China's did). Each arc notes which samples lie on the polity
-  (`onBody`); cached per
-  record and LOD (the other-land index is built once per frame, only when an arc is
-  missing). The type size fits the name into 80 % of the arc (and 42 % of the body's
-  median land width); it follows the map's scale up to zoom 2 and grows 2^(0.6·Δzoom)
-  beyond (smaller relative to the polity when zooming in), at most 30 px.
-  `shortLabelName` (a common map name, a leading title or a trailing parenthetical
-  dropped) is used when it reads ≥ 1.5× larger or the full name is under 9 px. Below 9 px
-  a label keeps 9 px instead of disappearing (overlaps are resolved by area, largest
-  first), unless its text would run longer than 1.5× its arc, less than 60 % of it lies
-  over the polity's own land (it would spill over the sea and its neighbours), or it sits
-  within 25° of the horizon (acos(R/(R+d)) for the camera; it would only smear at the
-  rim). Letter spacing spreads
-  the name over the arc: up to 2 em from 14 px, less for smaller type (0.3 em at 9 px), so
-  small names still read as words. The name slides along its arc to the window with the
-  most of it on the polity's own land and in view (within 10° of the view's edge or the
-  horizon) when that gains ≥ 10 % over the middle: off a gulf or strait in the middle of
-  the arc, and toward the side of the globe facing the viewer (Russia's name moves west
-  when Europe is in view); labels refresh after zooms and after pans. A themed halo (the
-  site's soft dark glow) is capped to 0.07 em width and 0.05 em blur, inside the glyphs'
-  distance field, which MapLibre clips to each glyph's box (wider showed light or dark
-  rectangles behind small letters). Each
-  label is lettered in its polity's outline colour (`_ink`: its fill shaded by
-  `theme.edge`, or 0.2), outlined by `labelHalo`. MapLibre 6 constraints shape the
-  implementation: a 'line-center' label is dropped where its line crosses a tile edge,
-  its fit is checked with the text size at zoom 18 and laid out at the whole tile zoom.
-  So the arcs live in their own source `<prefix>label-arcs` tiled only at zoom 2
-  (`buffer` 512, `tolerance` 0, overscaled beyond), and each arc's `_px` and `_ls` are
-  computed in JS for the current zoom and re-sent during zooms (every 120 ms), after
-  every zoom and on frame changes. MapLibre checks the fit on the line at the whole tile
-  zoom, where it is up to 2× shorter than on screen at a fractional zoom; each arc is
-  therefore sent with straight lead-ins of half its length at both ends (`extendLine`,
-  measured in Web Mercator like MapLibre's tile units; the name is drawn along the
-  projected line) and fitted to the arc at the current zoom; a held 9 px name gets lead-ins
-  as long as its text needs, and unequal lead-ins put the line's middle, where MapLibre
-  centres the name, where the slide wants it. Where a lead-in would leave lon/lat range,
-  the fit is checked at the tile zoom. While the globe is shown smaller than
-  `CURVED_LABELS.hideBelowScale` (0.5) × the view's smaller side no labels are drawn. A
-  compact part (axes within 1.6×) reads horizontally. `text-max-angle` is 180° (the
-  check is off): on a globe MapLibre subdivides lines at tile-grid crossings and rounds
-  them, and a crossing next to a vertex leaves a micro-segment pointing anywhere; at 85°
-  that dropped whole labels, the largest first (its window grows with the type size:
-  British Raj in 1914, Qing in 1700); the arcs turn at most 20°.
-  `shortLabelName` knows common map names for some long official names ("German
-  Empire" → "Germany", "United States of America" → "United States") and drops leading
-  titles. The rim fade works by angle from the view centre (`project()` maps far-side
-  points inside the disc): an arc whose name centre (after sliding) is past 72° is hidden, one with an end
-  past 84° dimmed.
 - Hover: `feature-state` (`promoteId: 'id'`) lightens the fill and draws a white
   outline; the pick under the pointer prefers tier-1 overlays, then the smallest
   area; `unclaimed` land is never picked.
@@ -255,7 +171,7 @@ compensation would undershoot.
 - Off the globe: a point in space picks nothing (no hover, no selection). MapLibre
   unprojects such a point to the nearest point on the horizon, so without this guard
   the pointer beside the globe hovered polities on its far rim (`globeDisc`).
-- Accessibility: the canvas `aria-label` reads "Globe showing borders in 1453,
+- Accessibility: the canvas's accessible name reads "Globe showing borders in 1453,
   130 areas"; MapLibre keyboard pan/zoom stays on (rotation off); the tooltip is
   `aria-hidden` (hosts provide an accessible list of the polities, root §7.3).
 
@@ -267,9 +183,10 @@ const handle = addBorderLayers(map, {
   year: 1453,
   beforeId: 'sea',         // optional: insert every layer below this host layer
   prefix: 'ca-',           // ids of sources/layers/images
-  palette, theme, fontFamily, labels: true, hover: true, clickSelect: true,
+  palette, theme, hover: true, clickSelect: true,
   baseLand: true,          // Natural Earth land until the first frame
   lakes: true,             // Natural Earth lakes above the polities
+  names: true, nameFont,   // country names on a canvas in the map's canvas container (§5.3)
   onYearApplied, onHover, onSelect, onLoadingChange, onFailure,
 });
 await handle.setYear(1914);      // resolves once 1914 (or a later request) rendered
@@ -281,15 +198,10 @@ Call it after the map's `load` (if the style is still loading, it waits for it).
 It adds no background, sky or projection: those stay the host's. A missing
 `beforeId` logs a warning and adds the layers on top. The handle is a
 `BorderLayers` instance; beyond the contract it offers `setInteracting(bool)`,
-`select(pid)`, `getSelected()`, `featuresOf(pid)`, `frameFeatures()`,
+`select(pid)`, `getSelected()`, `setNames(bool)`, `namesShown()`, `featuresOf(pid)`, `frameFeatures()`,
 `featuresAt(point)`, `loadPolities()`, `setTheme()`, `setPalette()`,
-`setLabels()`, `timings()` (last year-change timings), `getManifest()` and the
-`firstFrame` promise.
-
-Host styles **with** a `glyphs` URL: MapLibre then requests our label font
-stack from the host's glyph server and, on a 404, draws locally with a console
-warning. Pass a `fontFamily` the server has (the sibling site: `'noto-sans'`) or
-one that is fine to draw locally.
+`timings()` (last year-change timings), `getManifest()` and the `firstFrame`
+promise.
 
 ### 4.1 Ids (prefix `ca-`) and layer order, bottom → top
 
@@ -304,12 +216,10 @@ one that is fine to draw locally.
 | `ca-overlay-tint`, `ca-overlay-hatch`, `ca-overlay-line` | `ca-frame` | Tier-1 overlays: translucent tint, diagonal hatch (image `ca-hatch`, added with `map.addImage`), dashed outline. |
 | `ca-lakes`, `ca-lake-shore` | `ca-lakes` | `base/lakes-<lod>` above the polities. |
 | `ca-coast` | `ca-coast` | `linesAt` kind `coast` (own source, see below). |
-| `ca-labels` | `ca-frame` | `labelsAt` points: one per polity, `symbol-sort-key: −a`, size by area, hidden below an area threshold per zoom (≥ 1.4 M km² at z0 … all at z7); tier-1 labels in `labelOverlay`. |
 | `ca-hover-line`, `ca-select-glow`, `ca-select-line` | `ca-highlight` | Hover outline (white) and selection outline (brass). |
 
-`ca-frame` is ONE GeoJSON source holding a frame's polygons, border lines and
-label points (`promoteId: 'id'`, `buffer: 32`), so a year change swaps all of them
-in one `setData`. The coastline — about 90 % of a frame's line vertices — has its
+`ca-frame` is ONE GeoJSON source holding a frame's polygons and border lines
+(`promoteId: 'id'`, `buffer: 32`), so a year change swaps both in one `setData`. The coastline — about 90 % of a frame's line vertices — has its
 own source `ca-coast` (`buffer: 32`): the borders client returns the identical coast
 feature for frames of a chunk with the same coastline, and the layers then leave
 that source alone. `ChronoGlobe` adds the background `ca-ocean`.
@@ -330,7 +240,7 @@ and LOD with geojson-vt and MapLibre's `classifyRings`, and in the browser).
 
 1. `frameOf(year)` → if the frame (and LOD) is the one on screen: nothing to load,
    `onYearApplied(year)` only.
-2. Otherwise one load runs at a time: `bordersAt` + `linesAt` + `labelsAt` (from
+2. Otherwise one load runs at a time: `bordersAt` + `linesAt` (from
    cached chunks: 5–35 ms), culled to the view (§3.4), then `setData` on `ca-frame`
    and, only when the coast feature or the culled cap changed, on `ca-coast`;
    requests arriving meanwhile only replace the target (latest wins), stale results
@@ -349,7 +259,7 @@ and LOD with geojson-vt and MapLibre's `classifyRings`, and in the browser).
 so stacked or overlapping areas never mix into a third colour. Measured (OKLab
 ΔE×100, as drawn): worst pair 7.1; slots 0–5 (used most by the pipeline's
 adjacency colouring) ≥ 10.7, ≥ 8.5 under protan/deutan simulation; every fill
-≥ 20 from unclaimed land; labels (light text, dark halo) ≥ 2.2:1 on every fill.
+≥ 20 from unclaimed land.
 The pipeline assigns slots (`PolityProps.c`) so neighbours differ and colonies
 share their power's colour; a palette function overrides that per feature. The
 reference site uses one: identity colours for major powers by `power`, a 12-slot
@@ -371,9 +281,8 @@ Precedence: `DEFAULT_THEME` < `--ca-*` custom properties on the container
 | `approximate` | `--ca-approximate` | `rgba(230,237,246,.6)` | Dashes of approximate extents. |
 | `coast` | `--ca-coast` | `rgba(136,162,186,.75)` | Coastline. |
 | `hatch` | `--ca-hatch` | `rgba(240,244,250,.5)` | Tier-1 hatch lines. |
-| `label` / `labelHalo` / `labelOverlay` | `--ca-label` / `--ca-label-halo` / `--ca-label-overlay` | `#eef2f7` / `rgba(7,11,20,.85)` / `#f3e2bf` | Label text, halo, tier-1 label text. |
-| `labelHaloWidth` / `labelHaloBlur` | `--ca-label-halo-width` / `--ca-label-halo-blur` | `null` / `null` | Halo width and blur in px (0–8; a wide blurred halo is a soft glow under the letters); `null` keeps the label mode's own (curved 0.9 / 0, point 1.3 / 0.4). The halo is drawn by the glyph shader in one more pass over the same buffers, so it costs next to nothing; its reach is bounded by the glyphs' distance field (a few px). |
 | `hover` / `selection` | `--ca-hover` / `--ca-selection` | `#f4f7fb` / `#e9b45f` | Outlines. |
+| `nameInk` / `nameSeaInk` | `--ca-name-ink` / `--ca-name-sea-ink` | `rgba(238,242,247,.72)` / `rgba(238,242,247,.6)` | Country names (§5.3): letters over land, and letters over the sea. |
 | `fillBlend` | `--ca-fill-blend` | `0.85` | Pre-blend strength of palette colours over `land`. |
 | `edge` | `--ca-edge` | `0` | Own outlines (layer `ca-edge`): OKLab lightness drop of each polity's outline from its fill; 0 = none. With outlines the selection replaces the polity's outline in place (no glow). |
 | `overlayTint` | `--ca-overlay-tint` | `0.3` | Tier-1 tint opacity. |
@@ -381,7 +290,73 @@ Precedence: `DEFAULT_THEME` < `--ca-*` custom properties on the container
 | `atmosphere` | `--ca-atmosphere` | `0.5` | `sky.atmosphere-blend` at z0, fading to 0 by z7 (capped at 0.6; 1 washes colours out). |
 | `stars` | `--ca-stars: off` | `true` | Star field (`sky.ts`): 26 000 stars at infinity (seeded, so always the same sky; most faint, a few bright, three tints) projected through the map's camera — centre, field of view and padding — onto a canvas under the map, repainted when the camera moves. They turn with the camera as in a 3D scene (the sky slides opposite to the surface), are hidden behind the globe and fade in from its rim to 1.75 radii. Hidden under `prefers-contrast: more` and forced colours. |
 
-A line layer whose colour is fully transparent (`coast`, `border`, `lakeShore`, `hover`, `selection`) is not drawn at all (visibility `none`), e.g. a map without coastlines; a fully transparent `labelHalo` draws labels with no halo (width 0).
+A line layer whose colour is fully transparent (`coast`, `border`, `lakeShore`, `hover`, `selection`) is not drawn at all (visibility `none`), e.g. a map without coastlines.
+
+### 5.3 Country names
+
+Every tier-0 and tier-1 polity of the frame on screen is named on the map in the
+manner of Victoria 3: its name in capitals (the short form from `shortName`,
+"Kingdom of France" → "France", unless another polity of the frame shares it, as
+both Congos do), spread along a gentle arc through its main body (`nameArcs`) and
+**fixed to the ground**. Each territory a polity holds apart is named on its own (up
+to four, each seeded by a part at least 3 % of its largest and 2,000 km from the
+territories named before it), so a colonial power is named at home as well as over
+its largest colony: the United Kingdom over Britain and Aden in 1914, the Dutch
+Republic over the Netherlands and Java in 1789; an archipelago (Indonesia) or Alaska
+is not named again. Each letter is placed once on the sphere, with a size in
+kilometres: the largest letters that fit 80 % of the arc (at least 0.12 em apart)
+and 40 % of the polity's width across it, spread up to 1 em apart to span the arc
+(`NAME_TYPE` in `names.ts`). An arc's ends are trimmed where it leaves its land or the
+land narrows to under 35 % of its median room (China's east end over the Yellow Sea,
+Pakistan's northern tip). A polity around an inner sea is also tried with that sea
+bridged, and the arc holding the larger name wins (less a little for each share over
+water), so the Roman Empire is named across the Mediterranean in every year, not along
+one shore in some years and across in others. A name is therefore as much a part of the map as a
+border: at twice the scale it is twice as large, and it foreshortens towards the
+rim and sets behind the horizon with the land under it.
+
+- **Drawing.** `MapNames` paints a 2D canvas inserted in `map.getCanvasContainer()`
+  right after the map's canvas (markers and popups stay on top; pointer events pass
+  through), on every MapLibre `render` event, so names never lag the map. Each
+  letter is drawn with `fillText` under an affine transform from central differences
+  of the projection over one em at the letter, through `globeCamera`: MapLibre
+  6.11's globe camera (`VerticalPerspectiveTransform`) computed analytically, a
+  pinhole camera `(height / 2) / tan(fovY / 2)` px above the view centre on a globe
+  of radius `512 · 2^zoom / (2π · cos(centre latitude))` px, the principal point
+  moved by the map padding (checked in Chrome against `map.project`: within 1e-12 px).
+  Otherwise (a rotated or tilted host map, zoom ≥ 10 where MapLibre turns the globe
+  into Web Mercator, another projection): `map.project` itself, on a globe with a
+  letter in sight when `map.unproject` finds it again, on a flat map at the world copy
+  nearest the centre. Painting ~150 names, ~200 letters of them split at shores,
+  takes under 0.3 ms on a GPU.
+- **Visibility.** A name fades in while its letters grow from 7 to 10 px and out
+  while they grow from 20 % to 32 % of the view's smaller side (zoomed in close,
+  as in Victoria 3, a name no longer fits the view); letters fade out towards the
+  rim (surface facing the viewer < 0.32, hidden < 0.1). Where two names overlap on
+  the ground, the larger is drawn and the smaller only as far as the larger is not
+  (`nameBlockers`; tier-1 names rank as 0.75 × their size). New names fade in over
+  250 ms; a polity whose borders change keeps its name (no new fade-in) and shows the
+  old one until the new record's is set. A name reads left to right, judged at its
+  middle letter (the letter nearest the view centre while the middle is near the
+  rim), so a curved name does not flip as the map pans; names within 15° of vertical
+  read upward.
+- **Ink.** `nameInk` over land and `nameSeaInk` over water: the sea (no tier-0 land)
+  and the Natural Earth lakes at l0, which are drawn over the polities in the sea's
+  colour (`OTTOMAN` over the Mediterranean, letters over the IJsselmeer). Nine points
+  across each letter decide; a letter across a shore keeps the land around it
+  (`landWater().shores`, clipped to a box round the letter, even-odd) and is drawn
+  twice, clipped to the land in `nameInk` and to the water in `nameSeaInk`, so it
+  changes colour exactly at the coast.
+- **Data.** Arcs come from the frame at the coarsest LOD whatever the zoom, so a name
+  keeps its place at every zoom: a finer frame loads its records at l0 with it
+  (`bordersAt(year, { lod: 'l0' })`; on failure the frame's own), and the names change
+  when its borders do. Arcs are found in 6 ms slices, largest polities first (a whole
+  frame takes 40–70 ms at l0), and cached by record (`rid`), so a year change only
+  sets the names of new records; arcs and names of the least recently used records
+  beyond 2,000 are dropped (never the frame's own). Names wait for the lakes; the font
+  is measured once it has loaded (`document.fonts.load`, 3 s wait, then again when it
+  arrives). `namesShown()` lists the names set for the frame, drawn or hidden. The
+  site draws them in Newsreader (`nameFont`) with dark ink (`map-colors.ts`).
 
 UI chrome (tooltip, attribution, map focus ring) reads `--ca-text`,
 `--ca-text-muted`, `--ca-surface`, `--ca-stroke`, `--ca-focus`, `--ca-font`, each
@@ -414,14 +389,12 @@ const timeline = new Timeline(bar, {
 | `stops` | `defaultStops(present)` | `[year, t][]`, both strictly increasing; extended with the outer slopes when `[min, max]` is wider. |
 | `present` | `max(2026, max)` | Last default stop. |
 | `frames` | none | `manifest.frames`: density strip and previous/next-change buttons (hidden without frames). |
-| `eras` | `DEFAULT_ERAS` | `{ from?, to?, label, short?, title? }[]`, or `false` to hide the band (defaults: the six AP World History periods). |
+| `eras` | `DEFAULT_ERAS` | `TimelineEra[]` (`timeline/eras.ts`), or `false` to hide the band (defaults: the six AP World History periods). |
 | `highlight` | `null` | A span or an array of spans (inclusive), drawn as brass bands. |
-| `labels` | `DEFAULT_TIMELINE_LABELS` | Partial UI strings, plus `formatYear` (visible) and `spokenYear` (`aria-valuetext`). |
 | `speed`, `speeds` | `1`, `[0.5, 1, 2, 4]` | Clamped to 0.25–4 (the reference site: `[0.25, 0.5, 1, 2]`). |
 | `sweepSeconds` | `120` | A full sweep of the track at 1×. |
-| `layout` | `'stacked'` | `'bar'`: one row of separate controls (transport, year, a thick track with its tick lines inside, speed menu) on a transparent root, the track on a row of its own in compact containers; no density strip, tick labels or era band (`eras` is ignored). See **Bar layout** below. |
+| `layout` | `'stacked'` | `'bar'`: one row of separate controls (transport, year, a thick track with its tick lines inside, speed menu) on a transparent root, the track on a row of its own in compact containers; no density strip, tick years or era band (`eras` is ignored). See **Bar layout** below. |
 | `step` | `'adaptive'` | Step of the back/forward buttons: a whole number of years (e.g. `1`), or `'adaptive'`. Page Up/Page Down stay adaptive. Invalid values fall back to adaptive. |
-| `yearField` | `'input'` | `'input'`: the typed-year field; `'label'`: the year as text only (`aria-hidden`; the slider carries the value). |
 | `changeButtons` | `true` | `false` leaves out the previous/next-change buttons (`[` and `]` still jump). |
 | `onInput(y)`, `onChange(y)`, `onPlayChange(playing)` | | `onInput` on every user change; `onChange` once per commit: pointer release, each key press (auto-repeat commits on keyup), a button click, an applied typed year, playback pausing or reaching the end. |
 
@@ -445,7 +418,7 @@ property `element` (the root).
   never returns 0, `toYear(toT(y)) === y`, clamped outside the stops; `DEFAULT_STOPS`
   (present 2026), `defaultStops(present)`.
 - **Behaviour:** adaptive step ≈ 1 % of the visible t span in the direction of travel,
-  rounded to 1/5/10/20/50/100/200 years; tick labels by priority (millennia, 1 CE, the
+  rounded to 1/5/10/20/50/100/200 years; tick years by priority (millennia, 1 CE, the
   stops, fill-ins), ≥ 56 px apart centre to centre and 6 px edge to edge, re-laid out on
   resize; density strip = changes per year within ±12 px against the track's 95th
   percentile; playback at constant track speed (reduced motion: 0.5 s steps; frame time
@@ -460,7 +433,7 @@ property `element` (the root).
   `--ca-control-border`, `--ca-control-text`, `--ca-control-text-hover`,
   `--ca-control-shadow` and `--ca-control-blur` (a host that draws its own buttons from
   the same properties gets identical controls; the site does). The track is as tall as
-  the buttons: tick lines centred inside it (majors placed as if labelled, minors ≥ 9 px
+  the buttons: tick lines centred inside it (majors placed as if numbered, minors ≥ 9 px
   apart), the lifespan band and a brass bar thumb; the hover bubble floats above. A
   fixed step hides the step number (it is in the buttons' names and titles; titles hint
   ←/→ for a one-year step). Compact containers (< 640 px): two rows, the track first;
@@ -483,21 +456,21 @@ property `element` (the root).
   serves `demo.html` on a free port (Vite prints the URL; `packages/borders/data` when
   built, embedded frames otherwise; `window.demoTimeline`); `demo.html?layout=bar` shows
   two bars with the site's options and `--ca-control-*` tokens (typed year, and year
-  label). `node packages/globe/src/timeline/demo.screenshot.mjs` writes 20 PNGs to
+  as text). `node packages/globe/src/timeline/demo.screenshot.mjs` writes 20 PNGs to
   `.cache/screenshots/timeline-*.png` (desktop, 2×, light, forced colours, phones at
   390/360/320 px, the bar at desktop/390/320 px) and fails on layout problems at 13
-  widths (320–2560 px: label spacing, overflow, controls on one row, year field narrower
+  widths (320–2560 px: tick spacing, overflow, controls on one row, year field narrower
   than "3400 BCE"; for the bars: one row ≥ 640 px and two below, equal control heights,
   the year fits "3400 BCE" without moving the track, the speed menu visible, the
   typed-year error on screen), console errors or third-party requests. The bar's DOM
-  (and Tab) order is transport, year, track, speed; its year label is at least 7em.
+  (and Tab) order is transport, year, track, speed; its year text is at least 7em.
 
 ### 6.2 `<chrono-globe>`
 
 `defineChronoGlobeElement(tagName = 'chrono-globe', defaults?)` registers the
 element (no-op if already defined). Attributes: `manifest-url` (required),
-`year`, `center="lon,lat"`, `scale`, `labels="false"`, `font-family`,
-`selected`. Live attributes: `year`, `selected`, `labels`. Property:
+`year`, `center="lon,lat"`, `scale`, `selected`. Live attributes: `year`,
+`selected`. Property:
 `el.globe` (the `ChronoGlobe`), `el.year`. Bubbling `CustomEvent`s with the
 callback argument as `detail`: `ca-ready`, `ca-yearapplied`, `ca-hover`,
 `ca-select`, `ca-viewchange`, `ca-interactionend`, `ca-loading`, `ca-failure`.
@@ -510,12 +483,12 @@ Connect creates the globe, disconnect destroys it.
 `wrapLon`; `blendPalette`, `hoverPalette`, `overlayLinePalette`,
 `slotColorExpression`; `DEFAULT_THEME`, `resolveTheme`, `readCssTheme`,
 `cssVarName`; `buildBaseStyle`, `borderLayerSpecs`, `borderSources`,
-`borderIds`, `layerOrder`, `skySpec`, `fontStack`, `externalUrls` (lists every
+`borderIds`, `layerOrder`, `skySpec`, `externalUrls` (lists every
 string in a style that would leave the origin); `splitParts` (one Polygon feature
 per part with the same `id` and properties; use it before putting `bordersAt()`
 output into your own MapLibre source, §4.1); `FrameScheduler`, `sameFrame`;
 `hatchImage`; colour utilities (`parseColor`, `blendOver`, `mix`,
-`contrastRatio`, `normalizeColor`); `formatSpan`, `hoverLabel`, `pickOrder`.
+`contrastRatio`, `normalizeColor`); `formatSpan`, `pickOrder`.
 
 ## 7. Performance
 
@@ -598,7 +571,7 @@ Copy to the static host: `node_modules/maplibre-gl/dist/` → `/vendor/maplibre-
   import { ChronoGlobe } from '@alexs-atlas/globe';
   const globe = new ChronoGlobe(
     document.getElementById('globe'),
-    { data: { manifestUrl: '/data/alexs-atlas/manifest.json' }, year: 1453, fontFamily: 'system-ui, sans-serif' },
+    { data: { manifestUrl: '/data/alexs-atlas/manifest.json' }, year: 1453 },
     { onYearApplied: (y) => console.log('showing', y) },
   );
 </script>
@@ -620,7 +593,6 @@ import { ChronoGlobe } from '@alexs-atlas/globe';
 const globe = new ChronoGlobe(document.getElementById('globe')!, {
   data: { manifestUrl: '/data/alexs-atlas/manifest.json' },
   year: 1453,
-  fontFamily: 'Inter Variable',
   workerUrl,
 });
 ```
@@ -699,7 +671,7 @@ import { ChronoGlobeView } from '../components/ChronoGlobeView';
 <div style="height: 80vh">
   <!-- Props must be serialisable: no functions. Put callbacks in a React wrapper island. -->
   <ChronoGlobeView client:only="react" year={1453}
-    options={{ data: { manifestUrl: '/data/alexs-atlas/manifest.json' }, fontFamily: 'Inter Variable' }} />
+    options={{ data: { manifestUrl: '/data/alexs-atlas/manifest.json' } }} />
 </div>
 ```
 
@@ -712,14 +684,14 @@ Without a UI framework, a processed `<script>` registers the element:
   import '@alexs-atlas/globe/style.css';
   import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
   import { defineChronoGlobeElement } from '@alexs-atlas/globe';
-  defineChronoGlobeElement('chrono-globe', { workerUrl, fontFamily: 'Inter Variable' });
+  defineChronoGlobeElement('chrono-globe', { workerUrl });
 </script>
 ```
 
 ### 8.5 Custom element — tested (`examples/element.html`)
 
 ```ts
-defineChronoGlobeElement('chrono-globe', { workerUrl, fontFamily: 'Inter Variable' });
+defineChronoGlobeElement('chrono-globe', { workerUrl });
 const el = document.querySelector('chrono-globe')!;
 el.addEventListener('ca-yearapplied', (e) => console.log((e as CustomEvent<number>).detail));
 el.setAttribute('year', '1500');                      // or el.year = 1500
@@ -736,7 +708,7 @@ import { addBorderLayers } from '@alexs-atlas/globe';
 const map = new Map({ container: 'map', style: hostStyle /* projection globe or mercator */ });
 map.on('load', () => {
   const borders = createBorders({ manifestUrl: '/data/alexs-atlas/manifest.json' });
-  const layers = addBorderLayers(map, { borders, year: 1453, beforeId: 'graticule', prefix: 'chrono-', fontFamily: 'system-ui, sans-serif' });
+  const layers = addBorderLayers(map, { borders, year: 1453, beforeId: 'graticule', prefix: 'chrono-' });
   slider.oninput = () => layers.setYear(Number(slider.value));
 });
 ```
@@ -775,11 +747,10 @@ async function load(year: number) {
 
 **Path B — Gen-2 any-year, keep its own style** — tested as §8.6. Replace the
 third-party vector source and its year filters with
-`addBorderLayers(map, { borders, year, beforeId: 'sea', prefix: 'ca-' })`;
-drop the client-side label layout (labels are precomputed); keep the host's
-year coalescing or rely on the handle's (latest wins); take the first year from
+`addBorderLayers(map, { borders, year, beforeId: 'sea', prefix: 'ca-' })`; keep
+the host's year coalescing or rely on the handle's (latest wins); take the first year from
 `(await borders.ready()).years.from`. The sea layer is optional (polygons are
-coast-clipped). With a host `glyphs` URL set `fontFamily: 'noto-sans'` (§4).
+coast-clipped).
 
 **Path C — adopt `ChronoGlobe`** — replace the dynamic import of the site's
 own controller with `import('@alexs-atlas/globe')` inside the island's effect
@@ -788,12 +759,10 @@ own controller with `import('@alexs-atlas/globe')` inside the island's effect
 | Sibling controller | `@alexs-atlas/globe` |
 | --- | --- |
 | `new GlobeController(el, callbacks, options)` | `new ChronoGlobe(el, options, callbacks)` |
-| `onPolityHover({ name, subjecto, dates, x, y })` | `onHover(info)`: `info.name`, `info.props.subjecto`, `info.label`, `info.point`; `tooltip: false` to keep its own tooltip |
+| `onPolityHover({ name, subjecto, dates, x, y })` | `onHover(info)`: `info.name`, `info.props.subjecto`, `info.point`; `tooltip: false` to keep its own tooltip |
 | `setView(center, scale)` | `setView({ center, scale })` |
 | `flyTo({ lng, lat }, { minScale })` | `setView({ center: [lng, lat], scale: Math.max(minScale, globe.getView().scale) }, { animate: true })` |
-| `fontStack: ['noto-sans']`, `glyphs` | `fontFamily` (local drawing); `glyphs` still accepted |
 | `palette(p, year)` | `palette(p)` (`globe.getYear()` if needed) |
-| `labelMinScale` | not needed: area thresholds per zoom |
 | `onFailure('base-source')` | `onFailure('webgl' \| 'data' \| 'context-lost')` |
 | `fitZoom(el)` | `fitZoom(el.clientWidth, el.clientHeight)` |
 | `whenReady`, `setYear`, `getView`, `zoomBy`, `resetView`, `startSpin`, `stopSpin`, `destroy` | same names |
@@ -821,9 +790,11 @@ also matches all 148 files and none of `/../`, `/./`, `//`, unknown folders):
   (contract layer order, filters, no external URL anywhere in the style JSON),
   frame scheduler (frame-change only, latest wins, stale never drawn, old frame
   kept on failure), `addBorderLayers` against a fake map,
-  view culling (cap distance against a brute-force search, part culling), the star
+  view culling (cap distance against a brute-force search, part culling), the country
+  names (arcs, short forms, letters on the sphere, MapLibre's camera, fades, overlaps,
+  reading direction, `MapNames` against a fake map), the star
   field's projection (sky: east/north orientation, pinhole scale, orbit direction, rim
-  fade), the labels' rim fade, and in the fake-map tests the coast source (re-sent only when the coast
+  fade), and in the fake-map tests the coast source (re-sent only when the coast
   changes), culling and re-culling after a pan, and the whole-world `l0` fallback
   during camera animations.
 - Visual QA (`scripts/screenshots.mjs`): 11 scenes (1914 world/Europe/hover +
@@ -847,15 +818,10 @@ also matches all 148 files and none of `/../`, `/./`, `//`, unknown folders):
 - The dev dataset has no `unclaimed` features before 1946: base land then stays
   under the frame at the frame's LOD, and coarse Cliopatria coasts show thin
   land-coloured slivers until the pipeline's clip-to-land step lands.
-- Labels sit at one point per polity (the pole of inaccessibility of its largest
-  part), so a polity whose label point is near the rim (Qing China or the Russian
-  Empire at the default view, a colonial empire labelled at its largest colony) is
-  dimmed or unlabelled until the globe turns towards it; at close zoom a polity whose
-  label point is off screen shows no name (hover shows it).
 - During a fast pan beyond the culled cap, the newly visible strip shows ocean until
   the pan pauses (≤ 150 ms checks) and the re-culled frame is drawn.
 - A year change re-sends the whole (culled) frame: MapLibre's `updateData` diffs
   would save the unchanged features (most modern frames change < 10 % of their
-  vertices) but need distinct ids for labels and line pieces — not done yet.
+  vertices) but need distinct ids for line pieces — not done yet.
 - Timeline drags redraw at ~8 fps on a GPU and 3–5 fps on SwiftShader with the
   dev dataset; intermediate frames are skipped, never shown out of order.

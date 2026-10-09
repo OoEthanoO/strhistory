@@ -12,7 +12,7 @@ import type { GlobeTheme, PaletteOption, PolityProps } from './types.js';
  * worst pair of all 66 ΔE 7.1 (normal vision); slots 0–5, which a greedy
  * colouring uses most, ΔE ≥ 10.7 normal and ≥ 8.5 under protan/deutan
  * simulation; every fill ΔE ≥ 20 from unclaimed land. Muted on purpose (OKLCH chroma ≈ 0.06–0.095), so identity never
- * relies on colour alone: borders, labels and the hover tooltip carry it.
+ * relies on colour alone: borders and the hover tooltip carry it.
  */
 export const DEFAULT_PALETTE: readonly string[] = Object.freeze([
   '#a87f40', // 0 ochre
