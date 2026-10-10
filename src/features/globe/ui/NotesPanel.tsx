@@ -22,8 +22,8 @@ export interface NotesPanelProps {
   year: number;
   level: 'SL' | 'HL';
   onLevel(level: 'SL' | 'HL'): void;
-  curriculum: '2028' | 'archive';
-  onCurriculum(curriculum: '2028' | 'archive'): void;
+  curriculum: '2028' | 'grade-10' | 'archive';
+  onCurriculum(curriculum: '2028' | 'grade-10' | 'archive'): void;
   showAll: boolean;
   onShowAll(showAll: boolean): void;
   query: string;
@@ -126,17 +126,20 @@ export function NotesPanel(p: NotesPanelProps) {
             />
           </label>
           <div className="notes__controls">
-            <div className="seg" role="group" aria-label="Course level">
-              {(['SL', 'HL'] as const).map((value) => (
-                <button key={value} type="button" className="seg__btn" aria-pressed={p.level === value} onClick={() => p.onLevel(value)}>
-                  {value}
-                </button>
-              ))}
-            </div>
+            {p.curriculum !== 'grade-10' && (
+              <div className="seg" role="group" aria-label="Course level">
+                {(['SL', 'HL'] as const).map((value) => (
+                  <button key={value} type="button" className="seg__btn" aria-pressed={p.level === value} onClick={() => p.onLevel(value)}>
+                    {value}
+                  </button>
+                ))}
+              </div>
+            )}
             <label className="notes__select-wrap">
               <span className="sr-only">Collection</span>
-              <select className="notes__select" value={p.curriculum} onChange={(e) => p.onCurriculum(e.target.value === 'archive' ? 'archive' : '2028')}>
+              <select className="notes__select" value={p.curriculum} onChange={(e) => p.onCurriculum(e.target.value as '2028' | 'grade-10' | 'archive')}>
                 <option value="2028">2028 curriculum</option>
+                <option value="grade-10">Grade 10</option>
                 <option value="archive">Archive</option>
               </select>
             </label>

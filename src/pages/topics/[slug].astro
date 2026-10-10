@@ -26,7 +26,8 @@ const authors = await getEntries(data.authors);
 const snapshot = snapshotYearFor(topic);
 const terms = await Promise.all(termIdsIn(topic.body ?? '').map((id) => getTerm(id)));
 terms.sort((a, b) => a.data.term.localeCompare(b.data.term));
-const collectionQuery = `curriculum=${data.curriculum}&level=${data.level}`;
+const isG10 = data.curriculum === 'grade-10';
+const collectionQuery = isG10 ? `curriculum=grade-10` : `curriculum=${data.curriculum}&level=${data.level ?? 'SL'}`;
 const libraryHref = `/topics?${collectionQuery}`;
 const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`;
 ---
@@ -37,16 +38,26 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
   <header class="topic-hero">
     <div class="container">
       <nav class="crumbs" aria-label="Breadcrumb">
-        <a href={libraryHref} data-course-link data-required-level={data.level}>Notes</a>
+        <a href={libraryHref} data-course-link data-required-level={isG10 ? undefined : data.level}>Notes</a>
         <span aria-hidden="true">/</span>
-        <a href={`${libraryHref}#paper-${unit.data.paper}`} data-course-link data-required-level={data.level}>Paper {unit.data.paper}</a>
+        {isG10 ? (
+          <a href={libraryHref} data-course-link>Grade 10</a>
+        ) : (
+          <a href={`${libraryHref}#paper-${unit.data.paper}`} data-course-link data-required-level={data.level}>Paper {unit.data.paper}</a>
+        )}
         <span aria-hidden="true">/</span>
         <span>{unit.data.title}</span>
       </nav>
       <h1>{data.title}</h1>
       <div class="meta">
-        <Badge tone={`paper-${unit.data.paper}`}>Paper {unit.data.paper}</Badge>
-        <Badge>{data.level === 'HL' ? 'HL only' : 'SL & HL'}</Badge>
+        {isG10 ? (
+          <Badge tone="paper-1">Grade 10</Badge>
+        ) : (
+          <>
+            <Badge tone={`paper-${unit.data.paper}`}>Paper {unit.data.paper}</Badge>
+            {data.level && <Badge>{data.level === 'HL' ? 'HL only' : 'SL & HL'}</Badge>}
+          </>
+        )}
         <span class="meta-item">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
             ><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"
@@ -70,7 +81,7 @@ const globeHref = `/globe?year=${snapshot}&topic=${topic.id}&${collectionQuery}`
       <p class="lede">{data.summary}</p>
       {data.curriculum === 'archive' && <p class="archive-notice">Archived study notes from the earlier syllabus. This topic is outside the department’s selected 2028 course. <a href="/topics?curriculum=2028">Browse the current notes.</a></p>}
       <div class="hero-actions">
-        <a class="btn btn--primary" href={globeHref} data-course-link data-required-level={data.level}>
+        <a class="btn btn--primary" href={globeHref} data-course-link data-required-level={isG10 ? undefined : data.level}>
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
             ><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"></circle><path
               d="M3.5 12h17M12 3.5c2.6 2.3 3.7 5.3 3.7 8.5s-1.1 6.2-3.7 8.5c-2.6-2.3-3.7-5.3-3.7-8.5s1.1-6.2 3.7-8.5Z"

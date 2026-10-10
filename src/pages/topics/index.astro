@@ -36,6 +36,7 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
         <span class="visually-hidden">Notes collection</span>
         <select data-curriculum aria-label="Notes collection">
           <option value="2028">2028 course</option>
+          <option value="grade-10">Grade 10</option>
           <option value="archive">Earlier syllabus archive</option>
         </select>
       </label>
@@ -51,7 +52,7 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
     {papers.map((p) => (
       <details class="paper" id={`paper-${p.paper}`} data-paper={p.paper} hidden={p.paper === 3} open>
         <summary>
-          <h2>Paper {p.paper} – <span data-paper-title data-current-title={p.name}>{p.name}</span></h2>
+          <h2><span data-paper-num>Paper {p.paper}</span> – <span data-paper-title data-current-title={p.name}>{p.name}</span></h2>
           <span class="paper-divider" aria-hidden="true"></span>
           <span class="paper-level">{p.level}</span>
         </summary>
@@ -104,12 +105,17 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
     try { saved = localStorage.getItem('history-level'); } catch { /* Storage is optional. */ }
     level = (params.get('level') ?? saved) === 'HL' ? 'HL' : 'SL';
     for (const radio of levelInputs) radio.checked = radio.value === level;
-    curriculumInput.value = params.get('curriculum') === 'archive' ? 'archive' : '2028';
+    const rawCurr = params.get('curriculum');
+    curriculumInput.value = rawCurr === 'archive' ? 'archive' : rawCurr === 'grade-10' ? 'grade-10' : '2028';
     input.value = params.get('q') ?? '';
   }
 
   function filterNotes(updateUrl = true) {
     const curriculum = curriculumInput.value;
+    const isG10 = curriculum === 'grade-10';
+    const levelFilter = document.querySelector<HTMLElement>('.level-filter');
+    if (levelFilter) levelFilter.hidden = isG10;
+
     const query = normalise(input.value.trim());
     const words = query.split(/\s+/).filter(Boolean);
     let shown = 0;
@@ -117,28 +123,43 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
       const text = normalise(item.dataset.text ?? '');
       const textMatches = words.every((word) => text.includes(word) || (/^-?\d+$/.test(word) && Number(word) >= Number(item.dataset.start) && Number(word) <= Number(item.dataset.end)));
       const unit = item.closest<HTMLElement>('[data-unit]')!;
-      const hit = textMatches && (level === 'HL' || (item.dataset.level === 'SL' && unit.dataset.level === 'SL')) && unit.dataset.curriculum === curriculum;
+      const hit = textMatches && (isG10 || level === 'HL' || (item.dataset.level === 'SL' && unit.dataset.level === 'SL')) && unit.dataset.curriculum === curriculum;
       item.hidden = !hit;
       if (hit) shown++;
     }
     for (const unit of units) {
-      const levelMatches = level === 'HL' || unit.dataset.level === 'SL';
+      const levelMatches = isG10 || level === 'HL' || unit.dataset.level === 'SL';
       const anyTopics = unit.querySelector('[data-topic]');
       unit.hidden = unit.dataset.curriculum !== curriculum || !levelMatches || (anyTopics ? !unit.querySelector('[data-topic]:not([hidden])') : !!query);
     }
     for (const paper of papers) {
       paper.hidden = !paper.querySelector('[data-unit]:not([hidden])');
       const title = paper.querySelector<HTMLElement>('[data-paper-title]')!;
-      title.textContent = curriculum === 'archive' ? 'Earlier syllabus notes' : title.dataset.currentTitle!;
+      const num = paper.querySelector<HTMLElement>('[data-paper-num]');
+      const paperLevel = paper.querySelector<HTMLElement>('.paper-level');
+      if (paperLevel) paperLevel.hidden = isG10;
+      if (isG10) {
+        if (num) num.textContent = 'Grade 10';
+        title.textContent = 'Canadian History';
+      } else if (curriculum === 'archive') {
+        if (num) num.textContent = `Paper ${paper.dataset.paper}`;
+        title.textContent = 'Earlier syllabus notes';
+      } else {
+        if (num) num.textContent = `Paper ${paper.dataset.paper}`;
+        title.textContent = title.dataset.currentTitle!;
+      }
     }
-    const collectionName = curriculum === '2028' ? '2028 course' : 'Earlier syllabus archive';
-    count.textContent = `${shown} ${shown === 1 ? 'note' : 'notes'} · ${collectionName} · ${level}${query ? ` · “${input.value.trim()}”` : ''}`;
+    const collectionName = curriculum === '2028' ? '2028 course' : isG10 ? 'Grade 10 course' : 'Earlier syllabus archive';
+    count.textContent = isG10
+      ? `${shown} ${shown === 1 ? 'note' : 'notes'} · ${collectionName}${query ? ` · “${input.value.trim()}”` : ''}`
+      : `${shown} ${shown === 1 ? 'note' : 'notes'} · ${collectionName} · ${level}${query ? ` · “${input.value.trim()}”` : ''}`;
     none.hidden = shown > 0;
     document.querySelector<HTMLElement>('[data-archive-notice]')!.hidden = curriculum !== 'archive';
-    document.querySelector<HTMLAnchorElement>('[data-globe-link]')!.href = `/globe?level=${level}&curriculum=${curriculum}`;
+    document.querySelector<HTMLAnchorElement>('[data-globe-link]')!.href = isG10 ? `/globe?curriculum=grade-10` : `/globe?level=${level}&curriculum=${curriculum}`;
     if (updateUrl) {
       const url = new URL(window.location.href);
-      url.searchParams.set('level', level);
+      if (isG10) url.searchParams.delete('level');
+      else url.searchParams.set('level', level);
       url.searchParams.set('curriculum', curriculum);
       if (input.value.trim()) url.searchParams.set('q', input.value.trim());
       else url.searchParams.delete('q');

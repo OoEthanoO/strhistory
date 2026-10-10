@@ -5,7 +5,7 @@ const summary = field('summary', 'Summary', 'textarea');
 const order = field('order', 'Display order', 'number');
 const sample = field('placeholder', 'Sample content', 'boolean');
 const draft = field('draft', 'Keep unpublished', 'boolean');
-const curriculum = field('curriculum', 'Collection', 'select', { options: ['2028', 'archive'] });
+const curriculum = field('curriculum', 'Collection', 'select', { options: ['2028', 'grade-10', 'archive'] });
 const refs = (name, label, collection) => field(name, label, 'references', { collection });
 export const collections = {
   topics: { label: 'Study notes', singular: 'Study note', extension: 'mdx', fields: [title, field('shortTitle', 'Short pin label'), summary, field('unit', 'Syllabus unit', 'reference', { collection: 'syllabus' }), curriculum, field('level', 'Course level', 'select', { options: ['SL', 'HL'] }), field('period.start', 'Start year', 'number'), field('period.end', 'End year', 'number'), field('location.place', 'Place'), field('location.lat', 'Latitude', 'number'), field('location.lng', 'Longitude', 'number'), field('keyQuestions', 'Key questions (one per line)', 'lines'), refs('authors', 'Teachers', 'teachers'), refs('related', 'Related notes', 'topics'), field('updated', 'Updated', 'date'), draft], defaults: { title: 'Untitled study note', summary: '', unit: 'p1-political-economic-transitions', curriculum: '2028', level: 'SL', period: { start: 1789, end: 1789 }, location: { place: '', lat: 0, lng: 0 }, keyQuestions: [], authors: [], related: [], draft: true }, body: '## Overview\n\nWrite the context and analysis here.\n\n## Historians’ debate\n\nAttribute interpretations to real works.\n\n## Test yourself\n\n<Recall q="What changed, and why?">Add the answer.</Recall>\n' },

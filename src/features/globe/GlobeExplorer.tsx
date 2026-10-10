@@ -25,7 +25,7 @@ import type { GlobeController } from './map';
 import { fillColor } from './map-colors';
 import PrebakedGlobe, { BAKED_FRAME, type GlobeView } from './PrebakedGlobe';
 import type { GlobeData, GlobeTopic } from './types';
-import { HistoryWriter, parseGlobeUrl, type GlobeUrlState } from './url';
+import { HistoryWriter, parseGlobeUrl, type GlobeCurriculum, type GlobeUrlState } from './url';
 import { AboutContent } from './ui/AboutContent';
 import { Announcer, type AnnouncerHandle } from './ui/Announcer';
 import { Dialog, type DialogHandle } from './ui/Dialog';
@@ -133,7 +133,7 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
   const [rows, setRows] = useState<ListRow[]>([]);
   const [selectedPid, setSelectedPid] = useState<string | null>(null);
   const [level, setLevel] = useState<'SL' | 'HL'>('SL');
-  const [curriculum, setCurriculum] = useState<'2028' | 'archive'>('2028');
+  const [curriculum, setCurriculum] = useState<GlobeCurriculum>('2028');
   const [showAll, setShowAll] = useState(false);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<GlobeTopic | null>(null);
@@ -157,7 +157,12 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
   const bakedBorders = year >= BAKED_FRAME[0] && year <= BAKED_FRAME[1];
   const snapshot = snapshots[indexOfYear(snapshots, year)];
   const inCourse = useMemo(
-    () => topics.filter((topic) => topic.curriculum === curriculum && (level === 'HL' || topic.level !== 'HL')),
+    () =>
+      topics.filter(
+        (topic) =>
+          topic.curriculum === curriculum &&
+          (curriculum === 'grade-10' || level === 'HL' || topic.level !== 'HL'),
+      ),
     [topics, level, curriculum],
   );
   const filtered = useMemo(() => {
@@ -430,7 +435,7 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
     }
     return {
       year: s.year,
-      level: s.level,
+      level: s.curriculum === 'grade-10' ? undefined : s.level,
       curriculum: s.curriculum,
       topic: s.selected?.slug,
       polity: s.selectedPid ?? undefined,
@@ -451,7 +456,7 @@ export default function GlobeExplorer({ topics, snapshots, currentYear }: GlobeD
       /* storage may be disabled */
     }
     setLevel(s.level ?? (topic?.level === 'HL' || (initial && stored === 'HL') ? 'HL' : initial ? 'SL' : latest.current.level));
-    setCurriculum(s.curriculum ?? (topic?.curriculum === 'archive' ? 'archive' : '2028'));
+    setCurriculum(s.curriculum ?? topic?.curriculum ?? '2028');
     setShowAll(s.all === true);
     setQuery(s.q ?? '');
     setSelected(topic);

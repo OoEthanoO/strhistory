@@ -62,7 +62,10 @@ for (const file of files) {
       problems.push(`${rel}: location needs a named place, latitude -90 to 90 and longitude -180 to 180`);
     }
     if (data.curriculum === '2028' && !['SL', 'HL'].includes(data.level)) {
-      problems.push(`${rel}: current course notes must explicitly declare level: SL or HL`);
+      problems.push(`${rel}: 2028 course notes must explicitly declare level: SL or HL`);
+    }
+    if (data.curriculum === 'grade-10' && data.level) {
+      problems.push(`${rel}: grade-10 notes must not specify a level (grade 10 has no SL or HL)`);
     }
   }
   if (/\/(topics|guides)\//.test(rel)) {
