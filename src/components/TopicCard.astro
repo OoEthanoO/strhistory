@@ -17,7 +17,11 @@ const paper = unit?.data.paper ?? 2;
 
 <a class="topic-card" href={`/topics/${topic.id}`}>
   <div class="top">
-    <Badge tone={`paper-${paper}`}>Paper {paper}</Badge>
+    {topic.data.curriculum === 'grade-10' ? (
+      <Badge tone="paper-1">Grade 10</Badge>
+    ) : (
+      <Badge tone={`paper-${paper}`}>Paper {paper}</Badge>
+    )}
     <span class="years">{formatYearRange(topic.data.period.start, topic.data.period.end)}</span>
   </div>
   <Heading class="title">{topic.data.title}</Heading>

@@ -73,9 +73,9 @@ export function NotesPanel(p: NotesPanelProps) {
   }, [p.open]);
 
   const pins = p.visible.size;
-  const count = `${plural(pins, 'pin', 'pins')} ${p.showAll ? 'from all years' : `in ${formatYear(p.year)}`} · ${plural(p.topics.length, 'note', 'notes')}${p.level === 'HL' ? ' · HL includes SL' : ''}`;
+  const count = `${plural(pins, 'pin', 'pins')} ${p.showAll ? 'from all years' : `in ${formatYear(p.year)}`} · ${plural(p.topics.length, 'note', 'notes')}${p.curriculum !== 'grade-10' && p.level === 'HL' ? ' · HL includes SL' : ''}`;
   // Announced when the filters or the search change the notes, not with every year of playback.
-  const notesStatus = `${plural(p.topics.length, 'note', 'notes')}${p.level === 'HL' ? ', HL includes SL' : ''}`;
+  const notesStatus = `${plural(p.topics.length, 'note', 'notes')}${p.curriculum !== 'grade-10' && p.level === 'HL' ? ', HL includes SL' : ''}`;
 
   return (
     <div className="hud__item notes" ref={root}>
@@ -160,9 +160,11 @@ export function NotesPanel(p: NotesPanelProps) {
                     data-selected={p.selected === topic.slug || undefined}
                     data-outside={!onGlobe || undefined}
                   >
-                    <span className="paper-badge" data-paper={topic.paper} title={`Paper ${topic.paper}`}>
-                      P{topic.paper}
-                    </span>
+                    {topic.curriculum !== 'grade-10' && (
+                      <span className="paper-badge" data-paper={topic.paper} title={`Paper ${topic.paper}`}>
+                        P{topic.paper}
+                      </span>
+                    )}
                     <div className="note-row__text">
                       <a
                         className="note-row__title"
@@ -179,7 +181,7 @@ export function NotesPanel(p: NotesPanelProps) {
                       </span>
                       <span className="note-row__status">
                         {onGlobe ? 'On the globe' : `Pin in ${formatRange(topic.start, topic.end)}`}
-                        {topic.level === 'HL' ? ' · HL' : ''}
+                        {p.curriculum !== 'grade-10' && topic.level === 'HL' ? ' · HL' : ''}
                       </span>
                     </div>
                     <IconButton
@@ -204,7 +206,7 @@ export function NotesPanel(p: NotesPanelProps) {
           )}
         </div>
         <footer className="notes__foot">
-          <a href={`/topics?level=${p.level}&curriculum=${p.curriculum}`}>
+          <a href={p.curriculum === 'grade-10' ? '/topics?curriculum=grade-10' : `/topics?level=${p.level}&curriculum=${p.curriculum}`}>
             Open the notes library <Icon name="arrowRight" />
           </a>
         </footer>

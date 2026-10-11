@@ -106,7 +106,7 @@ export function AboutContent({ manifest: m, dataBase, onShortcuts }: AboutConten
           </li>
           <li>
             <strong>Papers. </strong>
-            The P1, P2 and P3 badges name the exam paper a note belongs to.
+            For IB Diploma notes, the P1, P2 and P3 badges name the exam paper a note belongs to. Grade 10 notes do not have papers.
           </li>
           <li>
             <strong>Study notes. </strong>

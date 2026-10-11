@@ -52,7 +52,7 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
     {papers.map((p) => (
       <details class="paper" id={`paper-${p.paper}`} data-paper={p.paper} hidden={p.paper === 3} open>
         <summary>
-          <h2><span data-paper-num>Paper {p.paper}</span> – <span data-paper-title data-current-title={p.name}>{p.name}</span></h2>
+          <h2><span data-paper-prefix><span data-paper-num>Paper {p.paper}</span> – </span><span data-paper-title data-current-title={p.name}>{p.name}</span></h2>
           <span class="paper-divider" aria-hidden="true"></span>
           <span class="paper-level">{p.level}</span>
         </summary>
@@ -135,17 +135,17 @@ const initialCount = topics.filter((t) => t.data.curriculum === '2028' && t.data
     for (const paper of papers) {
       paper.hidden = !paper.querySelector('[data-unit]:not([hidden])');
       const title = paper.querySelector<HTMLElement>('[data-paper-title]')!;
-      const num = paper.querySelector<HTMLElement>('[data-paper-num]');
+      const prefix = paper.querySelector<HTMLElement>('[data-paper-prefix]');
+      const divider = paper.querySelector<HTMLElement>('.paper-divider');
       const paperLevel = paper.querySelector<HTMLElement>('.paper-level');
       if (paperLevel) paperLevel.hidden = isG10;
+      if (divider) divider.hidden = isG10;
+      if (prefix) prefix.hidden = isG10;
       if (isG10) {
-        if (num) num.textContent = 'Grade 10';
-        title.textContent = 'Canadian History';
+        title.textContent = 'Grade 10 Canadian History';
       } else if (curriculum === 'archive') {
-        if (num) num.textContent = `Paper ${paper.dataset.paper}`;
         title.textContent = 'Earlier syllabus notes';
       } else {
-        if (num) num.textContent = `Paper ${paper.dataset.paper}`;
         title.textContent = title.dataset.currentTitle!;
       }
     }
