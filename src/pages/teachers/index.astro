@@ -10,9 +10,13 @@ const teachers = await getTeachers();
 <BaseLayout title="Teachers" description="Meet the teachers of the history department.">
   <PageHeader title="Teachers" />
   <div class="container list">
-    <div class="grid" style="--min: 260px">
-      {teachers.map((t) => <TeacherCard teacher={t} />)}
-    </div>
+    {teachers.length > 0 ? (
+      <div class="grid" style="--min: 260px">
+        {teachers.map((t) => <TeacherCard teacher={t} />)}
+      </div>
+    ) : (
+      <p class="muted">Teacher profiles have not been added yet.</p>
+    )}
   </div>
 </BaseLayout>
 
