@@ -1,0 +1,60 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { events } from '@/features/games/events';
+import { craftItems, craftRecipes } from '@/features/games/craft-data';
+const preview = events.find(event => event.id.includes('bastille')) ?? events[0];
+---
+<BaseLayout title="History games" description="Find the place, connect the dates, and craft your way through history. Three interactive games grounded in real events.">
+  <div class="container games-hub">
+    <header class="games-heading"><p class="eyebrow">The history playground</p><h1>Make a little history.</h1><p>Follow a clue. Place a moment. See what connects.<br />Three ways to think with the past.</p></header>
+    <div class="games-grid">
+      <a class="game-card where-card" href="/games/where-and-when">
+        <div class="card-art image-art"><img src={preview.image.src} alt="" width="1280" height="800" /><div class="image-crosshair" aria-hidden="true"><span></span></div><span class="art-label">A place. A day. A story.</span></div>
+        <div class="card-copy"><p class="card-number">01 / Observation</p><h2>Where & When <span aria-hidden="true">↗</span></h2><p>A photograph or painting. A map and a calendar. How close can you get to the moment it depicts?</p><div class="card-meta"><span>{events.length} historical images</span><span>Course & unit decks</span></div></div>
+      </a>
+      <a class="game-card timeline-card" href="/games/timeline"><div class="card-art timeline-art" aria-hidden="true"><div class="time-thread"></div><span class="time-stamp">1789</span><span class="time-question">?</span><span class="time-stamp">1871</span></div><div class="card-copy"><p class="card-number">02 / Perspective</p><h2>Timeline <span aria-hidden="true">↗</span></h2><p>What came first? Fit each new event between the others and watch the bigger picture take shape.</p><div class="card-meta"><span>Up to 8 placements</span><span>No timer</span></div></div></a>
+      <a class="game-card craft-card" href="/games/history-craft"><div class="card-art craft-art" aria-hidden="true"><div class="craft-preview"><span>People</span><b>+</b><span>Ideas</span></div><div class="craft-preview-output">✧ A new connection</div></div><div class="card-copy"><p class="card-number">03 / Discovery</p><h2>History Craft <span aria-hidden="true">↗</span></h2><p>Combine ideas, people and places to uncover historical figures, events and surprising connections.</p><div class="card-meta"><span>{craftItems.length} discoveries</span><span>{craftRecipes.length} combinations</span></div></div></a>
+    </div>
+    <div class="games-footnote"><div><h2>Curiosity, backed by sources.</h2><p>Image rounds cover the four current IB History units. Choose SL, HL or an individual unit; other courses can use the collection for broad source practice. Every reveal includes the event’s context and image credit.</p></div><div><h2>A collection that stays yours.</h2><p>Crafting discoveries and your best five-round map score save in this browser. No leaderboard, account or timer. Games use the same department access as the notes.</p></div></div>
+    <p class="games-inspiration">Inspired by the curiosity of <a href="https://www.geoguessr.com/">GeoGuessr</a> and <a href="https://neal.fun/">Neal.fun</a>. These are original STR History games, with a curated collection of historical material.</p>
+  </div>
+</BaseLayout>
+<style>
+  .games-hub { padding-block: clamp(40px, 6vw, 72px); }
+  .games-heading { margin-bottom: 40px; max-width: 760px; }
+  .games-heading h1 { font-size: clamp(2.5rem, 5.5vw, 4.7rem); line-height: 1.05; letter-spacing: -.055em; margin-bottom: 20px; }
+  .games-heading > p:last-child { color: var(--ink-2); font-size: var(--step-1); line-height: 1.7; }
+  .games-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+  .game-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid var(--rule); border-radius: var(--radius-l); color: var(--ink); text-decoration: none; background: var(--card); box-shadow: var(--shadow-s); transition: transform .2s var(--ease), box-shadow .2s; }
+  .game-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); color: var(--ink); }
+  .where-card { grid-row: span 2; }
+  .card-art { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 24px; min-height: 150px; }
+  .image-art { min-height: 380px; flex: 1; padding: 0; background: var(--night); }
+  .image-art img { width: 100%; height: 100%; position: absolute; object-fit: cover; filter: saturate(.65); }
+  .image-crosshair { position: absolute; width: 78px; height: 78px; border: 1px solid var(--night-ink); border-radius: 50%; box-shadow: 0 0 0 12px color-mix(in srgb, var(--night-ink) 12%, transparent); }
+  .image-crosshair::before, .image-crosshair::after { content: ''; position: absolute; background: var(--night-ink); }
+  .image-crosshair::before { width: 104px; height: 1px; left: -14px; top: 38px; }
+  .image-crosshair::after { width: 1px; height: 104px; top: -14px; left: 38px; }
+  .art-label { position: absolute; bottom: 20px; left: 20px; padding: 8px 12px; background: var(--night); color: var(--night-ink); border-radius: var(--radius-s); font-size: 12px; letter-spacing: .06em; }
+  .card-copy { padding: 26px 28px; }
+  .card-number { text-transform: uppercase; font-size: 11px; letter-spacing: .12em; color: var(--ink-2); margin: 0 0 14px; font-weight: 600; }
+  .card-copy h2 { font-size: var(--step-3); display: flex; justify-content: space-between; gap: 16px; }
+  .card-copy h2 span { font-weight: 400; color: var(--accent); }
+  .card-copy > p:not(.card-number) { color: var(--ink-2); max-width: 44ch; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; font-size: 11px; }
+  .card-meta span { padding: 5px 9px; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); }
+  .timeline-art { background: var(--c-exam-soft); gap: 25px; }
+  .time-thread { position: absolute; left: 15%; right: 15%; height: 1px; background: var(--c-exam); opacity: .4; }
+  .time-stamp, .time-question { z-index: 1; font-family: var(--font-serif); font-size: 1.8rem; padding: 14px 18px; background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-s); box-shadow: var(--shadow-s); transform: rotate(-6deg); }
+  .time-question { font-size: 2rem; background: var(--c-exam); color: var(--paper); transform: rotate(7deg); }
+  .time-stamp:last-child { transform: rotate(4deg); }
+  .craft-art { background: var(--c-historiography-soft); flex-direction: column; gap: 12px; }
+  .craft-preview { display: flex; gap: 14px; align-items: center; }
+  .craft-preview span { padding: 10px 18px; border-radius: var(--radius-s); background: var(--card); border: 1px solid var(--rule); transform: rotate(-4deg); font-weight: 500; box-shadow: var(--shadow-s); }
+  .craft-preview span:last-child { transform: rotate(5deg); }
+  .craft-preview-output { font-size: 13px; color: var(--c-historiography); }
+  .games-footnote { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--rule); }
+  .games-footnote h2 { font-size: var(--step-1); }.games-footnote p, .games-inspiration { color: var(--ink-2); font-size: var(--step--1); }.games-inspiration { margin-top: 24px; }
+  @media(max-width: 760px) { .games-grid, .games-footnote { grid-template-columns: 1fr; } .where-card { grid-row: auto; }.image-art { min-height: 290px; }.games-footnote { gap: 20px; }.card-copy { padding: 24px; }.card-art { min-height: 150px; }.image-art { min-height: 290px; } }
+  @media(prefers-reduced-motion: reduce) { .game-card { transition: none; }.game-card:hover { transform: none; } }
+</style>

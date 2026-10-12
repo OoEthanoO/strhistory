@@ -15,7 +15,7 @@ preserving paths and query strings. See §10 for DNS and migration requirements.
 
 ## 1. Purpose
 
-A website for a high-school history department with four connected jobs:
+A website for a high-school history department with five connected jobs:
 
 1. **An interactive, timeline-based globe with individual history notes.** The
    home page places the live globe on the left and smaller event previews on
@@ -39,6 +39,10 @@ A website for a high-school history department with four connected jobs:
    and the regional studies.
 4. **The department's home online**: courses, teacher profiles, news, study
    guides (exam papers, IA, extended essay), and an about page.
+5. **History games** at `/games`: Where & When (identify an event's date and
+   place from an image), Timeline (place events in chronological order), and
+   History Craft (discover connections by combining concepts and people).
+   All three require the department code, just like the notes.
 
 Audience: IB Diploma History students (SL and HL, grades 11–12), pre-IB
 students, parents, and the department's teachers, who add and edit content.
@@ -193,6 +197,10 @@ src/
       index.ts               the map of components exposed to MDX
     admin/                 ← FEATURE: teacher editor (React island, scoped CSS)
       Editor.tsx             collection browser, structured fields, text, preview and publish
+    games/                 ← FEATURE: image/date/map, timeline and crafting games
+      events.ts              sourced event dates, sites and reusable image credits
+      craft-data.ts          finite curated recipe graph; sources and explanations
+      logic.ts               scoring, date validation, filtering, hints and saved-item validation
   components/              ← shared UI: Header, Footer, cards, Badge, Avatar, HeroGlobe…
   layouts/BaseLayout.astro ← the HTML shell (head, fonts, theme, header/footer)
   pages/                   ← thin route files; they query content and compose components
@@ -467,7 +475,8 @@ screen replaces the globe. WebGL failures leave the SVG usable.
 
 **Personality:** a modern archive — warm paper, ink, oxblood and brass in the
 department pages; a dark "planetarium" for the globe. Calm, editorial, serious
-about sources, never gamified beyond the key-term progress bar.
+about sources. Optional play belongs in the games; study notes retain their
+calm reading experience.
 
 - **Tokens only.** Colours, fonts, radii and shadows come from
   `src/styles/tokens.css` (`--paper`, `--ink`, `--accent`, `--brass`,
@@ -491,6 +500,22 @@ about sources, never gamified beyond the key-term progress bar.
   contrast in both themes.
 - **Performance:** pages ship no JS unless they need it; MapLibre loads lazily on
   the home page and `/globe`. The notes directory uses a small search/filter script.
+
+### Games
+
+- Game pages are static Astro routes with React islands in `src/features/games/`.
+  Keep styles scoped to `.history-game`; use existing tokens in both themes.
+- Images live in `public/games/images/`; `SOURCES.md` records source pages,
+  licences and later depictions. Never substitute generated images for evidence.
+  Record the depicted event's Gregorian date separately from the artwork date.
+- Image decks follow each course's `units`; a course without selected units uses
+  the broad source-practice collection and says so. This is not syllabus coverage.
+- The pin map uses local Natural Earth/world-atlas coastlines, with a 10 km
+  full-credit radius. Date scoring requires the exact day for full credit.
+- Craft recipes are curated associations, not causal equations. Historical
+  connections need context and a source. Keep all items reachable from starters.
+- Progress is local to the browser and must work without localStorage. Run
+  `node --test src/features/games/logic.test.ts` for game changes (also in CI).
 
 ---
 

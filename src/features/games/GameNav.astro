@@ -1,0 +1,19 @@
+---
+const path = Astro.url.pathname.replace(/\/$/, '');
+const links = [
+  { href: '/games', label: 'All games' },
+  { href: '/games/where-and-when', label: 'Where & When' },
+  { href: '/games/timeline', label: 'Timeline' },
+  { href: '/games/history-craft', label: 'History Craft' },
+];
+---
+<nav class="game-nav" aria-label="History games">
+  {links.map(link => <a href={link.href} aria-current={path === link.href ? 'page' : undefined}>{link.label}</a>)}
+</nav>
+<style>
+  .game-nav { display: flex; gap: 8px; flex-wrap: wrap; padding-block: 24px; border-bottom: 1px solid var(--rule); margin-bottom: 36px; }
+  a { color: var(--ink-2); font-size: var(--step--1); padding: 8px 14px; border-radius: 999px; text-decoration: none; }
+  a:hover { background: var(--paper-2); }
+  a[aria-current='page'] { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+  @media(max-width: 500px) { .game-nav { gap: 2px; margin-bottom: 24px; padding-block: 16px; } a { padding: 8px 10px; } }
+</style>
