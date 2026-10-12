@@ -38,6 +38,7 @@ const teachers = (await getTeachers()).filter((t) => t.data.courses.some((c) => 
   <div class="container layout">
     <article class="prose">
       <Content />
+      <p><a href={`/games/where-and-when?course=${course.id}`}>Practise dates and places with this course’s history games →</a></p>
     </article>
 
     <aside class="side">

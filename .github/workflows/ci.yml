@@ -41,6 +41,9 @@ jobs:
       - name: Timeline and note pin behaviour
         run: node --test src/features/globe/era.test.ts src/features/globe/pin-layout.test.ts src/features/globe/url.test.ts
 
+      - name: History games, image decks and crafting graph
+        run: node --test src/features/games/logic.test.ts
+
       - name: Small-country border fidelity
         run: node --test scripts/data/geometry.test.mjs
 
