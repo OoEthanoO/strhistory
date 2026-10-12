@@ -56,10 +56,10 @@ const papers = [
       <div class="section-head"><h2>Courses</h2><a class="more" href="/courses">All courses →</a></div>
       <ul class="course-list">{courses.map(c => <li><a href={`/courses/${c.id}`}><span>{c.data.title}</span><span>{c.data.level} · {c.data.grades}{c.data.placeholder ? ' · Sample' : ''}</span></a></li>)}</ul>
     </div>
-    <div>
+    {teachers.length > 0 && <div>
       <div class="section-head"><h2>Teachers</h2><a class="more" href="/teachers">All teachers →</a></div>
       <div class="grid" style="--min: 260px">{teachers.map(t => <TeacherCard teacher={t} compact />)}</div>
-    </div>
+    </div>}
   </section>
 
   {news.length > 0 && <section class="section container"><div class="section-head"><h2>News</h2><a class="more" href="/news">All news →</a></div><div class="grid" style="--min: 300px">{news.map(n => <NewsCard post={n} />)}</div></section>}
@@ -98,6 +98,7 @@ const papers = [
   .paper .more { margin-top: auto; color: var(--tint); }
   .source { color: var(--ink-3); font-size: 13px; margin: 16px 0 0; }
   .dept { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; padding-top: 0; }
+  .dept > :only-child { grid-column: 1 / -1; }
   .dept .section-head h2 { font-size: var(--step-2); }
   .course-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .course-list a { display: flex; flex-direction: column; padding: 14px 18px; border-radius: var(--radius); box-shadow: var(--shadow-s); color: var(--ink); text-decoration: none; }
