@@ -4,8 +4,8 @@
 //          &lng=<lon>&lat=<lat>&scale=<scale>
 //
 //  - year        historical year, never 0 (typed forms such as "500 BC" are accepted on input)
-//  - level       'SL' | 'HL' (HL includes the SL core)
-//  - curriculum  '2028' | 'archive'
+//  - level       'SL' | 'HL' (HL includes the SL core); never with Grade 10, which has no levels
+//  - curriculum  '2028' | 'grade-10' | 'archive' ('g10' is accepted on input)
 //  - topic       the selected history note (a topic slug)
 //  - polity      the selected polity (`clio:…`, `ne:…`, `ovr:…`)
 //  - all         '1' shows pins from all years

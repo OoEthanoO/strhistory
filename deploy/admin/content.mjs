@@ -12,7 +12,7 @@ export function contentPath(collection, slug) {
 export const components = {
   Term: ['id'], Q: ['by', 'date', 'source', 'note'],
   KeyQuote: ['by', 'role', 'date', 'source', 'analysis'], Callout: ['type', 'title'],
-  Perspective: ['historian', 'work', 'year', 'school'], Chronology: ['title'], Event: ['date'], Recall: ['q'],
+  Perspective: ['historian', 'work', 'year', 'school'], Chronology: ['title'], Event: ['date'], Recall: ['q'], Figure: ['src', 'alt'],
   br: [], em: [], strong: [], sub: [], sup: [], p: [], ul: [], ol: [], li: [], blockquote: [], a: ['href', 'title'],
 };
 const escape = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -57,7 +57,10 @@ export async function createContentTools(repo) {
         for (const attr of node.attributes ?? []) {
           if (attr.type !== 'mdxJsxAttribute' || !components[node.name].includes(attr.name) || typeof attr.value !== 'string') throw new Error(`Use quoted text attributes on ${node.name}.`);
           if (attr.name === 'href') safeUrl(attr.value);
+          if (attr.name === 'src') safeUrl(attr.value, true);
         }
+        const has = (name) => node.attributes.some((attr) => attr.name === name && attr.value.trim());
+        if (node.name === 'Figure' && !(has('src') && has('alt'))) throw new Error('Give each Figure an image src and alt text that describes the image.');
       }
       if (node.url != null) safeUrl(node.url, node.type === 'image');
       if (node.type === 'imageReference') throw new Error('Use an inline image with a /public image URL.');
@@ -108,6 +111,7 @@ export async function createContentTools(repo) {
           if (n.name === 'Callout') return `<aside><strong>${escape(a.title || a.type)}</strong>${children()}</aside>`;
           if (n.name === 'Chronology') return `<section><h3>${escape(a.title || 'Chronology')}</h3>${children()}</section>`;
           if (n.name === 'Event') return `<div><strong>${escape(a.date)}</strong> ${children()}</div>`;
+          if (n.name === 'Figure') return `<figure><p>[Image: ${escape(a.alt)}]</p><figcaption>${children()}</figcaption></figure>`;
           return n.name === 'br' ? '<br />' : tag(n.name);
         }
         default: return children();

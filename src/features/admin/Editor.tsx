@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { collections as definitions } from '../../../deploy/admin/collections.mjs';
 import './admin.css';
-type Field = { name: string; label: string; type: string; options?: string[]; collection?: string };
+type Field = { name: string; label: string; type: string; options?: string[]; blank?: string; collection?: string };
 type Spec = { label: string; singular: string; fields: Field[]; defaults: Record<string, unknown>; body: string };
 const collections = definitions as Record<string, Spec>;
 type Entry = { collection: string; slug: string; fields: Record<string, any>; body: string; revision: string | null; draftVersion: string | null; hasDraft: boolean; savedAt?: string; changedUpstream?: boolean };
@@ -27,6 +27,7 @@ const snippets: Record<string, string> = {
   'Self-test': '\n<Recall q="Your question?">The answer.</Recall>\n',
   Callout: '\n<Callout type="context" title="Context">Add the context.</Callout>\n',
   Historian: '\n<Perspective historian="Historian" work="Published work" year="Year">Their interpretation.</Perspective>\n',
+  Image: '\n<Figure src="/folder/image.jpg" alt="What the image shows">What it is, who made it and when.</Figure>\n',
 };
 export default function Editor() {
   const [entries, setEntries] = useState<Summary[]>([]);
@@ -83,7 +84,9 @@ export default function Editor() {
     const fields = structuredClone(entry.fields); const parts = name.split('.');
     if (parts.length === 2) { fields[parts[0]] ??= {}; fields[parts[0]][parts[1]] = value; }
     else fields[name] = value;
-    if (value === '' && ['shortTitle', 'updated', 'email', 'when', 'quote', 'code'].includes(name)) delete fields[name];
+    if (value === '' && ['shortTitle', 'updated', 'email', 'when', 'quote', 'code', 'level', 'levels'].includes(name)) delete fields[name];
+    // Grade 10 has no SL/HL levels.
+    if (name === 'curriculum' && value === 'grade-10') { delete fields.level; delete fields.levels; }
     setEntry({ ...entry, fields }); setDirty(true); setPreview('');
   };
   const save = async () => { const saved = await api('draft', entry); setEntry(saved); setDirty(false); await reload(); return saved as Entry; };
@@ -97,6 +100,7 @@ export default function Editor() {
       field.type === 'textarea' || field.type === 'lines' ? <textarea id={id} rows={3} value={field.type === 'lines' ? (value ?? []).join('\n') : value ?? ''} onChange={(e) => changeField(field.name, field.type === 'lines' ? e.target.value.split('\n') : e.target.value)} /> :
       field.type === 'select' || field.type === 'reference' || field.type === 'references' ? <><select id={id} multiple={field.type === 'references'} value={value ?? (field.type === 'references' ? [] : '')} onChange={(e) => changeField(field.name, field.type === 'references' ? [...e.target.selectedOptions].map((o) => o.value) : e.target.value)}>
         {field.type === 'reference' && <option value="">Choose a unit</option>}
+        {field.blank && <option value="">{field.blank}</option>}
         {field.options?.map((v) => <option key={v}>{v}</option>)}
         {field.collection && entries.filter((e) => e.collection === field.collection).map((e) => <option key={e.slug} value={e.slug}>{e.title}</option>)}
       </select>{field.type === 'references' && <small>Use Ctrl / ⌘ to select more than one.</small>}</> :

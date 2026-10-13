@@ -6,6 +6,7 @@
  * Checks:
  *  - frontmatter in every .md/.mdx under src/content parses as YAML
  *  - every <Term id="…"> in topics and guides has a glossary entry
+ *  - every <Figure> in topics and guides shows an image in public/, with alt text
  *  - references between collections (topic → unit/related/authors, etc.) exist
  *  - notes have a valid date range and geographic location
  *  - current notes reference the current curriculum and correct level
@@ -71,6 +72,13 @@ for (const file of files) {
   if (/\/(topics|guides)\//.test(rel)) {
     for (const m of text.matchAll(/<Term\s+[^>]*id=["']([^"']+)["']/g)) {
       if (!glossaryIds.has(m[1])) problems.push(`${rel}: <Term id="${m[1]}"> has no src/content/glossary/${m[1]}.md`);
+    }
+    for (const [tag] of text.matchAll(/<Figure\b[^>]*>/g)) {
+      const src = tag.match(/\ssrc="([^"]*)"/)?.[1] ?? '';
+      if (!/^\/[a-zA-Z0-9/_-]+\.(png|jpe?g|webp|gif|avif)$/.test(src) || !existsSync(join(ROOT, 'public', src))) {
+        problems.push(`${rel}: <Figure src="${src}"> must name an image file in public/`);
+      }
+      if (!tag.match(/\salt="([^"]*)"/)?.[1].trim()) problems.push(`${rel}: <Figure src="${src}"> needs alt text describing the image`);
     }
   }
 }

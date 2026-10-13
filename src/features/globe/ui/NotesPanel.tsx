@@ -1,7 +1,8 @@
 /**
  * The history notes panel (top-left column, between search and the map key): the
- * catalogue of IB History notes with its search, SL/HL level, collection (2028
- * curriculum or archive) and "show pins from all years" filters. Each row links to
+ * catalogue of history notes with its search, SL/HL level, collection (2028
+ * curriculum, Grade 10 or archive) and "show pins from all years" filters. Grade 10
+ * has no levels or papers, so it hides both. Each row links to
  * its study notes and has a button that shows the note's pin on the globe. Its panel
  * opens to the right of its button, in the look of the search panel.
  */

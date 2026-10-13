@@ -8,6 +8,7 @@
 import Callout from './Callout.astro';
 import Chronology from './Chronology.astro';
 import Event from './Event.astro';
+import Figure from './Figure.astro';
 import KeyQuote from './KeyQuote.astro';
 import Perspective from './Perspective.astro';
 import Q from './Q.astro';
@@ -18,6 +19,7 @@ export const notesComponents = {
   Callout,
   Chronology,
   Event,
+  Figure,
   KeyQuote,
   Perspective,
   Q,

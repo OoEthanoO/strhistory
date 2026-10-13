@@ -98,11 +98,12 @@ export function AboutContent({ manifest: m, dataBase, onShortcuts }: AboutConten
           <li>
             <strong>Level. </strong>
             SL shows the notes for the shared core of the course; HL shows those and adds the regional study.
+            Grade 10 has no levels.
           </li>
           <li>
             <strong>Collection. </strong>
-            The 2028 curriculum holds the notes for the course first assessed in 2028; the archive keeps the
-            department’s earlier notes.
+            The 2028 curriculum holds the notes for the course first assessed in 2028; Grade 10 holds the Grade 10
+            notes; the archive keeps the department’s earlier notes.
           </li>
           <li>
             <strong>Papers. </strong>

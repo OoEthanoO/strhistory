@@ -11,9 +11,12 @@ export const topicSchema = z.object({
   shortTitle: z.string().max(36).optional(),
   /** The IB syllabus unit this topic belongs to (src/content/syllabus/<id>.md). */
   unit: reference('syllabus'),
-  /** SL is shared core content; HL adds the regional study notes. Omitted for Grade 10. */
-  level: z.enum(['SL', 'HL']).optional(),
-  /** Older notes remain readable without appearing in the current course. */
+  /** SL is shared core content; HL adds the regional study notes. Grade 10 notes leave it out. */
+  level: z.enum(['SL', 'HL']).default('SL'),
+  /**
+   * '2028' is the IB course, 'grade-10' the Grade 10 course. Older notes remain
+   * readable in the archive without appearing in either.
+   */
   curriculum: z.enum(['2028', 'grade-10', 'archive']).default('archive'),
   /** Years covered. Controls which timeline eras show the pin. */
   period: z

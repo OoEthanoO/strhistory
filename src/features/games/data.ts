@@ -8,10 +8,13 @@ import type { GameCatalogue, MapArtwork } from './types';
 
 export async function getGameCatalogue(): Promise<GameCatalogue> {
   const [courses, units] = await Promise.all([getCourses(), getUnits()]);
+  // A course's deck is its units that have image rounds. A course with none
+  // (such as Grade 10) practises with the whole collection and says so.
+  const withRounds = (id: string) => events.some(event => event.unit === id);
   return {
     events,
-    courses: courses.map(course => ({ id: course.id, title: course.data.title, units: course.data.units.map(unit => unit.id), sample: course.data.placeholder })),
-    units: units.filter(unit => events.some(event => event.unit === unit.id)).map(unit => ({ id: unit.id, title: unit.data.title, archive: unit.data.curriculum === 'archive' })),
+    courses: courses.map(course => ({ id: course.id, title: course.data.title, units: course.data.units.map(unit => unit.id).filter(withRounds), sample: course.data.placeholder })),
+    units: units.filter(unit => withRounds(unit.id)).map(unit => ({ id: unit.id, title: unit.data.title, archive: unit.data.curriculum === 'archive' })),
   };
 }
 

@@ -36,7 +36,9 @@ A website for a high-school history department with five connected jobs:
    Authoritarian rule (Paper 2), and Europe: the French Revolution and German
    and Italian unification (Paper 3, HL). Earlier notes retain their URLs in a
    clearly marked archive. SL shows the shared core; HL includes that core
-   and the regional studies.
+   and the regional studies. A separate Grade 10 collection holds the
+   department's Grade 10 notes on Canada and the First World War, which have
+   no SL/HL levels or exam papers.
 4. **The department's home online**: courses, teacher profiles, news, study
    guides (exam papers, IA, extended essay), and an about page.
 5. **History games** at `/games`: Where & When (identify an event's date and
@@ -191,7 +193,7 @@ src/
       atlas.css              the explorer's styles (Alex's Atlas's, scoped under .gx)
     notes/                 ← FEATURE: components usable inside MDX notes
       Term.astro Q.astro KeyQuote.astro Callout.astro Perspective.astro
-      Chronology.astro Event.astro Recall.astro
+      Chronology.astro Event.astro Recall.astro Figure.astro
       popover-client.ts      positioning + key-term progress (client JS)
       notes.css              prose + component styles
       index.ts               the map of components exposed to MDX
@@ -210,6 +212,7 @@ src/
   styles/tokens.css        ← design tokens (colours, type, spacing) for both themes
   styles/base.css          ← element defaults and a few utilities (.container, .btn…)
 public/
+  g10-curriculum/                       Grade 10 note images; SOURCES.md records each one's source
   data/snapshots/world_<year>.geojson   generated border files (GPL-3.0, see LICENSE.md there)
   data/land.geojson                     legacy base land layer (unused, see §11)
   glyphs/noto-sans/                     legacy Noto Sans glyphs (unused, see §11)
@@ -279,7 +282,10 @@ Rules:
 - `draft: true` (topics, news) shows in `npm run dev` but is excluded from builds.
 - Notes use `curriculum: '2028'` for the selected course and `archive` for older
   material (the safe default). `level: SL` means shared SL and HL content;
-  `level: HL` is the additional Europe study. Each file describes one event or
+  `level: HL` is the additional Europe study. `curriculum: 'grade-10'` holds the
+  Grade 10 notes: they leave out `level` (the lint rejects one), and their
+  syllabus units leave out `levels` and give `paper: 1`, which is never shown.
+  A note's curriculum must match its unit's. Each file describes one event or
   focused source, with required `location` and inclusive `period.start/end`.
   A single-year event uses the same start and end. An optional `snapshot` on a
   current note must lie within that range; it does not require a new border file.
@@ -343,6 +349,14 @@ These are available in every topic and guide without importing (mapped in
 | `<Perspective historian work year school>` | one historian's interpretation | in "Historians' debate" |
 | `<Chronology title>` + `<Event date>` | key-dates timeline | top of each topic |
 | `<Recall q>` | self-test question with hidden answer | "Test yourself" section |
+| `<Figure src alt>` | captioned image from `public/`; the caption says what the image is, who made it and when | `<Figure src="/g10-curriculum/quebec-chronicle-1914-08-05.jpg" alt="Newspaper front page headlined ‘England now at war’">Front page of …</Figure>` |
+
+Note images are evidence: put them in a folder under `public/`, as JPEGs at most
+1,400 px wide, and record each one's source page, creator, date and reuse status
+in that folder's `SOURCES.md` (as in `public/games/images/`). Captions name a
+later painting as a later depiction, and never claim more about a photograph
+(place, date, unit) than its source records. The lint checks that each
+`<Figure>` has alt text and an existing image.
 
 House style for topics: sections in this order — Overview (with
 `<Chronology>`), analytical sections answering the key questions, "Historians'
@@ -508,7 +522,8 @@ calm reading experience.
 - Images live in `public/games/images/`; `SOURCES.md` records source pages,
   licences and later depictions. Never substitute generated images for evidence.
   Record the depicted event's Gregorian date separately from the artwork date.
-- Image decks follow each course's `units`; a course without selected units uses
+- Image decks follow each course's `units` that have image rounds; a course with
+  none (no selected units, or only units without rounds, such as Grade 10) uses
   the broad source-practice collection and says so. This is not syllabus coverage.
 - The pin map uses local Natural Earth/world-atlas coastlines, with a 10 km
   full-credit radius. Date scoring requires the exact day for full credit.
@@ -822,6 +837,9 @@ the same checks before switching releases, so a failing commit never goes live).
   (current ones are marked samples).
 - Expand the seven initial event modules across the selected 2028 studies.
   This is a growing collection, not complete curriculum coverage.
+- Record the sources of the six Grade 10 photographs listed as unrecorded in
+  `public/g10-curriculum/SOURCES.md`; until then their captions only describe
+  what they show.
 - Border corrections are sourced override entries in
   `packages/borders/overrides/` (guide: `packages/borders/AGENTS.md`); open
   dataset and globe tasks are in `packages/TODO.md`.

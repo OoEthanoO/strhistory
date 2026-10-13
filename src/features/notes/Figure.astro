@@ -1,0 +1,23 @@
+---
+/**
+ * <Figure src="/folder/image.jpg" alt="What the image shows">Caption.</Figure>
+ *
+ * A captioned image from public/. The caption says what the image is
+ * (photograph, painting, poster), who made it and when — especially when it
+ * was made after the event it shows. Record its source in the folder's
+ * SOURCES.md.
+ */
+import './notes.css';
+
+interface Props {
+  src: string;
+  alt: string;
+}
+
+const { src, alt } = Astro.props;
+---
+
+<figure class="note-figure">
+  <img src={src} alt={alt} loading="lazy" decoding="async" />
+  {Astro.slots.has('default') && <figcaption><slot /></figcaption>}
+</figure>
