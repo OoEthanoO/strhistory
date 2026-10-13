@@ -1,7 +1,7 @@
 ---
 term: War Crime
 when: 1864–present
-definition: A violation of established rules determining which acts of war are acceptable inacceptable for the dignity of combatants and non combatants.
-significance: The use of chlorine gas at Ypres in 1915 violated the Hague Conventions of 1899 and 1907, which Germany had signed. Such violations become important in historical and legal judgements of wartime conduct and later formed the basis for international war crimes tribunals.
+definition: A serious breach of the laws of war, the agreed rules that limit how wars may be fought in order to protect soldiers and civilians.
+significance: Germany’s use of chlorine gas at Ypres in 1915 broke the Hague Conventions of 1899 and 1907, which banned poison weapons and which Germany had signed; Germany argued that releasing gas from cylinders, rather than firing it in shells, was allowed. Such breaches shaped later laws of war and international war crimes trials.
 related: []
 ---

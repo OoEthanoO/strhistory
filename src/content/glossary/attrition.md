@@ -1,7 +1,7 @@
 ---
 term: Attrition
 when: 1914–1918
-definition: A tactic in which you win a war or battle by causing more casualties than you sustain. Battles of attrition are not waged to gain a positional advantage, but simply to kill more enemies with negligible tactical advantages.
-significance: Germany employed attrition deliberately at Verdun in 1916, hoping to "bleed France white." The British response at the Somme was partly attritional in intent. Critics argue attrition produced enormous Allied casualties for minimal gains; defenders argue it eventually exhausted Germany's manpower reserves.
+definition: A strategy of winning a war or battle by causing the enemy more casualties than your own side suffers. Battles of attrition are fought to wear the enemy down rather than to gain ground.
+significance: Germany’s commander, Erich von Falkenhayn, later claimed that his 1916 attack at Verdun was meant to bleed the French army white. The British offensive at the Somme became partly a battle of attrition too. Critics argue attrition produced enormous Allied casualties for minimal gains; defenders argue it eventually exhausted Germany’s manpower reserves.
 related: []
 ---
