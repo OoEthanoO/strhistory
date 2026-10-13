@@ -1,0 +1,12 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import GameNav from '@/features/games/GameNav.astro';
+import WhereWhen from '@/features/games/WhereWhen';
+import { getGameCatalogue, getMapArtwork } from '@/features/games/data';
+const catalogue = await getGameCatalogue();
+const artwork = getMapArtwork();
+---
+<BaseLayout title="Where & When" description="Guess the exact date and place behind real historical photographs and paintings, with rounds for each current History unit.">
+  <div class="container games-page"><GameNav /><h1 class="game-page-title">Where & When</h1><WhereWhen client:load catalogue={catalogue} artwork={artwork} /><noscript><p>This game needs JavaScript. The <a href="/topics">study notes</a> work without it.</p></noscript></div>
+</BaseLayout>
+<style>.games-page { padding-bottom: 72px; } .game-page-title { font-size: var(--step--1); font-family: var(--font-sans); color: var(--accent); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 24px; }</style>

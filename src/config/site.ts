@@ -23,6 +23,7 @@ export type NavItem = NavLink | { label: string; children: NavLink[] };
 export const nav: NavItem[] = [
   { href: '/globe', label: 'Globe' },
   { href: '/topics', label: 'Notes' },
+  { href: '/games', label: 'Games' },
   { href: '/glossary', label: 'Glossary' },
   { href: '/resources', label: 'Resources' },
   { label: 'Department', children: [
