@@ -26,9 +26,11 @@ export function TopicPreview({ topic, inYear, onClose, onLocate, onPointerEnter,
   return (
     <aside className="preview" aria-label="Note preview" onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave}>
       <div className="preview__head">
-        <span className="paper-badge" data-paper={topic.paper} title={`Paper ${topic.paper}`}>
-          P{topic.paper}
-        </span>
+        {topic.curriculum !== 'grade-10' && (
+          <span className="paper-badge" data-paper={topic.paper} title={`Paper ${topic.paper}`}>
+            P{topic.paper}
+          </span>
+        )}
         <span className="preview__unit">{topic.unitTitle}</span>
         {onClose && <IconButton icon="close" className="ui-btn--small preview__close" label="Close preview" onClick={onClose} />}
       </div>

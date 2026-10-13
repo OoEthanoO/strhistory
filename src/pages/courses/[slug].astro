@@ -70,7 +70,7 @@ const teachers = (await getTeachers()).filter((t) => t.data.courses.some((c) => 
                 return (
                   <li>
                     <span class="u-title">
-                      <Badge tone={`paper-${u.data.paper}`}>P{u.data.paper}</Badge> {u.data.title}
+                      {u.data.curriculum !== 'grade-10' && <Badge tone={`paper-${u.data.paper}`}>P{u.data.paper}</Badge>} {u.data.title}
                     </span>
                     {list.length > 0 && (
                       <span class="u-topics">

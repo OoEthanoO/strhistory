@@ -69,6 +69,9 @@ describe('parseGlobeUrl', () => {
       all: true,
     });
     assert.equal(parseGlobeUrl('?level=SL', B).level, 'SL');
+    assert.equal(parseGlobeUrl('?curriculum=grade-10', B).curriculum, 'grade-10');
+    assert.equal(parseGlobeUrl('?curriculum=g10', B).curriculum, 'grade-10');
+    assert.equal(parseGlobeUrl('?curriculum=grade-10&level=HL', B).level, undefined);
   });
 
   it('trims the query and caps it at 100 characters', () => {
@@ -126,6 +129,7 @@ describe('serialiseGlobeUrl', () => {
     assert.equal(serialiseGlobeUrl({ year: 1453.5 }), '');
     assert.equal(serialiseGlobeUrl({ year: -500 }), '?year=-500');
     assert.equal(serialiseGlobeUrl({ all: false, q: '   ' }), '');
+    assert.equal(serialiseGlobeUrl({ curriculum: 'grade-10', level: 'HL', year: 1914 }), '?year=1914&curriculum=grade-10');
     assert.equal(serialiseGlobeUrl({ view: { lng: Number.NaN, lat: 0, scale: 1 } }), '');
   });
 

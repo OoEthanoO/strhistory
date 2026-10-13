@@ -14,7 +14,7 @@ export interface GlobeTopic {
   unitTitle: string;
   paper: 1 | 2 | 3;
   level: 'SL' | 'HL';
-  curriculum: '2028' | 'archive';
+  curriculum: '2028' | 'grade-10' | 'archive';
   /** Snapshot year the globe switches to when this topic is selected. */
   snapshot: number;
 }

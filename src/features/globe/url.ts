@@ -4,8 +4,8 @@
 //          &lng=<lon>&lat=<lat>&scale=<scale>
 //
 //  - year        historical year, never 0 (typed forms such as "500 BC" are accepted on input)
-//  - level       'SL' | 'HL' (HL includes the SL core)
-//  - curriculum  '2028' | 'archive'
+//  - level       'SL' | 'HL' (HL includes the SL core); never with Grade 10, which has no levels
+//  - curriculum  '2028' | 'grade-10' | 'archive' ('g10' is accepted on input)
 //  - topic       the selected history note (a topic slug)
 //  - polity      the selected polity (`clio:…`, `ne:…`, `ovr:…`)
 //  - all         '1' shows pins from all years
@@ -22,7 +22,7 @@
 // (src/features/globe/url.test.ts) without a build step.
 
 export type GlobeLevel = 'SL' | 'HL';
-export type GlobeCurriculum = '2028' | 'archive';
+export type GlobeCurriculum = '2028' | 'grade-10' | 'archive';
 
 /** The camera: centre and `scale = 2^(zoom − fitZoom)` (1 = the globe fits the view). */
 export interface GlobeUrlView {
@@ -133,7 +133,9 @@ function readLevel(raw: string | null): GlobeLevel | undefined {
 
 function readCurriculum(raw: string | null): GlobeCurriculum | undefined {
   const s = raw?.trim().toLowerCase();
-  return s === '2028' || s === 'archive' ? s : undefined;
+  if (s === '2028' || s === 'archive' || s === 'grade-10') return s;
+  if (s === 'g10') return 'grade-10';
+  return undefined;
 }
 
 function readTopic(raw: string | null): string | undefined {
@@ -176,10 +178,10 @@ export function parseGlobeUrl(search: string, bounds: GlobeUrlBounds): GlobeUrlS
   const out: GlobeUrlState = {};
   const year = readYear(params.get('year'), bounds);
   if (year !== undefined) out.year = year;
-  const level = readLevel(params.get('level'));
-  if (level !== undefined) out.level = level;
   const curriculum = readCurriculum(params.get('curriculum'));
   if (curriculum !== undefined) out.curriculum = curriculum;
+  const level = readLevel(params.get('level'));
+  if (level !== undefined && out.curriculum !== 'grade-10') out.level = level;
   const topic = readTopic(params.get('topic'));
   if (topic !== undefined) out.topic = topic;
   const polity = readPolity(params.get('polity'));
@@ -215,7 +217,7 @@ const enc = (s: string): string => encodeURIComponent(s).replace(/'/g, '%27').re
 export function serialiseGlobeUrl(s: GlobeUrlState): string {
   const parts: string[] = [];
   if (s.year !== undefined && Number.isInteger(s.year) && s.year !== 0) parts.push(`year=${s.year}`);
-  if (s.level) parts.push(`level=${enc(s.level)}`);
+  if (s.level && s.curriculum !== 'grade-10') parts.push(`level=${enc(s.level)}`);
   if (s.curriculum) parts.push(`curriculum=${enc(s.curriculum)}`);
   if (s.topic) parts.push(`topic=${enc(s.topic)}`);
   // The colon of a polity id stays readable (it needs no escaping in a query).

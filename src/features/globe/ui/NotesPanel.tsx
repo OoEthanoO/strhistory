@@ -1,7 +1,8 @@
 /**
  * The history notes panel (top-left column, between search and the map key): the
- * catalogue of IB History notes with its search, SL/HL level, collection (2028
- * curriculum or archive) and "show pins from all years" filters. Each row links to
+ * catalogue of history notes with its search, SL/HL level, collection (2028
+ * curriculum, Grade 10 or archive) and "show pins from all years" filters. Grade 10
+ * has no levels or papers, so it hides both. Each row links to
  * its study notes and has a button that shows the note's pin on the globe. Its panel
  * opens to the right of its button, in the look of the search panel.
  */
@@ -22,8 +23,8 @@ export interface NotesPanelProps {
   year: number;
   level: 'SL' | 'HL';
   onLevel(level: 'SL' | 'HL'): void;
-  curriculum: '2028' | 'archive';
-  onCurriculum(curriculum: '2028' | 'archive'): void;
+  curriculum: '2028' | 'grade-10' | 'archive';
+  onCurriculum(curriculum: '2028' | 'grade-10' | 'archive'): void;
   showAll: boolean;
   onShowAll(showAll: boolean): void;
   query: string;
@@ -73,9 +74,9 @@ export function NotesPanel(p: NotesPanelProps) {
   }, [p.open]);
 
   const pins = p.visible.size;
-  const count = `${plural(pins, 'pin', 'pins')} ${p.showAll ? 'from all years' : `in ${formatYear(p.year)}`} · ${plural(p.topics.length, 'note', 'notes')}${p.level === 'HL' ? ' · HL includes SL' : ''}`;
+  const count = `${plural(pins, 'pin', 'pins')} ${p.showAll ? 'from all years' : `in ${formatYear(p.year)}`} · ${plural(p.topics.length, 'note', 'notes')}${p.curriculum !== 'grade-10' && p.level === 'HL' ? ' · HL includes SL' : ''}`;
   // Announced when the filters or the search change the notes, not with every year of playback.
-  const notesStatus = `${plural(p.topics.length, 'note', 'notes')}${p.level === 'HL' ? ', HL includes SL' : ''}`;
+  const notesStatus = `${plural(p.topics.length, 'note', 'notes')}${p.curriculum !== 'grade-10' && p.level === 'HL' ? ', HL includes SL' : ''}`;
 
   return (
     <div className="hud__item notes" ref={root}>
@@ -126,17 +127,20 @@ export function NotesPanel(p: NotesPanelProps) {
             />
           </label>
           <div className="notes__controls">
-            <div className="seg" role="group" aria-label="Course level">
-              {(['SL', 'HL'] as const).map((value) => (
-                <button key={value} type="button" className="seg__btn" aria-pressed={p.level === value} onClick={() => p.onLevel(value)}>
-                  {value}
-                </button>
-              ))}
-            </div>
+            {p.curriculum !== 'grade-10' && (
+              <div className="seg" role="group" aria-label="Course level">
+                {(['SL', 'HL'] as const).map((value) => (
+                  <button key={value} type="button" className="seg__btn" aria-pressed={p.level === value} onClick={() => p.onLevel(value)}>
+                    {value}
+                  </button>
+                ))}
+              </div>
+            )}
             <label className="notes__select-wrap">
               <span className="sr-only">Collection</span>
-              <select className="notes__select" value={p.curriculum} onChange={(e) => p.onCurriculum(e.target.value === 'archive' ? 'archive' : '2028')}>
+              <select className="notes__select" value={p.curriculum} onChange={(e) => p.onCurriculum(e.target.value as '2028' | 'grade-10' | 'archive')}>
                 <option value="2028">2028 curriculum</option>
+                <option value="grade-10">Grade 10</option>
                 <option value="archive">Archive</option>
               </select>
             </label>
@@ -157,9 +161,11 @@ export function NotesPanel(p: NotesPanelProps) {
                     data-selected={p.selected === topic.slug || undefined}
                     data-outside={!onGlobe || undefined}
                   >
-                    <span className="paper-badge" data-paper={topic.paper} title={`Paper ${topic.paper}`}>
-                      P{topic.paper}
-                    </span>
+                    {topic.curriculum !== 'grade-10' && (
+                      <span className="paper-badge" data-paper={topic.paper} title={`Paper ${topic.paper}`}>
+                        P{topic.paper}
+                      </span>
+                    )}
                     <div className="note-row__text">
                       <a
                         className="note-row__title"
@@ -176,7 +182,7 @@ export function NotesPanel(p: NotesPanelProps) {
                       </span>
                       <span className="note-row__status">
                         {onGlobe ? 'On the globe' : `Pin in ${formatRange(topic.start, topic.end)}`}
-                        {topic.level === 'HL' ? ' · HL' : ''}
+                        {p.curriculum !== 'grade-10' && topic.level === 'HL' ? ' · HL' : ''}
                       </span>
                     </div>
                     <IconButton
@@ -201,7 +207,7 @@ export function NotesPanel(p: NotesPanelProps) {
           )}
         </div>
         <footer className="notes__foot">
-          <a href={`/topics?level=${p.level}&curriculum=${p.curriculum}`}>
+          <a href={p.curriculum === 'grade-10' ? '/topics?curriculum=grade-10' : `/topics?level=${p.level}&curriculum=${p.curriculum}`}>
             Open the notes library <Icon name="arrowRight" />
           </a>
         </footer>

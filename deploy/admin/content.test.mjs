@@ -11,7 +11,7 @@ test('only fixed content collections and safe filenames can be edited', () => {
 });
 test('teacher edits cannot execute MDX, raw HTML, unsafe URLs or load private files', async () => {
   const fields = { title: 'Safe title', summary: 'Safe summary' };
-  for (const body of ['import fs from "node:fs"\n\nHello', 'export const a = 1', '{process.env}', '<Term {...process.env}>x</Term>', '<Term id={process.env}>x</Term>', '<script>alert(1)</script>', '<iframe src="https://evil.test" />', '<a href="javascript:alert(1)">x</a>', '[x](javascript:alert%281%29)', '[x](java&#x73;cript:alert%281%29)', '![x](../../private/admin.json)', '![x](http://127.0.0.1:4310/health)', '<Callout onclick="alert(1)">x</Callout>']) await assert.rejects(tools.validate('topics', fields, body), body);
+  for (const body of ['import fs from "node:fs"\n\nHello', 'export const a = 1', '{process.env}', '<Term {...process.env}>x</Term>', '<Term id={process.env}>x</Term>', '<script>alert(1)</script>', '<iframe src="https://evil.test" />', '<a href="javascript:alert(1)">x</a>', '[x](javascript:alert%281%29)', '[x](java&#x73;cript:alert%281%29)', '![x](../../private/admin.json)', '![x](http://127.0.0.1:4310/health)', '<Callout onclick="alert(1)">x</Callout>', '<Figure src="javascript:alert(1)" alt="x" />', '<Figure src="../../private/admin.json" alt="x" />', '<Figure src="http://127.0.0.1:4310/x.png" alt="x" />', '<Figure src={process.env} alt="x" />', '<Figure src="/images/x.png" />', '<Figure src="/images/x.png" alt=" " />', '<Figure alt="x">Caption</Figure>', '<figure><img src="/images/x.png" alt="x" /></figure>']) await assert.rejects(tools.validate('topics', fields, body), body);
   await assert.rejects(tools.validate('teachers', { name: 'x', photo: '../../private/admin.json' }, ''));
   await assert.rejects(tools.validate('topics', { title: 'x', layout: '../../code.js' }, ''));
   await assert.rejects(tools.validate('news', fields, '<script>alert(1)</script>'));
@@ -19,6 +19,8 @@ test('teacher edits cannot execute MDX, raw HTML, unsafe URLs or load private fi
   const tree = await tools.validate('topics', fields, '<Recall q="What changed?">**Answer** with a <Term id="term">term</Term>.</Recall>');
   assert.match(tools.preview(tree, { term: { definition: '<script>no</script>', significance: 'Why it matters' } }), /&lt;script&gt;/);
   assert.match(tools.preview(tree), /<details>/);
+  const figure = await tools.validate('topics', fields, '<Figure src="/images/photo.jpg" alt="A <b>crowd</b>">A *photograph*, 1914.</Figure>');
+  assert.match(tools.preview(figure), /<figure><p>\[Image: A &lt;b&gt;crowd&lt;\/b&gt;\]<\/p><figcaption>.*<em>photograph<\/em>.*<\/figcaption><\/figure>/);
 });
 test('all existing editable entries pass the safety policy and YAML round-trips', async () => {
   for (const [collection, spec] of Object.entries(collections)) {

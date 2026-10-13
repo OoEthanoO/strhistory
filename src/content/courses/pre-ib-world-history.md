@@ -3,7 +3,7 @@ title: Modern World History
 grades: Grade 10
 level: Pre-IB
 summary: A foundation course in twentieth-century history that builds the reading, source-analysis and essay skills the IB Diploma expects.
-units: []
+units: [g10-canada-ww1]
 order: 3
 placeholder: true
 ---
