@@ -1,10 +1,13 @@
 // Small, loopback-only authentication service. Caddy still serves the Astro build.
 // Credentials live outside the checkout and document root; never log request bodies.
+// It also keeps the daily Connections position (daily.mjs), which only signed-in students advance.
 import { createServer } from 'node:http';
 import { createHmac, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createDailyRotation } from './daily.mjs';
 
 const derive = promisify(scrypt);
 export const COOKIE = '__Host-history-access';
@@ -26,7 +29,7 @@ function equal(a, b) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export function createAccessServer(config, { now = () => Date.now() } = {}) {
+export function createAccessServer(config, { now = () => Date.now(), connections = createDailyRotation(null, { now }) } = {}) {
   if (!/^[a-f0-9]{64}$/.test(config.sessionKey) || !/^[a-f0-9]{32}$/.test(config.salt) ||
       !/^[a-f0-9]{128}$/.test(config.codeHash) || !/^https:\/\/[^/]+$/.test(config.origin)) {
     throw new Error('Invalid access configuration');
@@ -58,6 +61,14 @@ export function createAccessServer(config, { now = () => Date.now() } = {}) {
     if (pathname === '/access/session' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ unlocked: authenticated(req) }));
+    }
+    if (pathname === '/games/api/connections/today') {
+      if (req.method !== 'GET' && req.method !== 'HEAD') { res.setHeader('Allow', 'GET, HEAD'); return send(405, 'Use GET.'); }
+      const unlocked = authenticated(req);
+      res.writeHead(unlocked ? 200 : 401, { 'Content-Type': 'application/json' });
+      // HEAD checks the route and session without counting as a view of today's puzzle.
+      if (req.method === 'HEAD') return res.end();
+      return res.end(JSON.stringify(unlocked ? connections.view() : { error: 'locked' }));
     }
     if (!['/access/unlock', '/access/logout'].includes(pathname)) return send(404, 'Not found');
     if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return send(405, 'Use the access form.'); }
@@ -106,5 +117,7 @@ export function createAccessServer(config, { now = () => Date.now() } = {}) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const config = JSON.parse(readFileSync(process.argv[2], 'utf8').replace(/^\uFEFF/, ''));
-  createAccessServer(config).listen(4310, '127.0.0.1', () => console.log('History access service listening on loopback:4310'));
+  // Beside the private configuration, outside the checkout and document root.
+  const connections = createDailyRotation(join(dirname(resolve(process.argv[2])), 'access-data', 'connections.json'));
+  createAccessServer(config, { connections }).listen(4310, '127.0.0.1', () => console.log('History access service listening on loopback:4310'));
 }

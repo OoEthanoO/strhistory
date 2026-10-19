@@ -64,6 +64,7 @@ strhistory.ca {
 	@publicPage path /globe /globe/ /globe/index.html /access /access/ /access/index.html /favicon.svg /robots.txt /sitemap-index.xml /sitemap-0.xml /version.json
 	@publicAsset path_regexp publicAsset ^(/_astro/[^/]+\.(js|css|woff2|woff|svg|png|jpg|jpeg|webp|avif)|/data/land\.geojson|/data/snapshots/world_-?[0-9]+\.geojson|/data/snapshots/LICENSE\.md|/glyphs/noto-sans/[0-9]+-[0-9]+\.pbf|/data/alexs-atlas/(?:(?:chunks/l[0-9]+|base)/)?[a-z0-9_-]+(?:\.[a-z0-9_-]+)*\.json|/data/alexs-atlas/(?:ATTRIBUTION|LICENSE)\.md)$
 	@accessAction path /access/unlock /access/logout /access/session
+	@gamesApi path /games/api/*
 	@adminLogin path /admin/login /admin/login/ /admin/login/index.html
 	@adminApi path /admin/api/*
 	@adminPage path_regexp adminPage (?i)^/admin(?:/|$)
@@ -92,6 +93,12 @@ strhistory.ca {
 			reverse_proxy 127.0.0.1:4310 {
 				header_up X-Access-Client {remote_host}
 			}
+		}
+		# The access service checks the student session itself and keeps the
+		# daily puzzle position; a locked request gets 401 JSON, not a redirect.
+		handle @gamesApi {
+			header X-Robots-Tag "noindex, nofollow"
+			reverse_proxy 127.0.0.1:4310
 		}
 		handle @publicPage {
 			header Cache-Control "no-store"

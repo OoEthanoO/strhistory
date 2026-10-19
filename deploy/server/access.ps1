@@ -1,5 +1,6 @@
 <# Install/update the loopback access service after provisioning private\access.json.
    This script is idempotent and called by every deploy before changing Caddy.
+   The service keeps the daily Connections position in private\access-data\ itself.
    Run with Windows PowerShell 5.1 and -ExecutionPolicy Bypass.
 #>
 [CmdletBinding()]
@@ -11,12 +12,19 @@ if (-not (Test-Path -LiteralPath $privateConfig)) {
     throw 'Missing private\access.json. Provision the access code before deploying.'
 }
 $settings = Get-Content (Join-Path $Root 'server.json') -Raw | ConvertFrom-Json
-$source = Join-Path $PSScriptRoot '..\access\server.mjs'
-$destination = Join-Path $Root 'bin\access\server.mjs'
+$sourceDir = Join-Path $PSScriptRoot '..\access'
+$installDir = Join-Path $Root 'bin\access'
+# server.mjs imports daily.mjs (the daily puzzle position); install them together.
+$files = @('server.mjs', 'daily.mjs')
+$destination = Join-Path $installDir 'server.mjs'
 $taskName = 'strhistory-access'
-New-Item -ItemType Directory -Force -Path (Split-Path $destination) | Out-Null
-$changed = -not (Test-Path -LiteralPath $destination)
-if (-not $changed) { $changed = (Get-FileHash $source).Hash -ne (Get-FileHash $destination).Hash }
+New-Item -ItemType Directory -Force -Path $installDir | Out-Null
+$changed = $false
+foreach ($file in $files) {
+    $installed = Join-Path $installDir $file
+    if (-not (Test-Path -LiteralPath $installed)) { $changed = $true }
+    elseif ((Get-FileHash (Join-Path $sourceDir $file)).Hash -ne (Get-FileHash $installed).Hash) { $changed = $true }
+}
 # The public origin follows the deployment domain. Preserve the existing code
 # hash and signing key; migrating a domain must not rotate credentials.
 $accessConfig = Get-Content -LiteralPath $privateConfig -Raw | ConvertFrom-Json
@@ -31,7 +39,9 @@ if (($changed -or $originChanged) -and $task) {
         Start-Sleep -Milliseconds 250
     }
 }
-if ($changed) { Copy-Item -LiteralPath $source -Destination $destination -Force }
+if ($changed) {
+    foreach ($file in $files) { Copy-Item -LiteralPath (Join-Path $sourceDir $file) -Destination (Join-Path $installDir $file) -Force }
+}
 if ($originChanged) {
     $accessConfig.origin = $expectedOrigin
     # Write in place so the restricted ACL on the existing file is retained.

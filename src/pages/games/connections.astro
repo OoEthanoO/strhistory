@@ -1,0 +1,9 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import GameNav from '@/features/games/GameNav.astro';
+import Connections from '@/features/games/Connections';
+---
+<BaseLayout title="Connections" description="A daily history puzzle: sort sixteen people, places and ideas into four hidden groups, then see the sources behind each connection.">
+  <div class="container games-page"><GameNav /><h1 class="game-page-title">Connections</h1><Connections client:load /><noscript><p>This game needs JavaScript. The <a href="/topics">study notes</a> work without it.</p></noscript></div>
+</BaseLayout>
+<style>.games-page { padding-bottom: 72px; } .game-page-title { font-size: var(--step--1); font-family: var(--font-sans); color: var(--accent); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 24px; }</style>

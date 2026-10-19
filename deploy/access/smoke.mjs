@@ -45,6 +45,11 @@ for (const path of atlasFiles) {
 }
 console.log(`Public: ${atlasFiles.length} borders dataset files.`);
 assert.doesNotMatch(await (await request('/sitemap-0.xml')).text(), /\/topics|\/teachers|\/courses/);
+// The daily Connections endpoint answers a locked browser with JSON, not the access page.
+let daily = await request('/games/api/connections/today');
+assert.equal(daily.status, 401, 'locked daily puzzle');
+assert.match(daily.headers.get('cache-control'), /no-store/);
+assert.deepEqual(await daily.json(), { error: 'locked' });
 let r = await post('/access/unlock', 'wrong-access-code');
 assert.match(r.headers.get('location'), /error=invalid/);
 assert.equal(r.headers.get('set-cookie'), null);
@@ -61,10 +66,14 @@ for (const path of protectedPages) {
   assert.match(html, /<!doctype html>/i);
   assert.ok(!html.includes(code), 'code must never appear in delivered HTML');
 }
+// HEAD checks the route with a session without counting as a view of today's puzzle.
+daily = await request('/games/api/connections/today', { method: 'HEAD', headers: { Cookie: cookie } });
+assert.equal(daily.status, 200, 'unlocked daily puzzle');
+assert.match(daily.headers.get('content-type'), /application\/json/);
 r = await post('/access/logout', '', { Cookie: cookie });
 assert.match(r.headers.get('set-cookie'), /Max-Age=0/);
 assert.equal((await request('/topics/')).status, 303);
-console.log('Public globe/assets, wrong code, unlock, all protected pages, return URL, cache headers and logout passed.');
+console.log('Public globe/assets, wrong code, unlock, all protected pages, daily puzzle route, return URL, cache headers and logout passed.');
 for (const alias of process.argv.slice(3)) {
   for (const path of ['/globe?year=1789&topic=storming-bastille-1789', '/topics/storming-bastille-1789/', '/access?next=%2Ftopics%2F']) {
     const r = await fetch(new URL(path, alias), { redirect: 'manual' });

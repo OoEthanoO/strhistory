@@ -42,9 +42,10 @@ A website for a high-school history department with five connected jobs:
 4. **The department's home online**: courses, teacher profiles, news, study
    guides (exam papers, IA, extended essay), and an about page.
 5. **History games** at `/games`: Where & When (identify an event's date and
-   place from an image), Timeline (place events in chronological order), and
-   History Craft (discover connections by combining concepts and people).
-   All three require the department code, just like the notes.
+   place from an image), Timeline (place events in chronological order),
+   History Craft (discover connections by combining concepts and people) and
+   Connections (a daily puzzle: sort sixteen tiles into four sourced groups).
+   All four require the department code, just like the notes.
 
 Audience: IB Diploma History students (SL and HL, grades 11–12), pre-IB
 students, parents, and the department's teachers, who add and edit content.
@@ -199,10 +200,11 @@ src/
       index.ts               the map of components exposed to MDX
     admin/                 ← FEATURE: teacher editor (React island, scoped CSS)
       Editor.tsx             collection browser, structured fields, text, preview and publish
-    games/                 ← FEATURE: image/date/map, timeline and crafting games
+    games/                 ← FEATURE: image/date/map, timeline, crafting and Connections games
       events.ts              sourced event dates, sites and reusable image credits
       craft-data.ts          finite curated recipe graph; sources and explanations
-      logic.ts               scoring, date validation, filtering, hints and saved-item validation
+      connections-data.ts    daily Connections puzzles in rotation order (append only)
+      logic.ts               scoring, date validation, filtering, hints, puzzle rules, saved-progress checks
   components/              ← shared UI: Header, Footer, cards, Badge, Avatar, HeroGlobe…
   layouts/BaseLayout.astro ← the HTML shell (head, fonts, theme, header/footer)
   pages/                   ← thin route files; they query content and compose components
@@ -230,7 +232,7 @@ packages/                  ← Alex's Atlas modules; packages/AGENTS.md and TODO
   globe/                   @alexs-atlas/globe: ChronoGlobe, addBorderLayers, Timeline, style.css
 deploy/
   Caddyfile                the site's Caddy config (source of truth)
-  access/                  code/session service, provisioning helper, tests
+  access/                  code/session service, daily puzzle position, provisioning helper, tests
   admin/                   separate teacher service: auth, content policy, Git/draft store,
                            shared editor field definitions and tests
   server/*.ps1             install / poll / deploy / status / rollback on the home server
@@ -529,6 +531,21 @@ calm reading experience.
   full-credit radius. Date scoring requires the exact day for full credit.
 - Craft recipes are curated associations, not causal equations. Historical
   connections need context and a source. Keep all items reachable from starters.
+- Connections shows one puzzle a day to everyone. The access service keeps the
+  position (`deploy/access/daily.mjs`): a puzzle moves on only after a school day
+  (America/Toronto) on which a signed-in student opened it, so a puzzle nobody
+  opened stays for the next day. The page's request to
+  `/games/api/connections/today` is that day's view; playing an earlier puzzle
+  never changes the rotation. Without the service (`astro dev`, `astro preview`)
+  the page shows the newest puzzle, with every other one under Earlier puzzles.
+- The rotation counts positions in `connections-data.ts`, so add new puzzles at
+  the end and never reorder or remove released ones; after the last puzzle it
+  starts again from the first. Each group needs an explanation and at least one
+  source that loads and supports it. Each puzzle must have exactly one solution:
+  when a tile also fits another group's label, its own group must be impossible
+  to complete without it, and the explanation names the trap. Mark break points
+  in words of 11 or more letters with a soft hyphen (`\u00AD`) so that four
+  tiles fit across a phone.
 - Progress is local to the browser and must work without localStorage. Run
   `node --test src/features/games/logic.test.ts` for game changes (also in CI).
 
@@ -613,7 +630,8 @@ shell, Node 24, Git, Caddy 2.11 (also serving finprint and ai subdomains).
 | `state.json` | last attempted/deployed commit, status, errors |
 | `logs\deploy.log`, `logs\access.log` | deploy log; Caddy access log |
 | `private\access.json` | salted scrypt code hash + random session signing key; outside repo/releases, restricted ACL |
-| `bin\access\server.mjs` | running access service, restarted when its code or configured origin changes |
+| `bin\access\server.mjs`, `daily.mjs` | running access service, restarted when its code or configured origin changes |
+| `private\access-data\` | daily Connections position, written by the access service; deleting it restarts the rotation at the first puzzle |
 | `private\admin.json` | independent teacher-code hash/session key and editor paths; never committed |
 | `private\admin-git`, `private\admin-known-hosts` | repository-scoped write deploy key and pinned GitHub SSH host keys |
 | `private\admin-data\` | durable private drafts and last publishing-job status |
@@ -631,6 +649,14 @@ immutable), are public. Keep that allowlist narrow, never use an
 extension-only exception across the site. An unavailable service fails closed
 for protected content while the public globe still works. Direct `index.html`
 URLs, mixed case and encoded paths must also remain protected.
+
+The service also answers `/games/api/connections/today`. Caddy proxies
+`/games/api/*` to it without `forward_auth`; the service checks the student
+cookie itself and returns 401 JSON to a locked browser. A signed-in GET returns
+today's Connections number and school date and counts as that day's view; HEAD
+checks the route without counting. The service stores only the position and the
+last day a puzzle was seen, in `private\access-data\connections.json` beside
+`access.json`.
 
 The code is checked with scrypt and a constant-time comparison. Seven-day sessions
 use a signed `__Host-history-access` cookie (Secure, HttpOnly, SameSite=Lax).
@@ -654,9 +680,10 @@ once at the new domain. Alias hosts redirect before authentication; old POSTed
 access forms return to the new `/access` page with a 303 instead of forwarding
 the submitted code across origins.
 
-Tests: `node --test deploy/access/server.test.mjs` runs in CI and before deploys.
-`deploy/access/smoke.mjs <base-url>` (code on stdin) tests the actual Caddy gate
-against all built HTML pages and assets. `astro dev` and `astro preview` are
+Tests: `node --test deploy/access/server.test.mjs` runs in CI and before deploys,
+including the daily rotation. `deploy/access/smoke.mjs <base-url>` (code on stdin)
+tests the actual Caddy gate against all built HTML pages and assets, and the
+daily puzzle route (with HEAD, so the smoke test is not a view). `astro dev` and `astro preview` are
 trusted authoring tools and do **not** enforce authentication; production must
 always serve through this Caddyfile. The access page can be previewed locally,
 but its unlock action requires the access service and the configured origin.
@@ -847,6 +874,7 @@ the same checks before switching releases, so a failing commit never goes live).
   historical-basemaps snapshot files (only the content lint and the geometry
   test read them), `public/data/land.geojson` and the Noto Sans glyphs.
 - Site search (e.g. Pagefind over `dist/`).
+- More Connections puzzles: the rotation starts again after 32 viewed days.
 - Verify detailed prescribed Paper 1 pairings and Europe study boundaries
   against the school's full 2028 History guide; only the public brief is verified.
 

@@ -31,3 +31,16 @@ export interface CraftRecipe {
   kind: 'association' | 'history';
   source?: { label: string; url: string };
 }
+export type ConnectionsLevel = 1 | 2 | 3 | 4;
+export interface ConnectionsGroup {
+  /** 1 is the most direct connection, 4 the trickiest. */
+  level: ConnectionsLevel;
+  /** The connection, shown once the group is found. */
+  label: string;
+  items: [string, string, string, string];
+  explanation: string;
+  sources: { label: string; url: string }[];
+  /** A study note to read next: a file name in src/content/topics. */
+  topic?: string;
+}
+export interface ConnectionsPuzzle { id: string; groups: [ConnectionsGroup, ConnectionsGroup, ConnectionsGroup, ConnectionsGroup] }

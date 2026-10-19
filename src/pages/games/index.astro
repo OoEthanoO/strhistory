@@ -2,11 +2,12 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { events } from '@/features/games/events';
 import { craftItems, craftRecipes } from '@/features/games/craft-data';
+import { connectionsPuzzles } from '@/features/games/connections-data';
 const preview = events.find(event => event.id.includes('bastille')) ?? events[0];
 ---
-<BaseLayout title="History games" description="Find the place, connect the dates, and craft your way through history. Three interactive games grounded in real events.">
+<BaseLayout title="History games" description="Find the place, connect the dates, craft your way through history and solve the daily Connections puzzle. Four games grounded in real events.">
   <div class="container games-hub">
-    <header class="games-heading"><p class="eyebrow">The history playground</p><h1>Make a little history.</h1><p>Follow a clue. Place a moment. See what connects.<br />Three ways to think with the past.</p></header>
+    <header class="games-heading"><p class="eyebrow">The history playground</p><h1>Make a little history.</h1><p>Follow a clue. Place a moment. See what connects.<br />Four ways to think with the past.</p></header>
     <div class="games-grid">
       <a class="game-card where-card" href="/games/where-and-when">
         <div class="card-art image-art"><img src={preview.image.src} alt="" width="1280" height="800" /><div class="image-crosshair" aria-hidden="true"><span></span></div><span class="art-label">A place. A day. A story.</span></div>
@@ -14,9 +15,10 @@ const preview = events.find(event => event.id.includes('bastille')) ?? events[0]
       </a>
       <a class="game-card timeline-card" href="/games/timeline"><div class="card-art timeline-art" aria-hidden="true"><div class="time-thread"></div><span class="time-stamp">1789</span><span class="time-question">?</span><span class="time-stamp">1871</span></div><div class="card-copy"><p class="card-number">02 / Perspective</p><h2>Timeline <span aria-hidden="true">↗</span></h2><p>What came first? Fit each new event between the others and watch the bigger picture take shape.</p><div class="card-meta"><span>Up to 8 placements</span><span>No timer</span></div></div></a>
       <a class="game-card craft-card" href="/games/history-craft"><div class="card-art craft-art" aria-hidden="true"><div class="craft-preview"><span>People</span><b>+</b><span>Ideas</span></div><div class="craft-preview-output">✧ A new connection</div></div><div class="card-copy"><p class="card-number">03 / Discovery</p><h2>History Craft <span aria-hidden="true">↗</span></h2><p>Combine ideas, people and places to uncover historical figures, events and surprising connections.</p><div class="card-meta"><span>{craftItems.length} discoveries</span><span>{craftRecipes.length} combinations</span></div></div></a>
+      <a class="game-card connections-card" href="/games/connections"><div class="card-art connections-art" aria-hidden="true"><div class="mini-board"><span class="mini-found">Four of a kind</span>{Array.from({ length: 12 }, (_, index) => <span class={index === 1 || index === 6 || index === 8 ? 'is-picked' : undefined} />)}</div></div><div class="card-copy"><p class="card-number">04 / Pattern</p><h2>Connections <span aria-hidden="true">↗</span></h2><p>Sixteen people, places and ideas hide four groups. Find what links them, then read the history behind each connection.</p><div class="card-meta"><span>A new puzzle each day</span><span>{connectionsPuzzles.length} puzzles</span></div></div></a>
     </div>
-    <div class="games-footnote"><div><h2>Curiosity, backed by sources.</h2><p>Image rounds cover the four current IB History units. Choose SL, HL or an individual unit; other courses can use the collection for broad source practice. Every reveal includes the event’s context and image credit.</p></div><div><h2>A collection that stays yours.</h2><p>Crafting discoveries and your best five-round map score save in this browser. No leaderboard, account or timer. Games use the same department access as the notes.</p></div></div>
-    <p class="games-inspiration">Inspired by the curiosity of <a href="https://www.geoguessr.com/">GeoGuessr</a> and <a href="https://neal.fun/">Neal.fun</a>. These are original STR History games, with a curated collection of historical material.</p>
+    <div class="games-footnote"><div><h2>Curiosity, backed by sources.</h2><p>Image rounds cover the four current IB History units. Choose SL, HL or an individual unit; other courses can use the collection for broad source practice. Every reveal includes the event’s context and image credit.</p></div><div><h2>A collection that stays yours.</h2><p>Crafting discoveries, Connections progress and your best five-round map score save in this browser. No leaderboard, account or timer. Games use the same department access as the notes.</p></div></div>
+    <p class="games-inspiration">Inspired by the curiosity of <a href="https://www.geoguessr.com/">GeoGuessr</a>, <a href="https://neal.fun/">Neal.fun</a> and the New York Times’s <a href="https://www.nytimes.com/games/connections">Connections</a>. These are original STR History games, with a curated collection of historical material.</p>
   </div>
 </BaseLayout>
 <style>
@@ -53,8 +55,16 @@ const preview = events.find(event => event.id.includes('bastille')) ?? events[0]
   .craft-preview span { padding: 10px 18px; border-radius: var(--radius-s); background: var(--card); border: 1px solid var(--rule); transform: rotate(-4deg); font-weight: 500; box-shadow: var(--shadow-s); }
   .craft-preview span:last-child { transform: rotate(5deg); }
   .craft-preview-output { font-size: 13px; color: var(--c-historiography); }
+  .connections-card { grid-column: 1 / -1; flex-direction: row; }
+  .connections-card .card-art { flex: 0 0 44%; }
+  .connections-card .card-copy { align-self: center; }
+  .connections-art { background: var(--c-context-soft); }
+  .mini-board { display: grid; grid-template-columns: repeat(4, 46px); gap: 6px; transform: rotate(-3deg); }
+  .mini-board span { height: 34px; border-radius: 6px; background: var(--card); border: 1px solid var(--rule); box-shadow: var(--shadow-s); }
+  .mini-board .is-picked { background: var(--ink); border-color: var(--ink); }
+  .mini-board .mini-found { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--seen) 18%, var(--card)); border-color: var(--seen); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
   .games-footnote { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--rule); }
   .games-footnote h2 { font-size: var(--step-1); }.games-footnote p, .games-inspiration { color: var(--ink-2); font-size: var(--step--1); }.games-inspiration { margin-top: 24px; }
-  @media(max-width: 760px) { .games-grid, .games-footnote { grid-template-columns: 1fr; } .where-card { grid-row: auto; }.image-art { min-height: 290px; }.games-footnote { gap: 20px; }.card-copy { padding: 24px; }.card-art { min-height: 150px; }.image-art { min-height: 290px; } }
+  @media(max-width: 760px) { .games-grid, .games-footnote { grid-template-columns: 1fr; } .where-card { grid-row: auto; }.connections-card { flex-direction: column; }.image-art { min-height: 290px; }.games-footnote { gap: 20px; }.card-copy { padding: 24px; }.card-art { min-height: 150px; }.image-art { min-height: 290px; } }
   @media(prefers-reduced-motion: reduce) { .game-card { transition: none; }.game-card:hover { transform: none; } }
 </style>
