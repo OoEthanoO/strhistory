@@ -7,7 +7,7 @@ courses: [ib-history-hl, ib-history-sl, extended-essay-history]
 order: 3
 ---
 
-Mr. Wood teaches IB History and supervises extended essays. He is an assistant hockey coach and coordinates the history trip to Europe.
+Mr. Wood teaches IB History, supervises extended essays, is an assistant hockey coach and coordinates the history trip to Europe.
 
 ## Getting to know Mr. Wood
 

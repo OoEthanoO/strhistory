@@ -7,4 +7,4 @@ courses: [ib-history-hl, ib-history-sl, extended-essay-history]
 order: 1
 ---
 
-Mr. Rovere is the department head of Canadian and World Studies. He teaches IB History, supervises extended essays and coaches the hockey and ski teams.
+As the department head of Canadian and World Studies, Mr. Rovere also teaches IB History, supervises extended essays and coaches the hockey and ski teams.
