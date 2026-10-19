@@ -1,9 +1,16 @@
 ---
+import { getImage } from 'astro:assets';
+import { getEntry } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import GameNav from '@/features/games/GameNav.astro';
 import HistoryCraft from '@/features/games/HistoryCraft';
+
+// The goal, Mr. Wood, is revealed with the teacher profile's photo once crafted.
+const goal = await getEntry('teachers', 'robert-wood');
+const photo = goal?.data.photo ? await getImage({ src: goal.data.photo, width: 160, height: 160 }) : undefined;
+const goalPortrait = goal && photo ? { src: photo.src, alt: goal.data.photoAlt ?? goal.data.name } : undefined;
 ---
-<BaseLayout title="History Craft" description="Combine ideas, people and places to discover historical figures and events, with context for every connection.">
-  <div class="container games-page"><GameNav /><h1 class="game-page-title">History Craft</h1><HistoryCraft client:load /><noscript><p>This game needs JavaScript. Explore the <a href="/glossary">glossary</a> instead.</p></noscript></div>
+<BaseLayout title="History Craft" description="Combine ideas, people and places to discover historical figures and events, with context for every connection, on the way to crafting Mr. Wood.">
+  <div class="container games-page"><GameNav /><h1 class="game-page-title">History Craft</h1><HistoryCraft client:load goalPortrait={goalPortrait} goalProfile={goal ? `/teachers/${goal.id}` : undefined} /><noscript><p>This game needs JavaScript. Explore the <a href="/glossary">glossary</a> instead.</p></noscript></div>
 </BaseLayout>
 <style>.games-page { padding-bottom: 72px; } .game-page-title { font-size: var(--step--1); font-family: var(--font-sans); color: var(--accent); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 24px; }</style>

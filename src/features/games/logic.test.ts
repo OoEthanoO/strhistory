@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { load } from 'js-yaml';
 import { events } from './events.ts';
-import { craftItems, craftRecipes, starterIds } from './craft-data.ts';
+import { craftItems, craftRecipes, goalId, starterIds } from './craft-data.ts';
 import { connectionsPuzzles } from './connections-data.ts';
-import { availableHint, CONNECTIONS_MISTAKES, connectionsLayout, connectionsProgress, connectionsShare, dateValue, distanceKm, earlierNumbers, filterEvents, judgeGuess, parseDate, readDaily, readDiscoveries, readSavedGuesses, recipeKey, scoreGuess, seededRandom, shuffled, tilesKey, validInsertion } from './logic.ts';
+import { availableHint, CONNECTIONS_MISTAKES, connectionsLayout, connectionsProgress, connectionsShare, dateValue, distanceKm, earlierNumbers, filterEvents, judgeGuess, parseDate, readDaily, readDiscoveries, readSavedGuesses, recipeKey, routeToGoal, scoreGuess, seededRandom, shuffled, tilesKey, validInsertion } from './logic.ts';
 import type { GameCatalogue, HistoricalDate, HistoryEvent } from './types.ts';
 
 const eventAt = (date: HistoricalDate): HistoryEvent => ({ ...events[0]!, date });
@@ -86,8 +86,35 @@ test('crafting has unique commutative pairs, valid ingredients and sources for h
     for (const id of [...recipe.ingredients, recipe.result]) assert.ok(ids.has(id), id);
     assert.ok(recipe.explanation.length > 20);
     if (recipe.kind === 'history') assert.ok(recipe.source?.url.startsWith('https://'), recipe.result);
+    // St. Robert connections cite the department's page or a profile on this site.
+    if (recipe.kind === 'school') assert.match(recipe.source?.url ?? '', /^(?:https:\/\/|\/teachers\/[a-z-]+$)/, recipe.result);
+    if (recipe.source) assert.match(recipe.source.label, / · /, recipe.source.label);
   }
   assert.equal(craftRecipes.find(recipe => recipeKey(...recipe.ingredients) === recipeKey('hitler', 'stalin'))?.result, 'nazi-soviet-pact');
+});
+
+test('the goal, Mr. Wood, takes real exploration, and every nudge on the way brings it closer', () => {
+  assert.equal(craftItems.find(item => item.id === goalId)?.category, 'person');
+  assert.ok(!starterIds.includes(goalId));
+  const goalRecipes = craftRecipes.filter(recipe => recipe.result === goalId);
+  assert.ok(goalRecipes.length >= 2 && goalRecipes.every(recipe => recipe.kind === 'school'), 'more than one route, all St. Robert connections');
+  const discovered = [...starterIds];
+  let route = routeToGoal(craftRecipes, discovered, goalId);
+  assert.ok(route && route.remaining >= 15, `the goal starts ${route?.remaining} combinations away`);
+  while (route) {
+    assert.ok(route.next.ingredients.every(id => discovered.includes(id)), 'the nudge uses discovered items');
+    assert.equal(discovered.includes(route.next.result), false);
+    discovered.push(route.next.result);
+    const after = routeToGoal(craftRecipes, discovered, goalId);
+    if (after) assert.ok(after.remaining < route.remaining, `${route.next.result} brings the goal closer`);
+    route = after;
+  }
+  assert.ok(discovered.includes(goalId));
+  assert.equal(routeToGoal(craftRecipes, discovered, goalId), null, 'no route once the goal is crafted');
+  assert.equal(routeToGoal(craftRecipes, starterIds, 'not-an-item'), null, 'no route to an item without recipes');
+  // After the goal, ordinary hints still reach everything else.
+  for (let hint = availableHint(craftRecipes, discovered); hint; hint = availableHint(craftRecipes, discovered)) discovered.push(hint.result);
+  assert.equal(new Set(discovered).size, craftItems.length);
 });
 
 test('hints lead from the starters to every craft item without requiring locked ingredients', () => {

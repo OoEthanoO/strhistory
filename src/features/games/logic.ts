@@ -68,6 +68,42 @@ export function availableHint(recipes: CraftRecipe[], discovered: readonly strin
   return recipes.find(recipe => !known.has(recipe.result) && recipe.ingredients.every(item => known.has(item)));
 }
 
+/**
+ * The cheapest known route from the collection to a goal: how many new items it
+ * still needs (the goal included), and a combination available now that starts it.
+ * Null once the goal is discovered, or if no recipes lead to it.
+ */
+export function routeToGoal(recipes: readonly CraftRecipe[], discovered: readonly string[], goal: string): { remaining: number; next: CraftRecipe } | null {
+  const known = new Set(discovered);
+  if (known.has(goal)) return null;
+  // An item costs one more than its cheapest recipe's ingredients (Knuth's generalisation of Dijkstra).
+  const cost = new Map([...known].map(id => [id, 0]));
+  const best = new Map<string, CraftRecipe>();
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const recipe of recipes) {
+      const [a, b] = recipe.ingredients;
+      const costA = cost.get(a), costB = cost.get(b);
+      if (known.has(recipe.result) || costA === undefined || costB === undefined) continue;
+      const total = 1 + costA + (a === b ? 0 : costB);
+      if (total < (cost.get(recipe.result) ?? Infinity)) { cost.set(recipe.result, total); best.set(recipe.result, recipe); changed = true; }
+    }
+  }
+  if (!best.has(goal)) return null;
+  // Ingredients always cost less than their result, so this walk ends at combinations available now.
+  const route = new Set<string>();
+  let next: CraftRecipe | undefined;
+  const visit = (id: string) => {
+    if (known.has(id) || route.has(id)) return;
+    route.add(id);
+    const recipe = best.get(id)!;
+    recipe.ingredients.forEach(visit);
+    if (!next && recipe.ingredients.every(item => known.has(item))) next = recipe;
+  };
+  visit(goal);
+  return { remaining: route.size, next: next! };
+}
+
 export function readDiscoveries(value: unknown, validIds: ReadonlySet<string>, starters: readonly string[]): string[] {
   const saved = Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && validIds.has(item)) : [];
   return [...new Set([...starters, ...saved])];

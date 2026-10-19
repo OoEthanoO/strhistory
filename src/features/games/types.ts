@@ -28,7 +28,8 @@ export interface CraftRecipe {
   ingredients: [string, string];
   result: string;
   explanation: string;
-  kind: 'association' | 'history';
+  /** `school` recipes are about St. Robert's own history department, not the past. */
+  kind: 'association' | 'history' | 'school';
   source?: { label: string; url: string };
 }
 export type ConnectionsLevel = 1 | 2 | 3 | 4;

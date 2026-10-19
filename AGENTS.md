@@ -43,7 +43,8 @@ A website for a high-school history department with five connected jobs:
    guides (exam papers, IA, extended essay), and an about page.
 5. **History games** at `/games`: Where & When (identify an event's date and
    place from an image), Timeline (place events in chronological order),
-   History Craft (discover connections by combining concepts and people) and
+   History Craft (discover connections by combining concepts and people, with
+   crafting Mr. Wood, one of the department's teachers, as the goal) and
    Connections (a daily puzzle: sort sixteen tiles into four sourced groups).
    All four require the department code, just like the notes.
 
@@ -534,6 +535,11 @@ calm reading experience.
   full-credit radius. Date scoring requires the exact day for full credit.
 - Craft recipes are curated associations, not causal equations. Historical
   connections need context and a source. Keep all items reachable from starters.
+- The craft goal is `goalId` in `craft-data.ts` (Mr. Wood). Until it is crafted,
+  a nudge follows the cheapest route to it (`routeToGoal` in `logic.ts`), and the
+  page counts the combinations left. Recipes for the goal are `school` recipes,
+  cited to the department's teacher page or a profile on this site; the test
+  checks that the goal stays reachable and that every nudge brings it closer.
 - Connections shows one puzzle a day to everyone. The access service keeps the
   position (`deploy/access/daily.mjs`): a puzzle moves on only after a school day
   (America/Toronto) on which a signed-in student opened it, so a puzzle nobody
