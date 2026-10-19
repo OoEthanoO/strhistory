@@ -76,7 +76,11 @@ export class GlobeController {
   readonly borders: BordersClient;
   private manifest: Manifest | undefined;
   private markers = new Map<string, HTMLAnchorElement>();
-  private pinEntries: Array<{ topic: GlobeTopic; marker: Marker; element: HTMLAnchorElement }> = [];
+  private pinEntries: Array<{ topic: GlobeTopic; marker: Marker; element: HTMLAnchorElement; stem: SVGLineElement; offset: [number, number]; tab: number }> = [];
+  /** The notes the pins show, by slug: a timeline step that keeps them keeps the markers. */
+  private pinSlugs = '';
+  /** The map's size in CSS px, read on resize rather than on every camera move. */
+  private size = { width: 0, height: 0 };
   private readonly ready: Promise<void>;
   private readonly reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   private paletteYear: number;
@@ -136,6 +140,9 @@ export class GlobeController {
     this.ready = this.globe.whenReady().catch(() => new Promise<void>(() => {}));
     const map = this.mapOrNull();
     if (map) {
+      const measure = () => { this.size = { width: map.getContainer().clientWidth, height: map.getContainer().clientHeight }; };
+      measure();
+      map.on('resize', () => { measure(); this.layoutPins(); });
       map.on('move', () => this.layoutPins());
       // A click is a completed gesture too (the home page hands off to /globe on it).
       map.on('click', () => this.cb.onInteractionEnd?.(this.getView()));
@@ -198,13 +205,18 @@ export class GlobeController {
   // ---------- pins ----------
 
   setTopics(topics: GlobeTopic[]) {
+    const map = this.mapOrNull();
+    const slugs = topics.map((topic) => topic.slug).join('\n');
+    // Scrubbing the timeline asks again with the same notes: keep their pins.
+    if (map && slugs === this.pinSlugs) return;
     // A removed pin never fires mouseleave or blur.
     this.container.classList.remove('is-pin-hovered');
     for (const { marker } of this.pinEntries) marker.remove();
     this.pinEntries = [];
     this.markers.clear();
-    const map = this.mapOrNull();
+    this.pinSlugs = '';
     if (!map) return;
+    this.pinSlugs = slugs;
     for (const topic of topics) {
       const el = document.createElement('a');
       el.className = 'globe-pin';
@@ -229,7 +241,7 @@ export class GlobeController {
       const marker = new Marker({ element: el, anchor: 'center', opacityWhenCovered: '0' })
         .setLngLat([topic.lng, topic.lat])
         .addTo(map);
-      this.pinEntries.push({ topic, marker, element: el });
+      this.pinEntries.push({ topic, marker, element: el, stem: el.querySelector('line')!, offset: [0, 0], tab: 0 });
       this.markers.set(topic.slug, el);
       this.describePin(el, topic);
       el.classList.add('is-active');
@@ -237,25 +249,33 @@ export class GlobeController {
     this.layoutPins();
   }
 
+  /** Runs on every camera move: touches a marker or its stem only when its fan-out offset or Tab stop changes. */
   private layoutPins() {
     const map = this.mapOrNull();
-    if (!map) return;
-    const { clientWidth: width, clientHeight: height } = map.getContainer();
+    if (!map || !this.pinEntries.length) return;
+    const { width, height } = this.size;
     const points = this.pinEntries.map(({ topic }) => {
       const point = map.project([topic.lng, topic.lat]);
       return { id: topic.slug, x: point.x, y: point.y };
     });
     const offsets = pinOffsets(points);
-    this.pinEntries.forEach(({ topic, marker, element }, i) => {
-      const [x, y] = offsets.get(topic.slug) ?? [0, 0];
-      marker.setOffset([x, y]);
-      const stem = element.querySelector('line')!;
-      stem.setAttribute('x2', String(-x));
-      stem.setAttribute('y2', String(-y));
+    this.pinEntries.forEach((entry, i) => {
+      // Whole pixels, as MapLibre places markers: sub-pixel drift is no reason to move one.
+      const [x, y] = (offsets.get(entry.topic.slug) ?? [0, 0]).map(Math.round) as [number, number];
+      if (x !== entry.offset[0] || y !== entry.offset[1]) {
+        entry.offset = [x, y];
+        entry.marker.setOffset([x, y]);
+        entry.stem.setAttribute('x2', String(-x));
+        entry.stem.setAttribute('y2', String(-y));
+      }
       // Pins off the screen leave the Tab order (the notes panel still reaches them).
       const px = points[i].x + x;
       const py = points[i].y + y;
-      element.tabIndex = px < 0 || py < 0 || px > width || py > height ? -1 : 0;
+      const tab = px < 0 || py < 0 || px > width || py > height ? -1 : 0;
+      if (tab !== entry.tab) {
+        entry.tab = tab;
+        entry.element.tabIndex = tab;
+      }
     });
   }
 
@@ -333,6 +353,7 @@ export class GlobeController {
 
   destroy() {
     this.pinEntries = [];
+    this.pinSlugs = '';
     this.markers.clear();
     this.globe.destroy();
   }

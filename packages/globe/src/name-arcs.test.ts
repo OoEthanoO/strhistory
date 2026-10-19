@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { MultiPolygon, Polygon } from '@alexs-atlas/borders';
-import { nameArc, nameArcs, otherLand, shortName } from './name-arcs.js';
+import { landWater, nameArc, nameArcs, otherLand, shortName } from './name-arcs.js';
 
 const KM = 111.32;
 const rect = (w: number, s: number, e: number, n: number): Polygon => ({
@@ -260,6 +260,60 @@ describe('otherLand', () => {
     const none = otherLand([{ id: 1, tier: 0, geometry: { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [0, 0]]] } }]);
     expect(none(-1)(0.2, 0.1)).toBe(false);
   });
+
+  it('answers exactly as a plain even-odd scan for large, banded parts', () => {
+    // Wavy many-vertex rings (large parts get an edge index by latitude band), a hole,
+    // small parts that are scanned whole, and a part on the grid's last row and column.
+    const wavy = (cx: number, cy: number, r: number, n: number, wobble: number): number[][] => {
+      const ring: number[][] = [];
+      for (let i = 0; i < n; i++) {
+        const a = (2 * Math.PI * i) / n;
+        const rr = r * (1 + wobble * Math.sin(7 * a));
+        ring.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a)]);
+      }
+      return [...ring, ring[0]!];
+    };
+    const features = [
+      { id: 1, tier: 0, geometry: { type: 'Polygon', coordinates: [wavy(20, 40, 15, 900, 0.3), wavy(20, 40, 4, 120, 0.1).reverse()] } as Polygon },
+      { id: 2, tier: 0, geometry: { type: 'MultiPolygon', coordinates: [[wavy(-60, -20, 3, 12, 0)], [wavy(174, 84, 5, 300, 0.2)]] } as MultiPolygon },
+      { id: 3, tier: 1, geometry: rect(10, 30, 30, 50) },
+    ];
+    const lakes = [{ geometry: { type: 'Polygon', coordinates: [wavy(25, 42, 2, 200, 0.2)] } as Polygon }];
+    const evenOdd = (rings: number[][][], x: number, y: number): boolean => {
+      let hit = false;
+      for (const ring of rings) {
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const [xi, yi] = ring[i]!;
+          const [xj, yj] = ring[j]!;
+          if (yi! > y !== yj! > y && x < ((xj! - xi!) * (y - yi!)) / (yj! - yi!) + xi!) hit = !hit;
+        }
+      }
+      return hit;
+    };
+    const parts = (g: Polygon | MultiPolygon): number[][][][] => (g.type === 'Polygon' ? [g.coordinates] : g.coordinates);
+    const onLand = (x: number, y: number, except: number): boolean =>
+      features.some((f) => f.tier === 0 && f.id !== except && parts(f.geometry).some((rings) => evenOdd(rings, x, y)));
+    const other = otherLand(features);
+    const ink = landWater(features, lakes);
+    // Random points, plus points at vertex latitudes (where bands begin and end).
+    let seed = 7;
+    const random = (): number => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+    const vertices = features.flatMap((f) => parts(f.geometry).flat(2));
+    const points: [number, number][] = [];
+    for (let i = 0; i < 4000; i++) points.push([-80 + random() * 260, -30 + random() * 120]);
+    for (let i = 0; i < 2000; i++) {
+      const v = vertices[Math.floor(random() * vertices.length)]!;
+      points.push([v[0]! + (random() - 0.5) * 2, v[1]!]);
+    }
+    let land = 0;
+    for (const [x, y] of points) {
+      for (const except of [-1, 1, 2]) expect(other(except)(x, y), `${x}, ${y} but ${except}`).toBe(onLand(x, y, except));
+      const lake = evenOdd(parts(lakes[0]!.geometry)[0]!, x, y);
+      expect(ink.water(x, y), `${x}, ${y}`).toBe(!onLand(x, y, -1) || lake);
+      if (onLand(x, y, -1)) land++;
+    }
+    expect(land).toBeGreaterThan(500); // the points reach the land, not only the sea
+  });
 });
 
 describe('shortName', () => {
@@ -309,6 +363,13 @@ describe('nameArcs: separate territories', () => {
   it('names the islands of an archipelago, or land within 2,000 km, once', () => {
     const archipelago: MultiPolygon = { type: 'MultiPolygon', coordinates: [square(0, 0, 8), square(12, 0, 6), square(0, 12, 6)] };
     expect(nameArcs(archipelago)).toHaveLength(1);
+  });
+
+  it('names a colony on its own from just beyond 2,000 km of the homeland', () => {
+    // Nearest corners along the equator: 17.5° ≈ 1,946 km, 18.5° ≈ 2,057 km.
+    const at = (gap: number): MultiPolygon => ({ type: 'MultiPolygon', coordinates: [square(0, 0, 20), square(20 + gap, 0, 5)] });
+    expect(nameArcs(at(17.5))).toHaveLength(1);
+    expect(nameArcs(at(18.5))).toHaveLength(2);
   });
 
   it('leaves out territories smaller than 3 % of the largest part', () => {

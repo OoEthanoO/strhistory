@@ -55,38 +55,28 @@ const TURN_LONG = 20;
 /** Whether a point (lon, lat) lies on land held by another polity (or by none): never bridged. */
 export type OtherLandTest = (lon: number, lat: number) => boolean;
 
-interface BodyPart {
+interface BodyPart extends RingPart {
   rings: [number, number][][];
   area: number;
-  box: [number, number, number, number];
 }
 
 /** Even-odd point-in-polygon over a part's rings (outer and holes) in the local plane. */
 function inPart(part: BodyPart, x: number, y: number): boolean {
-  if (x < part.box[0] || x > part.box[2] || y < part.box[1] || y > part.box[3]) return false;
-  let inside = false;
-  for (const ring of part.rings) {
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      const [xi, yi] = ring[i]!;
-      const [xj, yj] = ring[j]!;
-      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
-    }
-  }
-  return inside;
+  return evenOdd(part, x, y);
 }
 
-/** Smallest distance between the (sampled) vertices of two parts' outer rings, km. */
-function partGap(a: BodyPart, b: BodyPart): number {
+/** Whether two parts' outer rings come within `gap` km of each other (sampled vertices, as close as any pair). */
+function partsWithin(a: BodyPart, b: BodyPart, gap: number): boolean {
   const ra = a.rings[0]!;
   const rb = b.rings[0]!;
   const sa = Math.max(1, Math.floor(ra.length / GAP_VERTICES));
   const sb = Math.max(1, Math.floor(rb.length / GAP_VERTICES));
-  let best = Infinity;
+  const gap2 = gap * gap;
   for (let i = 0; i < ra.length; i += sa) {
     const [x, y] = ra[i]!;
-    for (let j = 0; j < rb.length; j += sb) best = Math.min(best, Math.hypot(rb[j]![0] - x, rb[j]![1] - y));
+    for (let j = 0; j < rb.length; j += sb) if ((rb[j]![0] - x) ** 2 + (rb[j]![1] - y) ** 2 <= gap2) return true;
   }
-  return best;
+  return false;
 }
 
 /** Separate territories of one polity named on their own: at most this many, … */
@@ -143,7 +133,7 @@ export function nameArcs(geometry: Polygon | MultiPolygon, isOther?: OtherLandTe
   const used = new Set<number>();
   const arcs: NameArc[] = [];
   // Sampled outer-ring vertices (unit vectors) of the territories named so far.
-  const named: [number, number, number][] = [];
+  const named = new ChordIndex(2 * Math.sin(BODY_APART_KM / (2 * 6371)));
   const sample = (part: Position[][]): [number, number, number][] => {
     const ring = part[0]!;
     const every = Math.max(1, Math.floor(ring.length / APART_VERTICES));
@@ -155,15 +145,12 @@ export function nameArcs(geometry: Polygon | MultiPolygon, isOther?: OtherLandTe
     }
     return out;
   };
-  const apartKm = (part: Position[][]): number => {
-    let best = 2;
-    for (const a of sample(part)) for (const b of named) best = Math.min(best, Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]));
-    return 2 * Math.asin(Math.min(1, best / 2)) * 6371;
-  };
+  // Whether a part lies BODY_APART_KM from the territories named so far.
+  const apart = (part: Position[][]): boolean => !sample(part).some((a) => named.near(a));
   let bodies = 0;
   for (const ref of order) {
     if (bodies >= maxBodies || own[ref]!.area < BODY_NAME_SHARE * own[order[0]!]!.area) break;
-    if (used.has(ref) || (named.length && apartKm(parts[ref]!) < BODY_APART_KM)) continue;
+    if (used.has(ref) || (named.size && !apart(parts[ref]!))) continue;
     bodies++;
     // The seed anchors one local plane (km) for its whole body.
     const lon0 = own[ref]!.cLon;
@@ -197,7 +184,7 @@ export function nameArcs(geometry: Polygon | MultiPolygon, isOther?: OtherLandTe
     for (let grew = true; grew; ) {
       grew = false;
       rest = rest.filter((o) => {
-        if (!body.some((m) => boxGap(o.q.box, m.box) <= gap && partGap(o.q, m) <= gap)) return true;
+        if (!body.some((m) => boxGap(o.q.box, m.box) <= gap && partsWithin(o.q, m, gap))) return true;
         body.push(o.q);
         used.add(o.i);
         grew = true;
@@ -206,9 +193,54 @@ export function nameArcs(geometry: Polygon | MultiPolygon, isOther?: OtherLandTe
     }
     const arc = arcOfBody(body, lon0, lat0, k0, gap, isOther) ?? (body.length > 1 ? arcOfBody([seed], lon0, lat0, k0, gap, isOther) : null);
     if (arc) arcs.push(arc);
-    if (bodies < maxBodies) for (const i of [ref, ...others.filter((o) => body.includes(o.q)).map((o) => o.i)]) named.push(...sample(parts[i]!));
+    if (bodies < maxBodies) for (const i of [ref, ...others.filter((o) => body.includes(o.q)).map((o) => o.i)]) named.add(sample(parts[i]!));
   }
   return arcs;
+}
+
+/**
+ * Points on the unit sphere hashed into cubes as wide as a chord `r`: `near(p)` says
+ * whether any point lies within `r` of `p` (squared distances, as a full scan would),
+ * looking only in the 27 cubes around it — a closer point cannot lie further away.
+ */
+class ChordIndex {
+  private readonly cells = new Map<number, number[]>();
+  private readonly n: number;
+  size = 0;
+
+  constructor(private readonly r: number) {
+    this.n = Math.ceil(2 / r) + 1;
+  }
+
+  private cell(v: number): number {
+    return Math.floor((v + 1) / this.r);
+  }
+
+  add(points: readonly [number, number, number][]): void {
+    for (const [x, y, z] of points) {
+      const key = (this.cell(x) * this.n + this.cell(y)) * this.n + this.cell(z);
+      const list = this.cells.get(key);
+      if (list) list.push(x, y, z);
+      else this.cells.set(key, [x, y, z]);
+      this.size++;
+    }
+  }
+
+  near([x, y, z]: readonly [number, number, number]): boolean {
+    const r2 = this.r ** 2;
+    const cx = this.cell(x), cy = this.cell(y), cz = this.cell(z);
+    for (let i = cx - 1; i <= cx + 1; i++) {
+      for (let j = cy - 1; j <= cy + 1; j++) {
+        for (let k = cz - 1; k <= cz + 1; k++) {
+          if (i < 0 || j < 0 || k < 0 || i >= this.n || j >= this.n || k >= this.n) continue;
+          const list = this.cells.get((i * this.n + j) * this.n + k);
+          if (!list) continue;
+          for (let q = 0; q < list.length; q += 3) if ((x - list[q]!) ** 2 + (y - list[q + 1]!) ** 2 + (z - list[q + 2]!) ** 2 < r2) return true;
+        }
+      }
+    }
+    return false;
+  }
 }
 
 /** The arc of a polity's main body (the first of `nameArcs`), or null. */
@@ -555,18 +587,44 @@ function arcOfBody(body: BodyPart[], lon0: number, lat0: number, k0: number, gap
   }
 }
 
+/** A part's edges sorted into horizontal bands (CSR layout): a point test reads only its latitude's band. */
+interface EdgeBands {
+  /** Edge endpoints, `xi yi xj yj` per edge, in ring order. */
+  xy: Float64Array;
+  /** Bottom of the first band and the height of each band (degrees). */
+  y0: number;
+  h: number;
+  /** Edges of band b: `edges[start[b]] … edges[start[b + 1] − 1]`. */
+  start: Int32Array;
+  edges: Int32Array;
+}
+
+/** Rings (outer first, then holes) with the outer ring's bounding box, for point tests. */
+interface RingPart {
+  rings: readonly (readonly number[])[][];
+  box: [number, number, number, number];
+  /** Built on the first point test that reaches the rings of a large part. */
+  bands?: EdgeBands;
+}
+
 /** One polygon part of a feature, for the grids below. */
-interface IndexedPart { id: number; rings: Position[][]; box: [number, number, number, number] }
+interface IndexedPart extends RingPart {
+  id: number;
+  rings: Position[][];
+}
 
 type PolygonFeature = { id: number; geometry: Polygon | MultiPolygon };
+
+/** Cells of the 2° grid: 180 columns (−180…180°) by 90 rows (−90…90°), the last ones taking the edge. */
+const GRID_COLUMNS = 180;
+const GRID_ROWS = 90;
 
 /** A 2° grid of polygon parts by bounding box: point tests and box queries touch a few parts. */
 class PartGrid {
   private static readonly CELL = 2;
-  private readonly grid = new Map<number, IndexedPart[]>();
+  private readonly cells: (IndexedPart[] | undefined)[] = new Array(GRID_COLUMNS * GRID_ROWS);
 
   constructor(features: readonly PolygonFeature[]) {
-    const C = PartGrid.CELL;
     for (const f of features) {
       const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
       for (const rings of polys) {
@@ -580,32 +638,38 @@ class PartGrid {
           box[3] = Math.max(box[3], q[1]!);
         }
         const part: IndexedPart = { id: f.id, rings, box };
-        for (let cy = Math.floor((box[1] + 90) / C); cy <= Math.floor((box[3] + 90) / C); cy++) {
-          for (let cx = Math.floor((box[0] + 180) / C); cx <= Math.floor((box[2] + 180) / C); cx++) {
-            const list = this.grid.get(cy * 1000 + cx);
+        for (let cy = PartGrid.row(box[1]); cy <= PartGrid.row(box[3]); cy++) {
+          for (let cx = PartGrid.column(box[0]); cx <= PartGrid.column(box[2]); cx++) {
+            const list = this.cells[cy * GRID_COLUMNS + cx];
             if (list) list.push(part);
-            else this.grid.set(cy * 1000 + cx, [part]);
+            else this.cells[cy * GRID_COLUMNS + cx] = [part];
           }
         }
       }
     }
   }
 
+  private static column(lon: number): number {
+    return Math.min(GRID_COLUMNS - 1, Math.max(0, Math.floor((lon + 180) / PartGrid.CELL)));
+  }
+
+  private static row(lat: number): number {
+    return Math.min(GRID_ROWS - 1, Math.max(0, Math.floor((lat + 90) / PartGrid.CELL)));
+  }
+
   /** Whether (lon, lat) lies in a part of any feature but `except` (even-odd over its rings). */
   contains(lon: number, lat: number, except?: number): boolean {
-    const C = PartGrid.CELL;
     const x = ((((lon + 180) % 360) + 360) % 360) - 180;
-    const list = this.grid.get(Math.floor((lat + 90) / C) * 1000 + Math.floor((x + 180) / C));
+    const list = this.cells[PartGrid.row(lat) * GRID_COLUMNS + PartGrid.column(x)];
     return !!list && list.some((part) => part.id !== except && inside(part, x, lat));
   }
 
   /** The parts whose bounding boxes meet a lon/lat box (w ≤ e, within −180..180). */
   near(w: number, s: number, e: number, n: number): IndexedPart[] {
-    const C = PartGrid.CELL;
     const out = new Set<IndexedPart>();
-    for (let cy = Math.floor((s + 90) / C); cy <= Math.floor((n + 90) / C); cy++) {
-      for (let cx = Math.floor((w + 180) / C); cx <= Math.floor((e + 180) / C); cx++) {
-        for (const part of this.grid.get(cy * 1000 + cx) ?? []) {
+    for (let cy = PartGrid.row(s); cy <= PartGrid.row(n); cy++) {
+      for (let cx = PartGrid.column(w); cx <= PartGrid.column(e); cx++) {
+        for (const part of this.cells[cy * GRID_COLUMNS + cx] ?? []) {
           if (part.box[0] <= e && part.box[2] >= w && part.box[1] <= n && part.box[3] >= s) out.add(part);
         }
       }
@@ -614,9 +678,68 @@ class PartGrid {
   }
 }
 
+/** Parts with fewer vertices than this are scanned whole; larger ones get an edge index. */
+const BANDED_VERTICES = 64;
+/** Edges per band aimed for when a part's edges are sorted into bands. */
+const EDGES_PER_BAND = 8;
+
+/** Sorts a part's edges into horizontal bands. An edge goes in every band its latitudes span. */
+function edgeBands(part: RingPart): EdgeBands {
+  let count = 0;
+  for (const ring of part.rings) count += ring.length;
+  const xy = new Float64Array(count * 4);
+  let e = 0;
+  for (const ring of part.rings) {
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++, e++) {
+      xy[e * 4] = ring[i]![0]!;
+      xy[e * 4 + 1] = ring[i]![1]!;
+      xy[e * 4 + 2] = ring[j]![0]!;
+      xy[e * 4 + 3] = ring[j]![1]!;
+    }
+  }
+  const bands = Math.max(1, Math.min(1024, Math.ceil(count / EDGES_PER_BAND)));
+  const y0 = part.box[1];
+  const h = (part.box[3] - part.box[1]) / bands || 1;
+  // Out-of-box latitudes are clamped: such edges sit in the first or last band, where the
+  // crossing test (the same as the plain scan's) ignores them as the scan would.
+  const band = (y: number): number => Math.min(bands - 1, Math.max(0, Math.floor((y - y0) / h)));
+  const start = new Int32Array(bands + 1);
+  for (let k = 0; k < count; k++) {
+    const a = xy[k * 4 + 1]!, b = xy[k * 4 + 3]!;
+    for (let t = band(Math.min(a, b)), last = band(Math.max(a, b)); t <= last; t++) start[t + 1]!++;
+  }
+  for (let t = 0; t < bands; t++) start[t + 1]! += start[t]!;
+  const edges = new Int32Array(start[bands]!);
+  const fill = start.slice(0, bands);
+  for (let k = 0; k < count; k++) {
+    const a = xy[k * 4 + 1]!, b = xy[k * 4 + 3]!;
+    for (let t = band(Math.min(a, b)), last = band(Math.max(a, b)); t <= last; t++) edges[fill[t]!++] = k;
+  }
+  return { xy, y0, h, start, edges };
+}
+
 function inside(part: IndexedPart, x: number, y: number): boolean {
+  return evenOdd(part, x, y);
+}
+
+/**
+ * Even-odd point-in-polygon over a part's rings. Large parts test only the edges in the
+ * point's latitude band: every edge that can cross the point's latitude is in it, so the
+ * result is the plain scan's (the same arithmetic on the same coordinates).
+ */
+function evenOdd(part: RingPart, x: number, y: number): boolean {
   if (x < part.box[0] || x > part.box[2] || y < part.box[1] || y > part.box[3]) return false;
   let hit = false;
+  if (part.bands || part.rings.reduce((n, ring) => n + ring.length, 0) >= BANDED_VERTICES) {
+    const { xy, y0, h, start, edges } = (part.bands ??= edgeBands(part));
+    const b = Math.min(start.length - 2, Math.max(0, Math.floor((y - y0) / h)));
+    for (let k = start[b]!, end = start[b + 1]!; k < end; k++) {
+      const e = edges[k]! * 4;
+      const xi = xy[e]!, yi = xy[e + 1]!, xj = xy[e + 2]!, yj = xy[e + 3]!;
+      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit;
+    }
+    return hit;
+  }
   for (const ring of part.rings) {
     for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
       const xi = ring[i]![0]!, yi = ring[i]![1]!, xj = ring[j]![0]!, yj = ring[j]![1]!;
@@ -658,8 +781,17 @@ export function clipRing(ring: readonly Position[], w: number, s: number, e: num
  * tests.
  */
 export function otherLand(features: readonly { id: number; tier: number; geometry: Polygon | MultiPolygon }[]): (id: number) => OtherLandTest {
-  const grid = new PartGrid(features.filter((f) => f.tier === 0));
+  const grid = tierZeroGrid(features);
   return (id) => (lon, lat) => grid.contains(lon, lat, id);
+}
+
+/** Grids by the list they index: `otherLand` and `landWater` of one frame's list share its tier-0 grid, and lakes keep theirs. */
+const grids = new WeakMap<object, PartGrid>();
+
+function tierZeroGrid(features: readonly { id: number; tier: number; geometry: Polygon | MultiPolygon }[]): PartGrid {
+  let grid = grids.get(features);
+  if (!grid) grids.set(features, (grid = new PartGrid(features.filter((f) => f.tier === 0))));
+  return grid;
 }
 
 /** Land and water of a frame, for the ink of map names. */
@@ -679,8 +811,9 @@ export function landWater(
   features: readonly { id: number; tier: number; geometry: Polygon | MultiPolygon }[],
   lakes: readonly { geometry: Polygon | MultiPolygon | null }[] = [],
 ): LandWater {
-  const land = new PartGrid(features.filter((f) => f.tier === 0));
-  const water = new PartGrid(lakes.flatMap((f, i) => (f.geometry?.type === 'Polygon' || f.geometry?.type === 'MultiPolygon' ? [{ id: i, geometry: f.geometry }] : [])));
+  const land = tierZeroGrid(features);
+  let water = grids.get(lakes);
+  if (!water) grids.set(lakes, (water = new PartGrid(lakes.flatMap((f, i) => (f.geometry?.type === 'Polygon' || f.geometry?.type === 'MultiPolygon' ? [{ id: i, geometry: f.geometry }] : [])))));
   return {
     water: (lon, lat) => !land.contains(lon, lat) || water.contains(lon, lat),
     shores: (w, s, e, n) =>

@@ -1,6 +1,7 @@
 // addBorderLayers against a fake MapLibre map and a fake BordersClient:
 // sources/layers, frame changes (only when the frame or LOD changes, latest
-// wins), base land hand-off, LOD switching, hover, click-select, remove().
+// wins, sent as diffs), base land hand-off, LOD switching, hover, click-select,
+// hidden lines, remove().
 import { describe, expect, it, vi } from 'vitest';
 import { addBorderLayers, formatSpan, hoverLabel, pickOrder } from './border-layers.js';
 import { borderIds, layerOrder } from './style.js';
@@ -22,14 +23,47 @@ vi.mock('./map-names.js', async (importOriginal) => {
 
 type Handler = (e?: unknown) => void;
 
+type FakeFeature = { id?: number; geometry: unknown; properties: Record<string, unknown> | null };
+type FakeDiff = {
+  remove?: number[];
+  add?: FakeFeature[];
+  update?: { id: number; addOrUpdateProperties?: { key: string; value: unknown }[]; removeProperties?: string[] }[];
+};
+
 class FakeSource {
   data: unknown = null;
   setCalls = 0;
+  updateCalls = 0;
+  diffs: FakeDiff[] = [];
   constructor(readonly spec: unknown) {}
   setData(d: unknown): Promise<void> {
     this.data = d;
     this.setCalls++;
     return Promise.resolve();
+  }
+  /** MapLibre's GeoJSONSource.updateData: needs a unique id on every feature it holds. */
+  updateData(diff: FakeDiff): Promise<void> {
+    const features = ((this.data as { features?: FakeFeature[] } | null)?.features ?? []) as FakeFeature[];
+    const byId = new Map(features.map((f) => [f.id, f]));
+    if (features.some((f) => typeof f.id !== 'number') || byId.size !== features.length) throw new Error('GeoJSON data is not compatible with updateData');
+    for (const id of diff.remove ?? []) byId.delete(id);
+    for (const f of diff.add ?? []) byId.set(f.id, f);
+    for (const u of diff.update ?? []) {
+      const f = byId.get(u.id);
+      if (!f) continue;
+      const properties = { ...(f.properties ?? {}) };
+      for (const k of u.removeProperties ?? []) delete properties[k];
+      for (const { key, value } of u.addOrUpdateProperties ?? []) properties[key] = value;
+      byId.set(u.id, { ...f, properties });
+    }
+    this.data = { type: 'FeatureCollection', features: [...byId.values()] };
+    this.updateCalls++;
+    this.diffs.push(diff);
+    return Promise.resolve();
+  }
+  /** Updates of any kind (setData or updateData). */
+  get sends(): number {
+    return this.setCalls + this.updateCalls;
   }
 }
 
@@ -177,14 +211,18 @@ const coastOf = (year: number): unknown => {
 
 const twoParts = { type: 'MultiPolygon', coordinates: [square.coordinates, [[[3, 0], [4, 0], [4, 1], [3, 0]]]] };
 
-function fakeClient(opts: { partition?: boolean; coast?: boolean; spread?: boolean; multi?: boolean } = {}): BordersClient & { calls: { year: number; lod: string | undefined }[] } {
+function fakeClient(
+  opts: { partition?: boolean; coast?: boolean; spread?: boolean; multi?: boolean } = {},
+): BordersClient & { calls: { year: number; lod: string | undefined }[]; lineCalls: number[] } {
   const calls: { year: number; lod: string | undefined }[] = [];
+  const lineCalls: number[] = [];
   const frameOf = (y: number): { from: number; to: number } => {
     const from = Math.floor(y / 100) * 100;
     return { from, to: from + 99 };
   };
   const client = {
     calls,
+    lineCalls,
     ready: () => Promise.resolve(MANIFEST),
     frameOf,
     bordersAt: async (year: number, o?: { lod?: string }) => {
@@ -202,7 +240,7 @@ function fakeClient(opts: { partition?: boolean; coast?: boolean; spread?: boole
         ],
       };
     },
-    linesAt: async (year: number) => ({
+    linesAt: async (year: number) => (lineCalls.push(year), {
       type: 'FeatureCollection',
       features: [
         { type: 'Feature', geometry: { type: 'MultiLineString', coordinates: [[[0, 0], [1, 1]]] }, properties: { kind: 'border' } },
@@ -215,12 +253,18 @@ function fakeClient(opts: { partition?: boolean; coast?: boolean; spread?: boole
     search: async () => [],
     prefetch: () => undefined,
   };
-  return client as unknown as BordersClient & { calls: typeof calls };
+  return client as unknown as BordersClient & { calls: typeof calls; lineCalls: typeof lineCalls };
 }
 
 const settle = async (): Promise<void> => {
   for (let i = 0; i < 12; i++) await new Promise((r) => setTimeout(r, 5));
 };
+
+/** Ids, on the frame source, of the parts of a record. */
+const partIds = (map: FakeMap, record: number): number[] =>
+  ((map.sources.get(borderIds('ca-').frameSrc)!.data as { features: FakeFeature[] }).features ?? [])
+    .filter((f) => f.properties?.id === record)
+    .map((f) => f.id as number);
 
 describe('addBorderLayers', () => {
   it('adds every source and layer, in order, before the host layer', async () => {
@@ -255,7 +299,7 @@ describe('addBorderLayers', () => {
     expect(map.sources.get(ids.lakesSrc)!.setCalls).toBe(1);
   });
 
-  it('hands the map one feature per polygon part (same id), but keeps one feature per record', async () => {
+  it('hands the map one feature per polygon part (with an id of its own), but keeps one feature per record', async () => {
     // A sliver part whose winding flips in tiling must not unfill the mainland (cull.ts splitParts).
     const map = new FakeMap();
     const h = addBorderLayers(map as never, { borders: fakeClient({ multi: true }), year: 1914 });
@@ -264,11 +308,43 @@ describe('addBorderLayers', () => {
     const frame = map.sources.get(borderIds('ca-').frameSrc)!.data as {
       features: { id?: number; geometry: { type: string }; properties: { id: number } }[];
     };
-    const big = frame.features.filter((f) => f.properties.id === 1901);
+    const big = frame.features.filter((f) => f.properties?.id === 1901);
     expect(big.map((f) => f.geometry.type)).toEqual(['Polygon', 'Polygon']);
-    expect(big.map((f) => f.id)).toEqual([1901, 1901]);
+    // Diffs need a unique id per feature; the record is the `id` property.
+    expect(new Set(frame.features.map((f) => f.id)).size).toBe(frame.features.length);
     expect(h.frameFeatures().filter((f) => f.properties.id === 1901)).toHaveLength(1);
     expect(h.featuresOf('clio:big-1900').map((f) => f.geometry.type)).toEqual(['MultiPolygon']);
+    h.remove();
+  });
+
+  it('sends the map only what its layers read; the palette and picking see whole records', async () => {
+    const map = new FakeMap();
+    const coloured: string[] = [];
+    const onHover = vi.fn();
+    const h = addBorderLayers(map as never, {
+      borders: fakeClient(),
+      year: 1914,
+      onHover,
+      palette: (p) => {
+        coloured.push(`${p.pid} ${p.name}`);
+        return '#808080';
+      },
+    });
+    await h.firstFrame;
+    await settle();
+    const frame = map.sources.get(borderIds('ca-').frameSrc)!.data as { features: { geometry: { type: string }; properties: Record<string, unknown> }[] };
+    const polygons = frame.features.filter((f) => f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon');
+    expect(polygons.length).toBeGreaterThan(0);
+    for (const f of polygons) {
+      expect(Object.keys(f.properties).filter((k) => !k.startsWith('_')).sort()).toEqual(['a', 'c', 'id', 'kind', 'tier', ...('precision' in f.properties ? ['precision'] : [])].sort());
+      expect(f.properties._fill).toBeTypeOf('string');
+    }
+    expect(coloured).toContain('clio:big-1900 big-1900'); // the palette function got the record
+    // MapLibre hands back the map's properties; the hover info still names the record.
+    map.rendered = [polygons.find((f) => f.properties.id === 1901)!.properties as never];
+    map.fire('mousemove', { point: { x: 10, y: 20 }, lngLat: { lng: 1, lat: 2 } });
+    await settle();
+    expect(onHover.mock.calls.at(-1)![0]).toMatchObject({ pid: 'clio:big-1900', id: 1901, props: { name: 'big-1900' } });
     h.remove();
   });
 
@@ -289,9 +365,9 @@ describe('addBorderLayers', () => {
     await h.firstFrame;
     await settle();
     const src = map.sources.get(borderIds('ca-').frameSrc)!;
-    const before = src.setCalls;
+    const before = src.sends;
     await h.setYear(1950); // same frame (1900–1999)
-    expect(src.setCalls).toBe(before);
+    expect(src.sends).toBe(before);
     void h.setYear(1850);
     void h.setYear(1750);
     await h.setYear(1650);
@@ -330,10 +406,11 @@ describe('addBorderLayers', () => {
     const h = addBorderLayers(map as never, { borders, year: 1914, onHover, onSelect });
     await h.firstFrame;
     await settle();
+    const [small] = partIds(map, 1902); // the feature-state key: the part's own id
     map.rendered = [props(1901, 'clio:big-1900', { a: 5e6 }), props(1902, 'clio:small-1900', { a: 2e3 })];
     map.fire('mousemove', { point: { x: 10, y: 20 }, lngLat: { lng: 1, lat: 2 } });
     await settle();
-    expect(map.states.get(1902)).toEqual({ hover: true });
+    expect(map.states.get(small!)).toEqual({ hover: true });
     const info = onHover.mock.calls.at(-1)![0];
     expect(info).toMatchObject({ pid: 'clio:small-1900', id: 1902, others: 1, point: { x: 10, y: 20 }, lngLat: [1, 2] });
     expect(info.label).toBe('small-1900 · 1850–1950'); // period name + lifespan from the polity index spans
@@ -349,7 +426,27 @@ describe('addBorderLayers', () => {
     expect(onSelect).toHaveBeenLastCalledWith(null);
     map.fire('mouseout');
     expect(onHover).toHaveBeenLastCalledWith(null);
-    expect(map.states.get(1902)).toEqual({ hover: false });
+    expect(map.states.get(small!)).toEqual({ hover: false });
+  });
+
+  it('hover lights every part of a multi-part polity, and only its parts', async () => {
+    const map = new FakeMap();
+    const h = addBorderLayers(map as never, { borders: fakeClient({ multi: true }), year: 1914, onHover: () => undefined });
+    await h.firstFrame;
+    await settle();
+    const big = partIds(map, 1901);
+    expect(big).toHaveLength(2);
+    map.rendered = [props(1901, 'clio:big-1900', { a: 5e6 })];
+    map.fire('mousemove', { point: { x: 10, y: 20 }, lngLat: { lng: 1, lat: 2 } });
+    await settle();
+    expect(big.map((id) => map.states.get(id))).toEqual([{ hover: true }, { hover: true }]);
+    const [small] = partIds(map, 1902);
+    map.rendered = [props(1902, 'clio:small-1900', { a: 2e3 })];
+    map.fire('mousemove', { point: { x: 12, y: 20 }, lngLat: { lng: 1, lat: 2 } });
+    await settle();
+    expect(big.map((id) => map.states.get(id))).toEqual([{ hover: false }, { hover: false }]);
+    expect(map.states.get(small!)).toEqual({ hover: true });
+    h.remove();
   });
 
   it('keeps the selection by pid across years (outline only where present)', async () => {
@@ -367,6 +464,99 @@ describe('addBorderLayers', () => {
     expect(h.getSelected()).toBe('clio:small-1900');
     expect(hl()).toEqual([]);
     expect(h.featuresOf('clio:small-1900')).toEqual([]);
+  });
+});
+
+describe('frame changes as diffs, and hidden lines', () => {
+  const featuresOn = (map: FakeMap, id: string): FakeFeature[] => ((map.sources.get(id)!.data as { features?: FakeFeature[] } | null)?.features ?? []) as FakeFeature[];
+  const types = (fs: FakeFeature[]): string[] => fs.map((f) => (f.geometry as { type: string }).type);
+
+  it('sends a year change as a diff: shapes on the map stay, with their ids, and take the new records', async () => {
+    const map = new FakeMap();
+    const h = addBorderLayers(map as never, { borders: fakeClient({ multi: true }), year: 1914, names: false });
+    await h.firstFrame;
+    await settle();
+    const ids = borderIds('ca-');
+    const src = map.sources.get(ids.frameSrc)!;
+    expect([src.setCalls, src.updateCalls]).toEqual([1, 0]); // the first frame whole
+    const before = featuresOn(map, ids.frameSrc).map((f) => f.id);
+    await h.setYear(1814); // other records, the same shapes (the fake client draws every frame alike)
+    await settle();
+    expect([src.setCalls, src.updateCalls]).toEqual([1, 1]);
+    const diff = src.diffs.at(-1)!;
+    expect(diff.add).toEqual([]); // no geometry sent again
+    expect(diff.remove).toEqual([]);
+    // Only properties change (the record, and here its slot colour `c`).
+    const changed = diff.update!.map((u) => Object.fromEntries((u.addOrUpdateProperties ?? []).map(({ key, value }) => [key, value])));
+    expect(changed.map((p) => p.id)).toEqual([1801, 1801, 1802, 1803, 1804]);
+    expect(changed.every((p) => Object.keys(p).every((k) => k === 'id' || k === 'c'))).toBe(true);
+    const after = featuresOn(map, ids.frameSrc);
+    expect(after.map((f) => f.id)).toEqual(before);
+    expect(h.featuresOf('clio:big-1800')).toHaveLength(1); // the records behind them
+    h.remove();
+  });
+
+  it('sends whole frames, with unique ids, to a MapLibre without updateData', async () => {
+    const map = new FakeMap();
+    const addSource = map.addSource.bind(map);
+    map.addSource = (id: string, spec: unknown): void => {
+      addSource(id, spec);
+      Object.assign(map.sources.get(id)!, { updateData: undefined });
+    };
+    const h = addBorderLayers(map as never, { borders: fakeClient(), year: 1914, names: false });
+    await h.firstFrame;
+    await settle();
+    await h.setYear(1814);
+    await settle();
+    const src = map.sources.get(borderIds('ca-').frameSrc)!;
+    expect(src.setCalls).toBe(2);
+    const features = featuresOn(map, borderIds('ca-').frameSrc);
+    expect(new Set(features.map((f) => f.id)).size).toBe(features.length);
+    expect(features.filter((f) => f.properties?.kind === 'state').map((f) => f.properties!.id)).toEqual([1801, 1802]);
+    h.remove();
+  });
+
+  it('sends the whole frame to a frame source added again (after a style change)', async () => {
+    const map = new FakeMap();
+    const h = addBorderLayers(map as never, { borders: fakeClient(), year: 1914, names: false });
+    await h.firstFrame;
+    await settle();
+    const ids = borderIds('ca-');
+    map.addSource(ids.frameSrc, {}); // a new, empty source of the same id
+    await h.setYear(1814);
+    await settle();
+    const src = map.sources.get(ids.frameSrc)!;
+    expect([src.setCalls, src.updateCalls]).toEqual([1, 0]);
+    expect(featuresOn(map, ids.frameSrc)).toHaveLength(5);
+    h.remove();
+  });
+
+  it('decodes and sends no lines the theme does not draw, and loads them for the frame on screen once it does', async () => {
+    const map = new FakeMap();
+    const borders = fakeClient({ coast: true });
+    const ids = borderIds('ca-');
+    const h = addBorderLayers(map as never, { borders, year: 1914, theme: { border: 'rgba(0, 0, 0, 0)', coast: 'rgba(0, 0, 0, 0)' } });
+    await h.firstFrame;
+    await settle();
+    await h.setYear(1814);
+    await settle();
+    expect(borders.lineCalls).toEqual([]);
+    expect(types(featuresOn(map, ids.frameSrc))).toEqual(['Polygon', 'Polygon', 'Polygon', 'Polygon']);
+    expect(map.sources.get(ids.coastSrc)!.setCalls).toBe(0);
+    h.setTheme({ border: '#102030' }); // border lines appear: the frame on screen gets them
+    await settle();
+    expect(borders.lineCalls).toEqual([1814]);
+    expect(types(featuresOn(map, ids.frameSrc))).toContain('MultiLineString');
+    expect(map.sources.get(ids.coastSrc)!.setCalls).toBe(0); // the coast is still hidden
+    h.setTheme({ coast: '#405060' });
+    await settle();
+    expect(types(featuresOn(map, ids.coastSrc))).toEqual(['MultiLineString']);
+    h.setTheme({ border: 'rgba(0, 0, 0, 0)', coast: 'rgba(0, 0, 0, 0)' }); // and they go again
+    await settle();
+    expect(types(featuresOn(map, ids.frameSrc))).not.toContain('MultiLineString');
+    expect(featuresOn(map, ids.coastSrc)).toEqual([]);
+    expect(h.getYear()).toBe(1814);
+    h.remove();
   });
 });
 
@@ -403,15 +593,18 @@ describe('coast source and view culling', () => {
     await settle();
     const ids = borderIds('ca-');
     const frame = map.sources.get(ids.frameSrc)!;
+    // The map's features carry the record id (mapProps), not its pid.
+    const bigId = h.featuresOf('clio:big-1900')[0]!.properties.id;
+    const sent = (): boolean => (frame.data as { features: { properties: { id?: number } }[] }).features.some((f) => f.properties.id === bigId);
     // The big polity at 120°E is culled; the coast keeps its part at 0°.
-    expect((frame.data as { features: { properties: { pid?: string } }[] }).features.some((f) => f.properties.pid === 'clio:big-1900')).toBe(false);
+    expect(sent()).toBe(false);
     expect(parts(map.sources.get(ids.coastSrc))).toBe(1);
     expect(h.featuresOf('clio:big-1900')).toHaveLength(1); // picking and fly-to still see the whole frame
     // Pan to 120°E: the next moveend re-culls around the new view.
     map.center = { lng: 120, lat: 0 };
     map.fire('moveend');
     await settle();
-    expect((frame.data as { features: { properties: { pid?: string } }[] }).features.some((f) => f.properties.pid === 'clio:big-1900')).toBe(true);
+    expect(sent()).toBe(true);
     expect(parts(map.sources.get(ids.coastSrc))).toBe(1);
   });
 

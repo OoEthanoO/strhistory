@@ -7,7 +7,8 @@
 //    the wanted target (latest wins), intermediate ones are dropped;
 //  - data that went stale while loading is not rendered;
 //  - the previous frame stays on screen until the new one has rendered
-//    (`apply` resolves only then), and a failed load keeps it too.
+//    (`apply` resolves only then), and a failed load keeps it too;
+//  - between two frames of one run the host may pause (yield to the page).
 // Pure logic: MapLibre and the network are injected, so it is unit-tested.
 
 export interface FrameKey {
@@ -33,6 +34,11 @@ export interface FrameSchedulerDeps<D> {
   /** Busy state changes (true while the wanted frame is not displayed yet). */
   onLoading?(loading: boolean): void;
   onError?(error: unknown, key: FrameKey, year: number): void;
+  /**
+   * Between two frames of one run (never before the first): e.g. yield to the page, so
+   * input and painting come before the next frame's work and its target is the latest.
+   */
+  pause?(): Promise<void>;
 }
 
 export class FrameScheduler<D> {
@@ -113,7 +119,14 @@ export class FrameScheduler<D> {
     this.running = true;
     this.deps.onLoading?.(true);
     try {
+      let first = true;
       while (!this.disposed && this.wanted && !sameFrame(this.wanted, this.shown)) {
+        if (!first && this.deps.pause) {
+          await this.deps.pause();
+          if (this.disposed) return;
+          if (!this.wanted || sameFrame(this.wanted, this.shown)) break;
+        }
+        first = false;
         const key = this.wanted;
         const year = this.wantedYear;
         let data: D;

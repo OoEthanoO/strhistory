@@ -21,6 +21,7 @@ covers the behaviour it relies on.
 | `src/border-layers.ts` | `addBorderLayers()` / `BorderLayers`: sources, layers, year changes, LOD, hover, selection. `ChronoGlobe` uses it too. |
 | `src/frames.ts` | `FrameScheduler`: year → frame, latest-wins coalescing, keep-old-until-rendered (pure, unit-tested). |
 | `src/cull.ts` | View culling: spherical caps, part bounding boxes, `cullFeatures()` (pure, unit-tested; §3.4). |
+| `src/source-diff.ts` | `SourceMirror`: what the frame source holds, and the `updateData` diff to the next frame — features kept by exact geometry, property updates, ids of a polity's parts for hover (pure, unit-tested; §4.1). |
 | `src/rim.ts` | `globeDisc`: the globe's outline on screen, for picking and the star field (pure). |
 | `src/name-arcs.ts` | Country names: `nameArcs` (an arc along the long axis of each territory a polity holds apart, seas between its parts bridged, never other land), `otherLand`, `landWater` (where the sea and lakes are, shores clipped to a box), `shortName` (pure, unit-tested; §5.3). |
 | `src/names.ts` | Country names: letters set on the sphere (`layoutName`), MapLibre's globe camera (`globeCamera`, `projectPoint`, `facing`), fades, overlaps (`nameBlockers`), reading direction (pure, unit-tested; §5.3). |
@@ -164,9 +165,10 @@ compensation would undershoot.
   that leaves it shows the whole world at `l0` until `moveend`, then the zoom's LOD
   culled around the new view. Picking, `featuresOf`, `frameFeatures` and the
   highlight always use the whole frame.
-- Hover: `feature-state` (`promoteId: 'id'`) lightens the fill and draws a white
-  outline; the pick under the pointer prefers tier-1 overlays, then the smallest
-  area; `unclaimed` land is never picked.
+- Hover: `feature-state` on every part of the hovered polity (each part has a feature
+  id of its own on `ca-frame`, §4.1) lightens the fill and draws a white outline; the
+  pick under the pointer prefers tier-1 overlays, then the smallest area; `unclaimed`
+  land is never picked.
 - Click: selects the best pick (same order), or clears the selection on empty land/sea.
 - Off the globe: a point in space picks nothing (no hover, no selection). MapLibre
   unprojects such a point to the nearest point on the horizon, so without this guard
@@ -219,16 +221,23 @@ promise.
 | `ca-hover-line`, `ca-select-glow`, `ca-select-line` | `ca-highlight` | Hover outline (white) and selection outline (brass). |
 
 `ca-frame` is ONE GeoJSON source holding a frame's polygons and border lines
-(`promoteId: 'id'`, `buffer: 32`), so a year change swaps both in one `setData`. The coastline — about 90 % of a frame's line vertices — has its
+(`buffer: 32`), so a year change swaps both in one update. The coastline — about 90 % of a frame's line vertices — has its
 own source `ca-coast` (`buffer: 32`): the borders client returns the identical coast
 feature for frames of a chunk with the same coastline, and the layers then leave
-that source alone. `ChronoGlobe` adds the background `ca-ocean`.
+that source alone. Border lines and the coast are decoded and sent only while the
+theme draws them (§5.2). `ChronoGlobe` adds the background `ca-ocean`.
 
 **One feature per polygon part.** `ca-frame` gets every multi-part polity as one
-`Polygon` feature per part, all with the record's `id` and properties
-(`cull.ts splitParts`; `frameFeatures()`/`featuresOf()` still return one feature per
-record). MapLibre classifies a feature's rings per tile by winding, relative to the
-first ring in the tile, and `@maplibre/geojson-vt` rewinds each ring *before* rounding
+`Polygon` feature per part (`cull.ts splitParts`; `frameFeatures()`/`featuresOf()`
+still return one feature per record). Each part carries only what the layers and
+picking read — `id` (the record), `kind`, `tier`, `precision`, the sort key `a`, the
+slot `c` and, with a palette function, `_fill`, `_hover`, `_line` and `_edge` —
+because MapLibre serialises every property of every part it is sent to its worker. The
+palette function, picking (`featuresAt`, mapped back by `id`, also to the frame still
+on screen while a new one renders) and `frameFeatures()` see the whole records.
+
+MapLibre classifies a feature's rings per tile by winding, relative to the first ring
+in the tile, and `@maplibre/geojson-vt` rewinds each ring *before* rounding
 it to integer tile coordinates, so a sliver island can flip winding there. Inside one
 multi-part feature that flip turned the mainland into a "hole" (unfilled, the ocean
 showing through): the USA from 1946 at tile zoom 2 (map zoom 2–3), flipped by Santa
@@ -236,15 +245,40 @@ Rosa Island off Pensacola, plus about a dozen other polities at some tile zooms.
 Separate features confine a flip to the sliver itself (checked offline for every frame
 and LOD with geojson-vt and MapLibre's `classifyRings`, and in the browser).
 
+**Year changes as diffs** (`source-diff.ts`). Each feature on `ca-frame` has a feature
+id of its own (from 1, never reused; no `promoteId`), and `SourceMirror` keeps what
+MapLibre holds. The next frame (or re-cull) goes as one `GeoJSONSource.updateData`
+diff: a feature whose exact geometry is already on the map stays — compared position
+by position (positions are shared between frames of a chunk, so most comparisons are
+by reference), and matched across records and chunks: a polity whose border moves
+elsewhere becomes a new record of the same shapes — with a property update where its
+record, colours or sort key changed; the rest is added, and what is gone removed.
+MapLibre then serialises only the new geometry and re-tiles only the tiles the diff
+touches. When less than 10 % of the positions are on the map already (another LOD),
+on the first frame, after the source was added again, or without `updateData`, the
+whole set goes with `setData`. Hover sets the feature-state on every part id of the
+hovered record (`idsOf`) and moves with the frame. Features stay in the order diffs
+left them (new ones last), so where neighbouring polities' anti-aliased outlines
+overlap, the one drawn last can differ from a fresh load of the same year: about a
+thousand single pixels along outlines in a world view, as between any two orders of a
+whole frame. Fills and tints are identical, and with outlines of one colour the
+differing pixels are one or two colour levels apart (blending rounds differently in
+another order): checked pixel for pixel in the browser.
+
 ### 4.2 Year changes (both `ChronoGlobe` and `addBorderLayers`)
 
 1. `frameOf(year)` → if the frame (and LOD) is the one on screen: nothing to load,
    `onYearApplied(year)` only.
-2. Otherwise one load runs at a time: `bordersAt` + `linesAt` (from
-   cached chunks: 5–35 ms), culled to the view (§3.4), then `setData` on `ca-frame`
-   and, only when the coast feature or the culled cap changed, on `ca-coast`;
+2. Otherwise one load runs at a time: `bordersAt`, plus `linesAt` only for lines the
+   theme draws (from cached chunks: 5–35 ms), culled to the view (§3.4), then a diff
+   (`updateData`, §4.1) on `ca-frame` and, only when the coast feature or the culled
+   cap changed, `setData` on `ca-coast`;
    requests arriving meanwhile only replace the target (latest wins), stale results
-   are never drawn.
+   are never drawn. Between two frames of one run the scheduler yields to the page
+   (`FrameScheduler`'s `pause`): the next frame's decoding and MapLibre's serialisation
+   of it then run in a task of their own instead of the render callback that finished
+   the last frame, so a timeline drag keeps painting and taking input, and the next
+   target is the latest request.
 3. The old frame stays on screen until MapLibre rendered the new one
    (`isSourceLoaded` of both sources on a render, 2.5 s safety timeout for hidden maps).
 4. A failed load keeps the old frame and reports `onFailure('data', err)`; a
@@ -290,7 +324,7 @@ Precedence: `DEFAULT_THEME` < `--ca-*` custom properties on the container
 | `atmosphere` | `--ca-atmosphere` | `0.5` | `sky.atmosphere-blend` at z0, fading to 0 by z7 (capped at 0.6; 1 washes colours out). |
 | `stars` | `--ca-stars: off` | `true` | Star field (`sky.ts`): 26 000 stars at infinity (seeded, so always the same sky; most faint, a few bright, three tints) projected through the map's camera — centre, field of view and padding — onto a canvas under the map, repainted when the camera moves. They turn with the camera as in a 3D scene (the sky slides opposite to the surface), are hidden behind the globe and fade in from its rim to 1.75 radii. Hidden under `prefers-contrast: more` and forced colours. |
 
-A line layer whose colour is fully transparent (`coast`, `border`, `lakeShore`, `hover`, `selection`) is not drawn at all (visibility `none`), e.g. a map without coastlines.
+A line layer whose colour is fully transparent (`coast`, `border`, `lakeShore`, `hover`, `selection`) is not drawn at all (visibility `none`), e.g. a map without coastlines. Frames then decode and send no border lines or coast: with both transparent `linesAt` is not called (it costs about as much as the polygons, ~15 ms per frame in Node), and a theme that shows them later reloads the frame on screen with them.
 
 ### 5.3 Country names
 
@@ -350,13 +384,21 @@ rim and sets behind the horizon with the land under it.
 - **Data.** Arcs come from the frame at the coarsest LOD whatever the zoom, so a name
   keeps its place at every zoom: a finer frame loads its records at l0 with it
   (`bordersAt(year, { lod: 'l0' })`; on failure the frame's own), and the names change
-  when its borders do. Arcs are found in 6 ms slices, largest polities first (a whole
-  frame takes 40–70 ms at l0), and cached by record (`rid`), so a year change only
-  sets the names of new records; arcs and names of the least recently used records
+  when its borders do. Arcs are found in 6 ms slices, largest polities first, and
+  cached by record (`rid`), so a year change only sets the names of new records; arcs and names of the least recently used records
   beyond 2,000 are dropped (never the frame's own). Names wait for the lakes; the font
   is measured once it has loaded (`document.fonts.load`, 3 s wait, then again when it
   arrives). `namesShown()` lists the names set for the frame, drawn or hidden. The
   site draws them in Newsreader (`nameFont`) with dark ink (`map-colors.ts`).
+- **Speed.** Every point test (land under an arc, water under a letter) is even-odd over
+  a part's rings, but a large part's edges are sorted by latitude band on its first test
+  (`name-arcs.ts edgeBands`), so a test reads only the edges that can cross its point's
+  latitude; the frame's tier-0 grid is built once for both `otherLand` and `landWater`
+  (lakes keep theirs), territories held apart are compared through a hash of chord-sized
+  cubes, and two parts' gap stops at the first close pair. Results are the plain scans'
+  exactly (tested, and checked over 14 years of the real dataset: 1,690 names, 36,272
+  letters identical). A whole frame's arcs and letters take 31–76 ms at l0 on a desktop
+  CPU, against 54–179 ms with plain scans (12 years, best of 7; §7.3).
 
 UI chrome (tooltip, attribution, map focus ring) reads `--ca-text`,
 `--ca-text-muted`, `--ca-surface`, `--ca-stroke`, `--ca-focus`, `--ca-font`, each
@@ -537,6 +579,49 @@ SwiftShader runs vary by about ±25 % between runs; compare like with like.
 - Bundle (incl. the timeline): `dist/index.js` ≈ 140 kB unminified (≈ 43 kB
   gzip; MapLibre and the borders client stay external), `dist/style.css`
   ≈ 26 kB (≈ 6 kB gzip).
+
+### 7.3 Year changes after the name and handoff work (measured 2026-10-18, strhistory site)
+
+Production builds of the site before and after, alternated in one Chromium tab
+(921×432, world view, l0), on a busy desktop: compare like with like.
+
+| | Before | After |
+| --- | --- | --- |
+| Names of 12 whole frames from cold (Node, best of 7) | 1,496–1,575 ms | 524–531 ms |
+| Jump to a far year until borders and every name are set | 251–941 ms | 153–485 ms (29–52 % less) |
+| 3 s timeline drag 1789→1900: frames drawn | 24–26 | 29–31 |
+| … 90th-percentile long animation frame | 163–208 ms | 123–137 ms |
+
+Profiled (JS Self-Profiling, unminified production build): before, the name engine took
+about 80 % of the main thread's JavaScript during a drag, mostly full-ring point tests
+(`inside`, `inPart`) and pairwise distances (`apartKm`, `partGap`); after, it hardly
+shows, and MapLibre's own serialisation of each frame to its worker (`serialize` and the
+`postMessage`) takes about 80 %, which the diffs below address.
+
+### 7.4 Frame diffs and hidden lines (measured 2026-10-18, strhistory site)
+
+Year changes and re-culls as `updateData` diffs, and no border or coast lines decoded
+while the theme hides them (the site draws own outlines only), §4.1 and §5.2.
+Production builds before and after in headless Chrome on the machine's GPU
+(ANGLE/OpenGL, a laptop RTX 5080), 1440×900, alternating in fresh pages, 3 rounds
+each; drags scripted as 101 slider steps 30 ms apart.
+
+| | Before | After |
+| --- | --- | --- |
+| 3 s drag 1789→1900, cold chunks: positions sent per frame | 106–107k (polygons, border lines, coast) | 22k |
+| … long animation frames in total | 516–743 ms (9–13, worst 64–67 ms) | none |
+| … frames drawn | 21–23 | 22–24 |
+| … apply → on screen, per frame | 156–160 ms | 121–140 ms |
+| … the drag's 3,030 ms of timers ran | 4,015–4,116 ms | 3,507–3,666 ms |
+| Same drag, warm chunks: long animation frames | 269–518 ms | none |
+| Jumps to far years (1914, 1500, 2026, 117, 1650, 1789): borders on screen | median 170 ms (112–196) | median 167 ms (115–188) |
+| Eight 320 px mouse pans at zoom 3.9 (l1, 4 re-culls): positions sent | 559–568k | 34–35k |
+| … long animation frames | 172–243 ms (worst 62–66 ms) | none |
+
+A drag frame now sends about a fifth of the positions: the polygon parts new to the
+map (about a third of a frame's polygon positions in this drag) and no lines. Jumps across centuries share
+little and still go whole. What remains per drag frame is mostly the worker's
+re-tiling: a world view's tiles each meet some change, so every tile is rebuilt.
 
 ## 8. Integration recipes
 
@@ -820,8 +905,9 @@ also matches all 148 files and none of `/../`, `/./`, `//`, unknown folders):
   land-coloured slivers until the pipeline's clip-to-land step lands.
 - During a fast pan beyond the culled cap, the newly visible strip shows ocean until
   the pan pauses (≤ 150 ms checks) and the re-culled frame is drawn.
-- A year change re-sends the whole (culled) frame: MapLibre's `updateData` diffs
-  would save the unchanged features (most modern frames change < 10 % of their
-  vertices) but need distinct ids for line pieces — not done yet.
+- Year changes go to MapLibre as diffs (§4.1), but in a world view every tile meets
+  some change, so MapLibre's worker re-tiles them all: ~120–140 ms per drag frame at
+  l0 on a laptop GPU (§7.4), which now limits how many frames a drag draws. Jumps
+  across centuries share little and go whole.
 - Timeline drags redraw at ~8 fps on a GPU and 3–5 fps on SwiftShader with the
   dev dataset; intermediate frames are skipped, never shown out of order.

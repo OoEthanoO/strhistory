@@ -182,10 +182,12 @@ export function borderSources(ctx: Pick<BorderStyleContext, 'ids' | 'relief'>): 
       : {}),
     [ids.baseLandSrc]: { type: 'geojson', data: EMPTY_FC, maxzoom: 8 },
     // Polygons and border lines of one frame in ONE source, so a year change swaps
-    // both in the same tile update.
+    // both in the same tile update. No promoteId: each feature (polygon part) has an id
+    // of its own, as updateData diffs need (source-diff.ts); `id` in its properties is
+    // the record's.
     // buffer 32 px (default 128): enough for fills and ≤ 3 px lines at tile edges and
     // ~15–20 % less tile work per year change (measured on the dev dataset).
-    [ids.frameSrc]: { type: 'geojson', data: EMPTY_FC, promoteId: 'id', maxzoom: 9, buffer: 32 },
+    [ids.frameSrc]: { type: 'geojson', data: EMPTY_FC, maxzoom: 9, buffer: 32 },
     // The coastline (~90 % of a frame's line vertices) has its own source: it is the
     // same in most frames of a chunk (the borders client then returns the identical
     // feature), so a year change usually leaves it alone.

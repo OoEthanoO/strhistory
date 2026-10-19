@@ -107,6 +107,55 @@ describe('FrameScheduler', () => {
     expect(h.applied).toEqual([1550]); // only the settled year is reported
   });
 
+  it('pauses between two frames of a run, not before the first, then loads the latest year', async () => {
+    const pauses: Deferred<void>[] = [];
+    const applies: Deferred<void>[] = [];
+    const loads: number[] = [];
+    const s = new FrameScheduler<string>({
+      frameOf,
+      load: async (key) => {
+        loads.push(key.from);
+        return String(key.from);
+      },
+      apply: () => {
+        const d = deferred<void>();
+        applies.push(d);
+        return d.promise;
+      },
+      pause: () => {
+        const d = deferred<void>();
+        pauses.push(d);
+        return d.promise;
+      },
+    });
+    s.request(1914, 'l0');
+    await flush();
+    expect(pauses).toHaveLength(0); // the first frame starts at once
+    s.request(1750, 'l0'); // while the 1900s render
+    applies[0]!.resolve();
+    await flush();
+    expect(pauses).toHaveLength(1);
+    s.request(1550, 'l0'); // input handled during the pause
+    pauses[0]!.resolve();
+    await flush();
+    expect(loads).toEqual([1900, 1500]); // the 1700s were never loaded
+    applies[1]!.resolve();
+    await flush();
+    expect(s.displayed!.from).toBe(1500);
+    // Back to the frame on screen during a pause: the run ends without loading.
+    s.request(1350, 'l0'); // a new run: the 1300s start at once
+    await flush();
+    s.request(1250, 'l0'); // while the 1300s render
+    applies[2]!.resolve();
+    await flush();
+    expect(pauses).toHaveLength(2);
+    s.request(1399, 'l0'); // back to the 1300s during the pause
+    pauses[1]!.resolve();
+    await flush();
+    expect(loads).toEqual([1900, 1500, 1300]);
+    expect(s.busy).toBe(false);
+  });
+
   it('never renders data that went stale while loading', async () => {
     const h = harness();
     h.s.request(1914, 'l0');

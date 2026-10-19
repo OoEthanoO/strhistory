@@ -129,6 +129,8 @@ export class MapNames {
   private features: readonly PolityFeatureLike[] = [];
   private land: ((id: number) => OtherLandTest) | null = null;
   private water: LandWater | null = null;
+  /** The frame's polygons, one list for both tests, so they share one grid of its land. */
+  private polys: { id: number; tier: number; geometry: Polygon | MultiPolygon }[] | null = null;
   private lakes: readonly { geometry: Polygon | MultiPolygon | null }[] = [];
   private lakesReady: boolean;
   private timer: ReturnType<typeof setTimeout> | 0 = 0;
@@ -213,6 +215,7 @@ export class MapNames {
     this.features = features;
     this.land = null;
     this.water = null;
+    this.polys = null;
     if (signature === this.signature) return;
     this.signature = signature;
     this.candidates = candidates;
@@ -365,9 +368,9 @@ export class MapNames {
   }
 
   private polygons(): { id: number; tier: number; geometry: Polygon | MultiPolygon }[] {
-    return this.features.flatMap((f) =>
+    return (this.polys ??= this.features.flatMap((f) =>
       f.geometry?.type === 'Polygon' || f.geometry?.type === 'MultiPolygon' ? [{ id: Number(f.properties.id), tier: f.properties.tier, geometry: f.geometry }] : [],
-    );
+    ));
   }
 
   /**

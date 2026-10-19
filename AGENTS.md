@@ -400,9 +400,10 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   `packages/globe/AGENTS.md` §8.7), created by `map.ts`'s `GlobeController`,
   which keeps the interface the explorer and the home page use and adds the note
   pins as MapLibre markers on `globe.map`. It draws the polities with their own
-  outlines (no shared border or coast lines), tier 1 hatched, a star field behind the
-  globe, a hover tooltip ("name · years") and click selection (white outline; Escape
-  clears).
+  outlines (no shared border or coast lines, so frames decode none), tier 1 hatched,
+  a star field behind the globe, a hover tooltip ("name · years") and click selection
+  (white outline; Escape clears). A year change or re-cull sends MapLibre only the
+  polygon parts new to the map, as a diff (`packages/globe/AGENTS.md` §4.1).
   The explorer, the home handoff URL and the baked SVG share one view,
   `{ center, scale }` with `scale = 2^(zoom − fitZoom)` and
   `fitZoom = log2(min(width, height)·π/512)`. The SVG is an orthographic
@@ -445,7 +446,9 @@ screen replaces the globe. WebGL failures leave the SVG usable.
   (notes panel, search, preview) choose the note's start year and fly to its
   place, kept clear of the open panel and, on phones, the card. Pins off the
   screen leave the Tab order; a pin's click opens its note without selecting
-  the polity under it.
+  the polity under it. Markers are rebuilt only when the set of pins changes
+  (not on every timeline step), and a camera move touches a pin only when its
+  fan-out offset (whole pixels) or Tab stop changes.
 - **URL state** (`url.ts`): query parameters `year`, `level`, `curriculum`,
   `topic`, `polity`, `all`, `q` and the camera `lng`, `lat`, `scale` — the topic
   pages' "Find this note in …" links and the home handoff use the same names.

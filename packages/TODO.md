@@ -122,6 +122,12 @@ State: everything below "Site look and fixes" is done and tested on that branch,
 - Open with the user: Native-nations plan (`packages/borders/research/native-nations/plan.md`, decisions in its §5); the lifespan band across the 1946 cut-over (join by Wikidata id / remove / label it); Cliopatria's fort rhombuses (keep / dots / hide); a sourced US-claims fix (blocked by a data rebuild); plaintext git token in `~/.git-credentials` on the local Mac (`credential.helper store`); deploying (merge to `main`) and renaming the repo.
 - The user's recent direction: Victoria 3-style political map (pastel, classic colours, flag colours for the rest), Globe of History's lighter chrome with white accents (own values), curved capital labels, a flat sea (sea-floor and land relief were both tried and removed), no Globe of History assets.
 
+## Globe performance (2026-10-18, strhistory session)
+- [x] Name engine 3× faster with identical output: point tests by latitude band of a part's edges (`edgeBands`), one tier-0 grid per frame for both tests, a chord hash for territories held apart, early-exit part gaps (globe AGENTS.md §5.3, §7.3)
+- [x] Frames hand MapLibre only the properties the layers and picking read (`mapProps`); the scheduler yields to the page between frames (`pause`)
+- [x] Year changes and re-culls as `updateData` diffs (`source-diff.ts`: a feature id per part, parts matched by exact geometry across records and chunks, property updates, hover on every part); border and coast lines not decoded while the theme hides them. Drags send ~a fifth of the positions and have no long animation frames; zoomed-in pans send 16× less (globe AGENTS.md §4.1, §7.4)
+- [ ] Drag frame rate is now bound by MapLibre's worker re-tiling every tile of a world view (~120–140 ms per l0 frame on a laptop GPU, globe AGENTS.md §10)
+
 ## Later / ideas
 - [ ] OpenHistoricalMap refinement module for 1700+ detail (CC0 with OSM-import exceptions)
 - [-] Tracing workbench (hand-tracing over RR's embedded map) — dropped (Running Reality dropped 2026-10-02)

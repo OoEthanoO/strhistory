@@ -319,12 +319,14 @@ createTimeScale(stops: [year, t][]) → { toT(year), toYear(t), … }   // piece
   (`linesAt` kind `border`) → tier-1 hatched fills + dashed outlines → lakes →
   coastline (`linesAt` kind `coast`) → hover/selection outlines.
   Approximate precision draws dashed.
-- Fills get one feature per polygon part (same `id`): MapLibre classifies a feature's
-  rings by winding per tile, and a sliver part that flips winding when it is tiled would
-  otherwise unfill the whole polity (packages/globe/AGENTS.md §4.1).
-- Year changes: only when the frame changes; `setData` with a latest-wins guard;
-  keep showing the previous frame until the new one rendered; l0 while dragging
-  the timeline, the zoom's LOD on release.
+- Fills get one feature per polygon part (each with a feature id of its own, the
+  record's `id` a property): MapLibre classifies a feature's rings by winding per tile,
+  and a sliver part that flips winding when it is tiled would otherwise unfill the
+  whole polity (packages/globe/AGENTS.md §4.1).
+- Year changes: only when the frame changes; sent as an `updateData` diff from what
+  the source holds (whole with `setData` when little is shared), with a latest-wins
+  guard; keep showing the previous frame until the new one rendered; l0 while
+  dragging the timeline, the zoom's LOD on release.
 - Optional own outlines (`theme.edge` > 0): each tier-0 polity outlined inside its edge
   in a deeper shade of its fill. Line layers whose theme colour is fully transparent
   (coast, border, lake shore, hover) are not drawn.

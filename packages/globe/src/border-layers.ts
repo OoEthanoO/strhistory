@@ -3,7 +3,7 @@
 import { formatYear, lodForZoom } from '@alexs-atlas/borders';
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from '@alexs-atlas/borders';
 import type { Map as MlMap, MapMouseEvent, GeoJSONSource } from 'maplibre-gl';
-import { normalizeColor, shade } from './color.js';
+import { isTransparent, normalizeColor, shade } from './color.js';
 import { WHOLE, angularDistance, capContains, cullFeatures, growCap, isWhole, splitParts, type Cap } from './cull.js';
 import { FrameScheduler, type FrameKey } from './frames.js';
 import { hatchImage } from './hatch.js';
@@ -11,6 +11,7 @@ import { MapNames } from './map-names.js';
 import type { PlacedName } from './names.js';
 import { DEFAULT_PALETTE, blendPalette, hoverPalette, isPaletteFunction, overlayLinePalette } from './palette.js';
 import { globeDisc, type Disc, type DiscMap } from './rim.js';
+import { SourceMirror } from './source-diff.js';
 import { EMPTY_FC, borderIds, borderLayers, borderSources, layerOrder, type BorderIds, type BorderStyleContext, type LayerSpec } from './style.js';
 import { resolveTheme } from './theme.js';
 import type {
@@ -30,13 +31,27 @@ import type {
 type AddLayerArg = Parameters<MlMap['addLayer']>[0];
 type AddSourceArg = Parameters<MlMap['addSource']>[1];
 type SetDataArg = Parameters<GeoJSONSource['setData']>[0];
+type UpdateDataArg = Parameters<GeoJSONSource['updateData']>[0];
+
+/**
+ * The properties of a polygon on the map: what the layers read (`kind`, `tier`,
+ * `precision`, the sort key `a`, the slot `c`) and `id`, the record that picking and
+ * hover map it back to. Names, dates and the rest stay in the frame's records.
+ */
+function mapProps(p: PolityProps): PolityProps {
+  const out: Record<string, unknown> = { id: p.id, kind: p.kind, tier: p.tier, a: p.a, c: p.c };
+  if (p.precision !== undefined) out.precision = p.precision;
+  return out as unknown as PolityProps;
+}
 type PolityFeature = PolityFeatureLike;
 
 /** Data of one displayed frame. */
 interface FrameData {
   key: FrameKey;
-  /** What the frame source shows (before culling): polygons, then border lines. */
+  /** What the frame source shows (before culling): polygons, then border lines (when drawn). */
   features: Feature[];
+  /** The lines the frame has (linesKey: 'border+coast', 'border', 'coast' or ''): only drawn ones are decoded. */
+  lines: string;
   /**
    * The coast lines, for the coast source. The borders client returns the identical
    * object for frames of a chunk with the same coastline, which then is not re-sent.
@@ -132,6 +147,8 @@ export class BorderLayers implements BorderLayersHandle {
   private manifest: Manifest | null = null;
   private readonly scheduler: FrameScheduler<FrameData>;
   private current: FrameData | null = null;
+  /** The frame before `current`: still on screen while `current` renders, so picking finds its records. */
+  private previous: FrameData | null = null;
   private interacting = false;
   private removed = false;
   private added = false;
@@ -151,6 +168,12 @@ export class BorderLayers implements BorderLayersHandle {
   private culledCap: Cap | null = null;
   /** Coast feature and cap on the coast source (skips re-sending an identical coast). */
   private shownCoast: { feature: Feature | null; cap: Cap } | null = null;
+  /** What MapLibre's frame source holds: year changes and re-culls go to it as diffs (source-diff.ts). */
+  private readonly mirror = new SourceMirror();
+  /** The frame source the mirror describes (a source added again holds nothing). */
+  private frameSource: GeoJSONSource | null = null;
+  /** Feature ids on the frame source with the hover feature-state (every part of the hovered polity). */
+  private hoverIds: number[] = [];
   /** The view moved while a frame was loading: re-check the culling once it is shown. */
   private cullPending = false;
   private lastCullCheck = 0;
@@ -203,6 +226,10 @@ export class BorderLayers implements BorderLayersHandle {
       },
       onLoading: (l) => this.opts.onLoadingChange?.(l),
       onError: (err) => this.opts.onFailure?.('data', err),
+      // The next frame's decoding and MapLibre's serialisation of it run in a task of their
+      // own, not in the render callback that finished the last one: the page paints and
+      // takes input in between (a timeline drag stays responsive), and the target is the latest.
+      pause: () => new Promise((resolve) => setTimeout(resolve, 0)),
     });
 
     this.whenStyleReady(() => this.addToMap());
@@ -299,7 +326,7 @@ export class BorderLayers implements BorderLayersHandle {
       const p = h.properties as unknown as PolityProps;
       if (!p || p.kind === 'unclaimed' || seen.has(Number(p.id))) continue;
       seen.add(Number(p.id));
-      out.push(this.current?.byId.get(Number(p.id))?.properties ?? p);
+      out.push(this.current?.byId.get(Number(p.id))?.properties ?? this.previous?.byId.get(Number(p.id))?.properties ?? p);
     }
     return out.sort(pickOrder);
   }
@@ -328,6 +355,7 @@ export class BorderLayers implements BorderLayersHandle {
     this.names?.setColors(this.theme.nameInk, this.theme.nameSeaInk);
     this.refreshPaint();
     this.addHatch(true);
+    this.refreshLines();
     if (isPaletteFunction(this.palette) && this.current) {
       // Per-feature colours (fill over land, own outline) follow the theme: re-colour.
       this.current = this.recolor(this.current);
@@ -657,6 +685,24 @@ export class BorderLayers implements BorderLayersHandle {
     this.refreshLakes();
   }
 
+  /**
+   * Which lines frames need: the border lines and the coast are decoded only while the
+   * theme draws them (a transparent colour hides a layer, as on a map whose polities
+   * have their own outlines). Decoding them costs about as much as the polygons.
+   */
+  private linesKey(): string {
+    return [isTransparent(this.theme.border) ? '' : 'border', isTransparent(this.theme.coast) ? '' : 'coast'].filter(Boolean).join('+');
+  }
+
+  /** After a theme change that shows or hides lines: loads the frame on screen again with the lines now drawn. */
+  private refreshLines(): void {
+    void this.scheduler.whenSettled().then(() => {
+      if (this.removed || !this.current || this.current.lines === this.linesKey()) return;
+      this.scheduler.invalidate();
+      this.scheduler.request(this.wantedYear, this.currentLod());
+    });
+  }
+
   private refreshLakes(): void {
     const m = this.manifest;
     if (!m || this.opts.lakes === false || !m.base.lakes || this.removed) return;
@@ -685,7 +731,12 @@ export class BorderLayers implements BorderLayersHandle {
             () => null,
           )
         : Promise.resolve(null);
-    const [polys, lines, coarseFeatures] = await Promise.all([this.borders.bordersAt(year, o), this.borders.linesAt(year, o), coarse]);
+    const lines = this.linesKey();
+    const [polys, linesFc, coarseFeatures] = await Promise.all([
+      this.borders.bordersAt(year, o),
+      lines === '' ? Promise.resolve(null) : this.borders.linesAt(year, o),
+      coarse,
+    ]);
     const byId = new Map<number, PolityFeature>();
     const byPid = new Map<string, PolityFeature[]>();
     for (const f of polys.features as PolityFeature[]) {
@@ -694,7 +745,7 @@ export class BorderLayers implements BorderLayersHandle {
       if (list) list.push(f);
       else byPid.set(f.properties.pid, [f]);
     }
-    const lineFeatures = lines.features as Feature[];
+    const lineFeatures = (linesFc?.features ?? []) as Feature[];
     const isCoast = (f: Feature): boolean => (f.properties as { kind?: string } | null)?.kind === 'coast';
     const data: FrameData = {
       key,
@@ -705,8 +756,14 @@ export class BorderLayers implements BorderLayersHandle {
       // The map gets one feature per polygon part (cull.ts splitParts): within one
       // multi-part feature, a sliver whose winding flips in tiling would unfill the
       // mainland. byId/byPid (frameFeatures, featuresOf) keep one feature per record.
-      features: [...splitParts(polys.features as Feature[]), ...lineFeatures.filter((f) => !isCoast(f))],
-      coast: lineFeatures.find(isCoast) ?? null,
+      // Polygons carry only what the layers and picking read (mapProps): what is new to
+      // the map is serialised to MapLibre's worker on each change; the records stay here.
+      features: [
+        ...splitParts((polys.features as PolityFeature[]).map((f) => ({ ...f, properties: mapProps(f.properties) })) as Feature[]),
+        ...(lines.includes('border') ? lineFeatures.filter((f) => !isCoast(f)) : []),
+      ],
+      lines,
+      coast: lines.includes('coast') ? (lineFeatures.find(isCoast) ?? null) : null,
       coarse: coarseFeatures,
     };
     this.lastLoadMs = now() - t0;
@@ -729,11 +786,18 @@ export class BorderLayers implements BorderLayersHandle {
       }
       return hit;
     };
+    // The parts of a record share one properties object, and so one coloured copy of it.
+    const coloured = new Map<object, Record<string, unknown>>();
     const features = data.features.map((f) => {
       const p = f.properties as PolityProps | null;
       if (!p || f.geometry?.type === 'MultiLineString' || f.geometry?.type === 'LineString') return f;
-      const [fill, hover, line, edge] = colorsOf(p);
-      return { ...f, properties: { ...p, _fill: fill, _hover: hover, _line: line, _edge: edge } };
+      let props = coloured.get(p);
+      if (!props) {
+        // The palette sees the whole record, not the map's subset of it.
+        const [fill, hover, line, edge] = colorsOf(data.byId.get(Number(p.id))?.properties ?? p);
+        coloured.set(p, (props = { ...p, _fill: fill, _hover: hover, _line: line, _edge: edge }));
+      }
+      return { ...f, properties: props };
     });
     return { ...data, features };
   }
@@ -742,6 +806,7 @@ export class BorderLayers implements BorderLayersHandle {
     if (this.removed) return;
     const t0 = now();
     this.setHover(null);
+    this.previous = this.current;
     this.current = data;
     this.cullPending = false;
     await this.showFrame(data, this.cullCap());
@@ -780,7 +845,9 @@ export class BorderLayers implements BorderLayersHandle {
    */
   private showFrame(data: FrameData, cap: Cap): Promise<void> {
     const jobs = [this.setFrameSource(data, cap)];
-    if (!this.shownCoast || this.shownCoast.feature !== data.coast || !sameCap(this.shownCoast.cap, cap)) {
+    const shown = this.shownCoast;
+    // Nothing shown (the source's initial empty data) and no coast (hidden): nothing to send.
+    if (shown ? shown.feature !== data.coast || (data.coast !== null && !sameCap(shown.cap, cap)) : data.coast !== null) {
       this.shownCoast = { feature: data.coast, cap };
       const features = data.coast ? cullFeatures([data.coast], cap) : [];
       jobs.push(this.setSource(this.ids.coastSrc, { type: 'FeatureCollection', features }));
@@ -788,9 +855,29 @@ export class BorderLayers implements BorderLayersHandle {
     return Promise.all(jobs).then(() => undefined);
   }
 
+  /**
+   * Sends the frame, culled to `cap`, to the frame source as a diff from what MapLibre
+   * holds (source-diff.ts): only features whose geometry is new to the map are
+   * serialised to its worker, the rest stay (with property updates where their record
+   * changed) and only the tiles they touch are re-tiled. Little in common (another
+   * LOD), a first frame or a MapLibre without `updateData` sends the whole set.
+   */
   private setFrameSource(data: FrameData, cap: Cap): Promise<void> {
     this.culledCap = cap;
-    return this.setSource(this.ids.frameSrc, { type: 'FeatureCollection', features: cullFeatures(data.features, cap) });
+    const src = this.map.getSource(this.ids.frameSrc) as GeoJSONSource | undefined;
+    if (!src) return Promise.resolve();
+    if (src !== this.frameSource) {
+      // A source added again (after a style change) holds nothing.
+      this.frameSource = src;
+      this.mirror.clear();
+    }
+    const { diff } = this.mirror.update(cullFeatures(data.features, cap));
+    this.syncHoverState();
+    if (diff && typeof src.updateData === 'function') {
+      if (diff.remove.length === 0 && diff.add.length === 0 && diff.update.length === 0) return Promise.resolve();
+      return Promise.resolve(src.updateData(diff as unknown as UpdateDataArg));
+    }
+    return src.setData({ type: 'FeatureCollection', features: this.mirror.features() } as unknown as SetDataArg);
   }
 
   private setSource(id: string, fc: FeatureCollection): Promise<void> {
@@ -872,18 +959,33 @@ export class BorderLayers implements BorderLayersHandle {
 
   private setHover(id: number | null): void {
     if (id === this.hoverId) return;
-    const prev = this.hoverId;
     this.hoverId = id;
     if (this.added && !this.removed) {
-      try {
-        if (prev !== null) this.map.setFeatureState({ source: this.ids.frameSrc, id: prev }, { hover: false });
-        if (id !== null) this.map.setFeatureState({ source: this.ids.frameSrc, id }, { hover: true });
-      } catch {
-        /* source gone */
-      }
+      this.syncHoverState();
       this.refreshHighlight();
     }
     if (id === null) this.opts.onHover?.(null);
+  }
+
+  /**
+   * Puts the hover feature-state on every part of the hovered polity on the frame
+   * source, and takes it off the rest. Each part has an id of its own there (diffs need
+   * unique ids), so the polity's record id maps to all of them.
+   */
+  private syncHoverState(): void {
+    if (!this.added || this.removed) return;
+    const ids = this.hoverId === null ? [] : this.mirror.idsOf(this.hoverId);
+    const prev = this.hoverIds;
+    if (ids === prev || (ids.length === 0 && prev.length === 0)) return;
+    this.hoverIds = ids;
+    const on = new Set(ids);
+    const was = new Set(prev);
+    try {
+      for (const id of prev) if (!on.has(id)) this.map.setFeatureState({ source: this.ids.frameSrc, id }, { hover: false });
+      for (const id of ids) if (!was.has(id)) this.map.setFeatureState({ source: this.ids.frameSrc, id }, { hover: true });
+    } catch {
+      /* source gone */
+    }
   }
 
   private refreshHighlight(): void {
