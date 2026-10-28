@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { connectionsPuzzles } from './connections-data';
-import { CONNECTIONS_MISTAKES, connectionsLayout, connectionsProgress, connectionsShare, earlierNumbers, formatDay, judgeGuess, readDaily, readSavedGuesses, shuffled } from './logic';
+import { CONNECTIONS_MISTAKES, connectionsLayout, connectionsProgress, connectionsShare, earlierNumbers, formatDay, judgeGuess, nextHint, readDaily, readSavedGuesses, readSavedHints, shuffled } from './logic';
 import type { ConnectionsGroup, ConnectionsLevel } from './types';
 import './games.css';
 
@@ -29,10 +29,11 @@ function localPreview(): Daily | null {
 function GroupBar({ group }: { group: ConnectionsGroup }) {
   return <li className={`connections-group level-${group.level}`}><span className="connections-level">{levels[group.level]}</span><strong>{group.label}</strong><span>{group.items.join(', ')}</span></li>;
 }
+const count = (value: number, word: string) => `${value} ${word}${value === 1 ? '' : 's'}`;
 
 export default function Connections() {
   const [load, setLoad] = useState<Load>({ state: 'loading' }), [attempt, setAttempt] = useState(0);
-  const [number, setNumber] = useState<number | null>(null), [guesses, setGuesses] = useState<string[][]>([]);
+  const [number, setNumber] = useState<number | null>(null), [guesses, setGuesses] = useState<string[][]>([]), [hints, setHints] = useState<ConnectionsLevel[]>([]);
   const [order, setOrder] = useState<string[]>([]), [selected, setSelected] = useState<string[]>([]);
   const [message, setMessage] = useState(''), [copied, setCopied] = useState(''), [wrong, setWrong] = useState(false), [saved, setSaved] = useState(true);
   const title = useRef<HTMLHeadingElement>(null), review = useRef<HTMLHeadingElement>(null), focusNext = useRef<'title' | 'review' | null>(null);
@@ -56,15 +57,15 @@ export default function Connections() {
   }, [attempt]);
   useEffect(() => { if (load.state === 'ready') open(load.daily.number, false); }, [load]);
   useEffect(() => {
-    if (number === null || !guesses.length) return;
+    if (number === null || (!guesses.length && !hints.length)) return;
     try {
       const store = readStore();
-      store[String(number)] = { puzzle: puzzleFor(number).id, guesses };
+      store[String(number)] = { puzzle: puzzleFor(number).id, guesses, hints };
       localStorage.setItem(storageKey, JSON.stringify(store));
       setSaved(true);
     } catch { setSaved(false); }
-  }, [number, guesses]);
-  const store = useMemo(readStore, [number, guesses]);
+  }, [number, guesses, hints]);
+  const store = useMemo(readStore, [number, guesses, hints]);
   // Move focus once the new puzzle or the result has rendered (the button that was used may be gone).
   useEffect(() => {
     if (!focusNext.current) return;
@@ -75,7 +76,7 @@ export default function Connections() {
   function open(next: number, focus = true) {
     const puzzle = puzzleFor(next), restored = readSavedGuesses(readStore(), next, puzzle);
     const found = new Set(connectionsProgress(puzzle, restored).solved.flatMap(group => group.items));
-    setNumber(next); setGuesses(restored); setSelected([]); setMessage(''); setCopied('');
+    setNumber(next); setGuesses(restored); setHints(readSavedHints(readStore(), next, puzzle)); setSelected([]); setMessage(''); setCopied('');
     setOrder(connectionsLayout(puzzle).filter(item => !found.has(item)));
     if (focus) focusNext.current = 'title';
   }
@@ -88,6 +89,12 @@ export default function Connections() {
   const progress = connectionsProgress(puzzle, guesses), left = CONNECTIONS_MISTAKES - progress.mistakes;
   const level = new Map(puzzle.groups.flatMap(group => group.items.map(item => [item, group.level] as const)));
   const archive = earlierNumbers(today, connectionsPuzzles.length);
+  // A hint names the easiest connection still hidden; its tiles stay for the player to find.
+  const hint = nextHint(puzzle, progress.solved, hints);
+  const hinted = [...puzzle.groups].sort((a, b) => a.level - b.level).filter(group => hints.includes(group.level) && !progress.solved.includes(group));
+  const summary = !progress.won ? 'Out of mistakes. Here are the connections.'
+    : hints.length ? `Solved with ${progress.mistakes ? count(progress.mistakes, 'mistake') : 'no mistakes'} and ${count(hints.length, 'hint')}.`
+    : progress.mistakes ? `Solved with ${count(progress.mistakes, 'mistake')}.` : 'Solved without a mistake.';
 
   function toggle(item: string) {
     if (selected.length === 4 && !selected.includes(item)) { setMessage('Four tiles are selected. Submit them, or deselect one first.'); return; }
@@ -110,16 +117,21 @@ export default function Connections() {
     }
     if (after.over) focusNext.current = 'review';
   }
+  function showHint() {
+    if (!hint) { setMessage('Every connection still hidden is already named above.'); return; }
+    setHints(old => [...old, hint.level]);
+    setMessage(`Hint: one connection is “${hint.label}”.`);
+  }
   async function copy() {
     try {
-      await navigator.clipboard.writeText(`${connectionsShare(puzzle, current, guesses)}\n${new URL('/games/connections', location.origin)}`);
+      await navigator.clipboard.writeText(`${connectionsShare(puzzle, current, guesses, hints.length)}\n${new URL('/games/connections', location.origin)}`);
       setCopied('Result copied. It shows colours only, never the answers.');
     } catch { setCopied('Copying is not available in this browser.'); }
   }
   function status(entry: number) {
     // The open puzzle's newest guess is saved after this render, so use the one in memory.
     const restored = entry === current ? guesses : readSavedGuesses(store, entry, puzzleFor(entry));
-    if (!restored.length) return 'Not started';
+    if (!restored.length) return (entry === current ? hints : readSavedHints(store, entry, puzzleFor(entry))).length ? 'Started' : 'Not started';
     const result = connectionsProgress(puzzleFor(entry), restored);
     return result.won ? 'Solved' : result.over ? 'Revealed' : 'Started';
   }
@@ -134,10 +146,10 @@ export default function Connections() {
           {load.preview && <p className="game-help">Local preview without the access service: this is the newest puzzle, and every other one is under Earlier puzzles. On the website the daily rotation chooses.</p>}
         </div>
         {progress.over ? <div className="connections-review">
-          <h3 ref={review} tabIndex={-1}>{progress.won ? (progress.mistakes ? `Solved with ${progress.mistakes} ${progress.mistakes === 1 ? 'mistake' : 'mistakes'}.` : 'Solved without a mistake.') : 'Out of mistakes. Here are the connections.'}</h3>
+          <h3 ref={review} tabIndex={-1}>{summary}</h3>
           <div className="connections-guesses" aria-hidden="true">{guesses.map((guess, index) => <div key={index}>{guess.map(item => <span key={item} className={`level-${level.get(item)}`} />)}</div>)}</div>
           <ol className="connections-explained">{[...puzzle.groups].sort((a, b) => a.level - b.level).map(group => <li key={group.label} className={`connections-group level-${group.level}`}>
-            <span className="connections-level">{levels[group.level]}{progress.solved.includes(group) ? ' · found' : ' · revealed'}</span>
+            <span className="connections-level">{levels[group.level]}{progress.solved.includes(group) ? (hints.includes(group.level) ? ' · found with a hint' : ' · found') : ' · revealed'}</span>
             <h4>{group.label}</h4>
             <p className="connections-members">{group.items.join(' · ')}</p>
             <p>{group.explanation}</p>
@@ -147,6 +159,7 @@ export default function Connections() {
           <p className="game-help" role="status">{copied}</p>
         </div> : <div className="connections-board">
           {progress.solved.length > 0 && <ol className="connections-solved" aria-label="Connections found">{progress.solved.map(group => <GroupBar key={group.label} group={group} />)}</ol>}
+          {hinted.length > 0 && <ul className="connections-hints" aria-label="Connections named by hints">{hinted.map(group => <li key={group.label} className={`connections-hint level-${group.level}`}><span className="connections-level">Hint · {levels[group.level]}</span><strong>{group.label}</strong></li>)}</ul>}
           <div className={`connections-grid${wrong ? ' is-wrong' : ''}`} role="group" aria-label={`${order.length} tiles. Select four that share a connection.`}>
             {order.map(item => <button key={item} type="button" className="connections-tile" style={{ '--letters': longestWord(item) } as CSSProperties} aria-pressed={selected.includes(item)} onClick={() => toggle(item)}><span>{item}</span></button>)}
           </div>
@@ -154,6 +167,7 @@ export default function Connections() {
           <div className="connections-controls">
             <button className="game-button" onClick={() => setOrder(old => shuffled(old))}>Shuffle</button>
             <button className="game-button" aria-disabled={!selected.length} onClick={() => setSelected([])}>Deselect all</button>
+            <button className="game-button" aria-disabled={!hint} onClick={showHint}>Hint</button>
             <button className="game-button primary" aria-disabled={selected.length !== 4} onClick={submit}>Submit</button>
           </div>
           <p className="connections-feedback" role="status">{message}</p>
@@ -165,7 +179,8 @@ export default function Connections() {
           <ol className="game-instructions">
             <li>Select four tiles that share a connection, then submit.</li>
             <li>Some tiles seem to fit more than one group. Only one arrangement uses all sixteen.</li>
-            <li>Four mistakes end the game. Every connection is then explained, with its sources.</li>
+            <li>Stuck? A hint names the easiest connection you have not found yet. Finding its four tiles is still up to you.</li>
+            <li>You have {CONNECTIONS_MISTAKES} mistakes. When they run out, every connection is explained, with its sources.</li>
           </ol>
           <ul className="connections-legend" aria-label="Group difficulty">{([1, 2, 3, 4] as const).map(value => <li key={value} className={`level-${value}`}>{levels[value]}</li>)}</ul>
           <p className="game-help">A new puzzle arrives each day. If nobody opens a puzzle on its day, it stays for the next one. {saved ? 'Progress saves in this browser.' : 'Storage is unavailable, so progress lasts for this visit only.'}</p>

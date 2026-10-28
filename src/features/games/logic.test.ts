@@ -5,7 +5,7 @@ import { load } from 'js-yaml';
 import { events } from './events.ts';
 import { craftItems, craftRecipes, goalId, starterIds } from './craft-data.ts';
 import { connectionsPuzzles } from './connections-data.ts';
-import { availableHint, CONNECTIONS_MISTAKES, connectionsLayout, connectionsProgress, connectionsShare, dateValue, distanceKm, earlierNumbers, filterEvents, judgeGuess, parseDate, readDaily, readDiscoveries, readSavedGuesses, recipeKey, routeToGoal, scoreGuess, seededRandom, shuffled, tilesKey, validInsertion } from './logic.ts';
+import { availableHint, CONNECTIONS_MISTAKES, connectionsLayout, connectionsProgress, connectionsShare, dateValue, distanceKm, earlierNumbers, filterEvents, judgeGuess, nextHint, parseDate, readDaily, readDiscoveries, readSavedGuesses, readSavedHints, recipeKey, routeToGoal, scoreGuess, seededRandom, shuffled, tilesKey, validInsertion } from './logic.ts';
 import type { GameCatalogue, HistoricalDate, HistoryEvent } from './types.ts';
 
 const eventAt = (date: HistoricalDate): HistoryEvent => ({ ...events[0]!, date });
@@ -184,7 +184,7 @@ test('the opening board is the same for everyone and never shows three of a grou
   assert.notEqual(seededRandom('one')(), seededRandom('two')());
 });
 
-test('Connections guesses: one away, repeats cost nothing, four mistakes end the game', () => {
+test('Connections guesses: one away, repeats cost nothing, six mistakes end the game', () => {
   const puzzle = connectionsPuzzles[0]!;
   const [a, b, c, d] = puzzle.groups.map(group => [...group.items]);
   assert.deepEqual(judgeGuess(puzzle, [], a!), { kind: 'correct', group: puzzle.groups[0] });
@@ -196,7 +196,9 @@ test('Connections guesses: one away, repeats cost nothing, four mistakes end the
   assert.equal(judgeGuess(puzzle, [wrong], [...wrong].reverse()).kind, 'repeat');
   for (const invalid of [a!.slice(0, 3), [a![0]!, a![0]!, a![1]!, a![2]!], [...a!.slice(0, 3), 'Not a tile']]) assert.equal(judgeGuess(puzzle, [], invalid).kind, 'invalid');
   assert.equal(judgeGuess(puzzle, [a!], [a![0]!, b![0]!, b![1]!, b![2]!]).kind, 'invalid', 'a solved tile has left the board');
-  const mistakes = [wrong, oneAway, [b![0]!, b![1]!, c![0]!, c![1]!], [c![2]!, c![3]!, d![0]!, d![1]!]];
+  const mistakes = [wrong, oneAway, [b![0]!, b![1]!, c![0]!, c![1]!], [c![2]!, c![3]!, d![0]!, d![1]!], [a![2]!, a![3]!, c![0]!, c![1]!], [b![2]!, b![3]!, d![2]!, d![3]!]];
+  assert.equal(CONNECTIONS_MISTAKES, 6);
+  assert.ok(!connectionsProgress(puzzle, mistakes.slice(0, 5)).over, 'five mistakes still leave one');
   const lost = connectionsProgress(puzzle, mistakes);
   assert.equal(lost.mistakes, CONNECTIONS_MISTAKES);
   assert.ok(lost.over && !lost.won);
@@ -205,6 +207,20 @@ test('Connections guesses: one away, repeats cost nothing, four mistakes end the
   assert.ok(won.won && won.over);
   assert.equal(won.mistakes, 1);
   assert.deepEqual(won.solved.map(group => group.label), [d, c, b, a].map(items => puzzle.groups.find(group => tilesKey(group.items) === tilesKey(items!))!.label));
+});
+
+test('Connections hints name the easiest hidden connection, once each, and are saved per puzzle', () => {
+  const puzzle = connectionsPuzzles[0]!;
+  const byLevel = (level: number) => puzzle.groups.find(group => group.level === level)!;
+  assert.equal(nextHint(puzzle, [], []), byLevel(1));
+  assert.equal(nextHint(puzzle, [], [1]), byLevel(2), 'a hinted group is not named twice');
+  assert.equal(nextHint(puzzle, [byLevel(1), byLevel(2)], []), byLevel(3), 'found groups need no hint');
+  assert.equal(nextHint(puzzle, [byLevel(4)], [1, 2, 3]), undefined, 'every hidden group is named');
+  const store = { 3: { puzzle: puzzle.id, guesses: [], hints: [2, 2, 1, 9, '3', null] } };
+  assert.deepEqual(readSavedHints(store, 3, puzzle), [2, 1], 'repeats and unknown levels are dropped');
+  assert.deepEqual(readSavedHints(store, 4, puzzle), []);
+  assert.deepEqual(readSavedHints({ 3: { puzzle: 'another-puzzle', hints: [1] } }, 3, puzzle), []);
+  for (const damaged of [null, 'text', { 3: null }, { 3: { puzzle: puzzle.id, hints: 'all' } }, { 3: { puzzle: puzzle.id } }]) assert.deepEqual(readSavedHints(damaged, 3, puzzle), []);
 });
 
 test('saved Connections progress keeps only legal guesses for the same puzzle', () => {
@@ -235,4 +251,8 @@ test('the daily response, the archive and the shared result', () => {
   assert.equal(share.split('\n')[0], 'STR History Connections No. 5');
   assert.equal(share.split('\n')[2], square.repeat(4));
   for (const tile of puzzle.groups.flatMap(group => group.items)) assert.ok(!share.includes(tile), 'no answers in the shared result');
+  assert.equal(share.split('\n').length, 3, 'no hint line without hints');
+  const hinted = connectionsShare(puzzle, 4, [a!], 2).split('\n');
+  assert.deepEqual(hinted.slice(1), [square.repeat(4), '💡 2 hints']);
+  for (const label of puzzle.groups.map(group => group.label)) assert.ok(!hinted.join('\n').includes(label), 'no connection names either');
 });

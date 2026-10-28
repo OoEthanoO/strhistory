@@ -555,6 +555,10 @@ calm reading experience.
   to complete without it, and the explanation names the trap. Mark break points
   in words of 11 or more letters with a soft hyphen (`\u00AD`) so that four
   tiles fit across a phone.
+- Players have six mistakes (`CONNECTIONS_MISTAKES` in `logic.ts`) and may ask
+  for hints: each names the easiest connection not yet found or hinted
+  (`nextHint`), never its tiles. Hints are saved with the guesses, as group
+  levels, and counted in the shared result.
 - Progress is local to the browser and must work without localStorage. Run
   `node --test src/features/games/logic.test.ts` for game changes (also in CI).
 

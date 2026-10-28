@@ -1,4 +1,4 @@
-import type { ConnectionsGroup, ConnectionsPuzzle, Coordinates, CraftRecipe, GameCatalogue, HistoricalDate, HistoryEvent } from './types.ts';
+import type { ConnectionsGroup, ConnectionsLevel, ConnectionsPuzzle, Coordinates, CraftRecipe, GameCatalogue, HistoricalDate, HistoryEvent } from './types.ts';
 
 export function shuffled<T>(items: readonly T[], random = Math.random): T[] {
   const copy = [...items];
@@ -109,7 +109,7 @@ export function readDiscoveries(value: unknown, validIds: ReadonlySet<string>, s
   return [...new Set([...starters, ...saved])];
 }
 
-export const CONNECTIONS_MISTAKES = 4;
+export const CONNECTIONS_MISTAKES = 6;
 
 /** The same tiles in any order give the same key. */
 export function tilesKey(items: readonly string[]): string { return [...items].sort().join('\u0000'); }
@@ -180,6 +180,19 @@ export function readSavedGuesses(store: unknown, number: number, puzzle: Connect
   return guesses;
 }
 
+/** What the next hint names: the easiest connection that is neither found nor already hinted. */
+export function nextHint(puzzle: ConnectionsPuzzle, solved: readonly ConnectionsGroup[], hinted: readonly ConnectionsLevel[]): ConnectionsGroup | undefined {
+  return [...puzzle.groups].sort((a, b) => a.level - b.level).find(group => !solved.includes(group) && !hinted.includes(group.level));
+}
+
+/** Saved hints for one daily number: the levels of the groups they named, each once. */
+export function readSavedHints(store: unknown, number: number, puzzle: ConnectionsPuzzle): ConnectionsLevel[] {
+  const entry = store && typeof store === 'object' ? (store as Record<string, unknown>)[String(number)] : undefined;
+  if (!entry || typeof entry !== 'object' || (entry as { puzzle?: unknown }).puzzle !== puzzle.id) return [];
+  const saved = (entry as { hints?: unknown }).hints, levels: unknown[] = puzzle.groups.map(group => group.level);
+  return [...new Set(Array.isArray(saved) ? saved : [])].filter((level): level is ConnectionsLevel => levels.includes(level));
+}
+
 /** The access service's answer: today's position in the rotation and the school's date. */
 export function readDaily(value: unknown): { number: number; date: string } | null {
   if (!value || typeof value !== 'object') return null;
@@ -202,8 +215,8 @@ export function formatDay(day: string): string {
 
 const squares = { 1: '🟨', 2: '🟩', 3: '🟦', 4: '🟪' } as const;
 
-/** A shareable grid of coloured squares: one row per guess, no tile names. */
-export function connectionsShare(puzzle: ConnectionsPuzzle, number: number, guesses: readonly (readonly string[])[]): string {
+/** A shareable grid of coloured squares: one row per guess, no tile names, then any hints used. */
+export function connectionsShare(puzzle: ConnectionsPuzzle, number: number, guesses: readonly (readonly string[])[], hints = 0): string {
   const level = new Map(puzzle.groups.flatMap(group => group.items.map(item => [item, group.level] as const)));
-  return [`STR History Connections No. ${number + 1}`, ...guesses.map(guess => guess.map(item => squares[level.get(item)!]).join(''))].join('\n');
+  return [`STR History Connections No. ${number + 1}`, ...guesses.map(guess => guess.map(item => squares[level.get(item)!]).join('')), ...(hints ? [`💡 ${hints} ${hints === 1 ? 'hint' : 'hints'}`] : [])].join('\n');
 }
