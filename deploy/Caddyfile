@@ -17,6 +17,16 @@ history.ethanyanxu.com, www.strhistory.ca {
 		path /access/unlock /access/logout /admin/api/*
 	}
 	redir @accessPost https://strhistory.ca/access 303
+	# The old address's home page opens the public globe. The department home
+	# page is behind the access code and robots.txt, so a search engine following
+	# the old address would otherwise reach a blocked page (Search Console flagged
+	# history.ethanyanxu.com/ in November 2026). Other old paths keep their place
+	# on the canonical host, and www.strhistory.ca still goes to the home page.
+	@oldHome {
+		host history.ethanyanxu.com
+		path /
+	}
+	redir @oldHome https://strhistory.ca/globe 308
 	redir https://strhistory.ca{uri} 308
 }
 

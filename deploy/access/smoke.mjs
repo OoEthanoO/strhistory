@@ -80,6 +80,11 @@ for (const alias of process.argv.slice(3)) {
     assert.equal(r.status, 308, `permanent redirect: ${alias}${path}`);
     assert.equal(r.headers.get('location'), origin + path, 'redirect retains the full path and query');
   }
+  // The old address's home page opens the public globe; www keeps the home page (deploy/Caddyfile).
+  const home = await fetch(new URL('/', alias), { redirect: 'manual' });
+  assert.equal(home.status, 308, `permanent redirect: ${alias}/`);
+  const homeTarget = new URL(alias).hostname === 'history.ethanyanxu.com' ? origin + '/globe' : origin + '/';
+  assert.equal(home.headers.get('location'), homeTarget, `home page redirect: ${alias}/`);
   const r = await fetch(new URL('/access/unlock', alias), {
     method: 'POST', redirect: 'manual', body: new URLSearchParams({ code: 'not-a-real-code' }),
   });
