@@ -9,7 +9,10 @@ this file.
 Canonical site: **https://strhistory.ca** · Repo: https://github.com/OoEthanoO/strhistory
 
 `history.ethanyanxu.com` and `www.strhistory.ca` redirect to the canonical host,
-preserving paths and query strings. See §10 for DNS and migration requirements.
+preserving paths and query strings, with one exception: the old address's home
+page opens the public `/globe`, because the department home page is gated and
+blocked to search engines (Google flagged `history.ethanyanxu.com/` as "Blocked by
+robots.txt" in November 2026). See §10 for DNS and migration requirements.
 
 ---
 
